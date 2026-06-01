@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import BottomTabBar from "@/components/BottomTabBar";
 
 export const metadata: Metadata = {
   title: "⚽ Calcetto",
@@ -13,7 +14,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="it">
-      <body>{children}</body>
+      <body className="pb-20">
+        {children}
+        <BottomTabBar />
+      </body>
     </html>
   );
 }
