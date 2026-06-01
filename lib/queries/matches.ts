@@ -1,5 +1,6 @@
 // lib/queries/matches.ts
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import type { Match, MatchWithPlayers } from '@/lib/types'
 
 export async function getAllMatches(): Promise<Match[]> {
@@ -10,6 +11,16 @@ export async function getAllMatches(): Promise<Match[]> {
     .order('played_at', { ascending: false })
   if (error) throw new Error(error.message)
   return data
+}
+
+export async function getAllMatchesWithPlayers(): Promise<MatchWithPlayers[]> {
+  const supabase = createClient()
+  const { data, error } = await supabase
+    .from('matches')
+    .select('*, match_players(*, player:players(*))')
+    .order('played_at', { ascending: false })
+  if (error) throw new Error(error.message)
+  return data as MatchWithPlayers[]
 }
 
 export async function getMatchById(id: string): Promise<MatchWithPlayers> {
@@ -23,28 +34,28 @@ export async function getMatchById(id: string): Promise<MatchWithPlayers> {
   return data as MatchWithPlayers
 }
 
-export async function getLastMatch(): Promise<Match | null> {
+export async function getLastMatch(): Promise<MatchWithPlayers | null> {
   const supabase = createClient()
   const { data } = await supabase
     .from('matches')
-    .select('*')
+    .select('*, match_players(*, player:players(*))')
     .eq('is_upcoming', false)
     .order('played_at', { ascending: false })
     .limit(1)
     .single()
-  return data ?? null
+  return (data as MatchWithPlayers) ?? null
 }
 
-export async function getNextMatch(): Promise<Match | null> {
+export async function getNextMatch(): Promise<MatchWithPlayers | null> {
   const supabase = createClient()
   const { data } = await supabase
     .from('matches')
-    .select('*')
+    .select('*, match_players(*, player:players(*))')
     .eq('is_upcoming', true)
     .order('played_at', { ascending: true })
     .limit(1)
     .single()
-  return data ?? null
+  return (data as MatchWithPlayers) ?? null
 }
 
 export async function createMatch(formData: {
@@ -57,7 +68,7 @@ export async function createMatch(formData: {
   players: { player_id: string; team: 'a' | 'b'; goals: number }[]
 }): Promise<string> {
   'use server'
-  const supabase = createClient()
+  const supabase = createAdminClient()
 
   const { data: match, error } = await supabase
     .from('matches')
@@ -96,7 +107,7 @@ export async function updateMatch(
   }
 ): Promise<void> {
   'use server'
-  const supabase = createClient()
+  const supabase = createAdminClient()
 
   const { error } = await supabase.from('matches').update({
     played_at: formData.played_at,
@@ -120,7 +131,7 @@ export async function updateMatch(
 
 export async function deleteMatch(id: string): Promise<void> {
   'use server'
-  const supabase = createClient()
+  const supabase = createAdminClient()
   const { error } = await supabase.from('matches').delete().eq('id', id)
   if (error) throw new Error(error.message)
 }

@@ -1,49 +1,104 @@
 import Link from 'next/link'
-import type { Match } from '@/lib/types'
+import type { MatchWithPlayers } from '@/lib/types'
 
-export default function MatchCard({ match }: { match: Match }) {
+function topScorer(match: MatchWithPlayers, team: 'a' | 'b') {
+  const players = match.match_players.filter((mp) => mp.team === team && mp.goals > 0)
+  if (players.length === 0) return null
+  return players.reduce((a, b) => (b.goals > a.goals ? b : a))
+}
+
+function TeamColumn({ name, score, players, wins, upcoming }: {
+  name: string
+  score?: number | null
+  players: string[]
+  wins: boolean
+  upcoming?: boolean
+}) {
+  return (
+    <div className="flex-1 flex flex-col gap-1.5">
+      {/* Team name */}
+      <div className={`text-[9px] font-bold text-center truncate ${wins ? 'text-win/80' : 'text-white/30'}`}>{name}</div>
+
+      {/* Score */}
+      {score !== undefined && (
+        <div className={`text-3xl font-black leading-none text-center ${wins ? 'text-win' : 'text-white/30'}`}>{score}</div>
+      )}
+
+      {/* Players box */}
+      {players.length > 0 && (
+        <div
+          className="rounded-xl p-2 flex flex-col gap-0.5 mt-0.5"
+          style={{ background: wins && !upcoming ? 'rgba(74,222,128,0.07)' : 'rgba(255,255,255,0.04)', border: `1px solid ${wins && !upcoming ? 'rgba(74,222,128,0.15)' : 'rgba(255,255,255,0.07)'}` }}
+        >
+          {players.map((n) => (
+            <div key={n} className={`text-[9px] truncate ${wins && !upcoming ? 'text-win/60' : 'text-white/40'}`}>{n}</div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default function MatchCard({ match }: { match: MatchWithPlayers }) {
   const date = new Date(match.played_at).toLocaleDateString('it-IT', {
-    day: 'numeric', month: 'long', year: 'numeric',
+    day: 'numeric', month: 'short', year: 'numeric',
   })
+
+  const teamAPlayers = match.match_players.filter((mp) => mp.team === 'a').map((mp) => mp.player.name)
+  const teamBPlayers = match.match_players.filter((mp) => mp.team === 'b').map((mp) => mp.player.name)
 
   if (match.is_upcoming) {
     return (
-      <Link
-        href={`/matches/${match.id}`}
-        className="block p-4 rounded-2xl border border-white/8 hover:border-brand/30 transition-colors"
-        style={{ background: 'rgba(255,255,255,0.04)' }}
-      >
-        <span className="inline-block text-[10px] font-bold tracking-wider uppercase bg-brand/15 text-brand px-3 py-1 rounded-full mb-2">
-          📅 In programma
-        </span>
-        <div className="font-bold">{date}</div>
+      <Link href={`/matches/${match.id}`} className="flex flex-col rounded-2xl overflow-hidden border border-brand/20 hover:border-brand/50 transition-all" style={{ background: 'rgba(167,139,250,0.06)' }}>
+        <div className="h-0.5" style={{ background: 'linear-gradient(90deg,#7c3aed,#6366f1)' }} />
+        <div className="p-3 flex flex-col gap-2">
+          <div className="flex items-center justify-between">
+            <span className="text-[9px] font-bold tracking-wider uppercase bg-brand/15 text-brand px-2 py-0.5 rounded-full">📅 Upcoming</span>
+            <span className="text-[9px] text-white/30">{date}</span>
+          </div>
+          <div className="flex gap-2">
+            <TeamColumn name={match.team_a_name} players={teamAPlayers} wins={false} upcoming />
+            <div className="w-px bg-white/8 self-stretch mx-0.5" />
+            <TeamColumn name={match.team_b_name} players={teamBPlayers} wins={false} upcoming />
+          </div>
+        </div>
       </Link>
     )
   }
 
   const aWins = (match.score_a ?? 0) > (match.score_b ?? 0)
+  const bestA = topScorer(match, 'a')
+  const bestB = topScorer(match, 'b')
 
   return (
     <Link
       href={`/matches/${match.id}`}
-      className="flex items-center gap-3 p-4 rounded-2xl border border-white/8 hover:border-brand/25 transition-all hover:shadow-lg hover:shadow-brand/10"
+      className="flex flex-col rounded-2xl overflow-hidden border border-white/8 hover:border-brand/30 transition-all hover:shadow-xl hover:shadow-brand/10 hover:-translate-y-0.5"
       style={{ background: 'rgba(255,255,255,0.04)' }}
     >
-      <div className="text-center min-w-[80px]">
-        <div className="text-2xl font-black tracking-tight">
-          <span className={aWins ? 'text-win' : 'text-white/50'}>{match.score_a}</span>
-          <span className="text-white/15 mx-1">–</span>
-          <span className={!aWins ? 'text-win' : 'text-white/50'}>{match.score_b}</span>
+      <div className="p-3 flex flex-col gap-2">
+        {/* Date */}
+        <div className="text-[9px] text-white/25">{date}</div>
+
+        {/* Two-column layout: team A | team B */}
+        <div className="flex gap-2">
+          <TeamColumn name={match.team_a_name} score={match.score_a} players={teamAPlayers} wins={aWins} />
+          <div className="w-px bg-white/8 self-stretch mx-0.5" />
+          <TeamColumn name={match.team_b_name} score={match.score_b} players={teamBPlayers} wins={!aWins} />
         </div>
-        <div className="text-[10px] text-white/25 mt-0.5">
-          {match.team_a_name} vs {match.team_b_name}
-        </div>
+
+        {/* Top scorers */}
+        {(bestA || bestB) && (
+          <div className="border-t border-white/6 pt-2 flex gap-2">
+            <div className="flex-1 text-[9px] text-white/50 truncate">
+              {bestA ? <>⚽ {bestA.player.name} <span className="text-white/25">{bestA.goals}g</span></> : null}
+            </div>
+            <div className="flex-1 text-[9px] text-white/50 truncate text-right">
+              {bestB ? <>{bestB.goals}g <span className="text-white/25"></span>⚽ {bestB.player.name}</> : null}
+            </div>
+          </div>
+        )}
       </div>
-      <div className="flex-1">
-        <div className="text-[11px] text-white/30 mb-1">{date}</div>
-        <div className="text-sm font-bold text-brand">🏆 {aWins ? match.team_a_name : match.team_b_name}</div>
-      </div>
-      <span className="text-white/15 text-lg">›</span>
     </Link>
   )
 }

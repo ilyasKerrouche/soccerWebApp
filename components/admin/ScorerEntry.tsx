@@ -10,6 +10,11 @@ type Props = {
   label: string
 }
 
+const fieldStyle: React.CSSProperties = {
+  background: 'rgba(255,255,255,0.06)',
+  border: '1px solid rgba(255,255,255,0.1)',
+}
+
 export default function ScorerEntry({ players, value, onChange, label }: Props) {
   const add = () => {
     if (players.length === 0) return
@@ -26,53 +31,43 @@ export default function ScorerEntry({ players, value, onChange, label }: Props) 
 
   return (
     <div>
-      <div className="text-[11px] uppercase tracking-wider text-white/40 mb-2">{label}</div>
-      {value.map((row, i) => (
-        <div key={i} className="flex items-center gap-2 mb-2">
-          <select
-            value={row.player_id}
-            onChange={(e) => update(i, 'player_id', e.target.value)}
-            className="flex-1 bg-white/6 border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none"
-          >
-            {players.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
-              </option>
-            ))}
-          </select>
-          <div className="flex items-center gap-1 bg-white/6 border border-white/10 rounded-xl px-2 py-1.5">
-            <button
-              type="button"
-              onClick={() => update(i, 'goals', Math.max(0, row.goals - 1))}
-              className="text-white/50 text-lg w-6 h-6 flex items-center justify-center"
+      <div className="text-xs font-bold text-brand/80 mb-2 truncate">{label}</div>
+      <div className="flex flex-col gap-2">
+        {value.map((row, i) => (
+          <div key={i} className="flex flex-col gap-1.5 rounded-xl p-2.5" style={fieldStyle}>
+            <select
+              value={row.player_id}
+              onChange={(e) => update(i, 'player_id', e.target.value)}
+              className="w-full rounded-lg px-2 py-1.5 text-xs text-white outline-none"
+              style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.1)' }}
             >
-              −
-            </button>
-            <span className="text-sm font-bold w-5 text-center">{row.goals}</span>
-            <button
-              type="button"
-              onClick={() => update(i, 'goals', row.goals + 1)}
-              className="text-white/50 text-lg w-6 h-6 flex items-center justify-center"
-            >
-              +
-            </button>
+              {players.map((p) => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 rounded-lg px-2 py-1" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                <button type="button" onClick={() => update(i, 'goals', Math.max(0, row.goals - 1))} className="text-white/60 w-6 h-6 flex items-center justify-center text-lg hover:text-white transition-colors">−</button>
+                <span className="text-sm font-black w-4 text-center text-brand">{row.goals}</span>
+                <button type="button" onClick={() => update(i, 'goals', row.goals + 1)} className="text-white/60 w-6 h-6 flex items-center justify-center text-lg hover:text-white transition-colors">+</button>
+              </div>
+              <button type="button" onClick={() => remove(i)} className="text-white/25 hover:text-red-400 text-lg w-7 h-7 flex items-center justify-center transition-colors">×</button>
+            </div>
           </div>
-          <button
-            type="button"
-            onClick={() => remove(i)}
-            className="text-white/25 hover:text-red-400 text-lg w-7 h-7 flex items-center justify-center"
-          >
-            ×
-          </button>
-        </div>
-      ))}
-      <button
-        type="button"
-        onClick={add}
-        className="text-brand/70 text-xs flex items-center gap-1 mt-1 hover:text-brand transition-colors"
-      >
-        ＋ Aggiungi marcatore
-      </button>
+        ))}
+      </div>
+      {players.length > 0 && (
+        <button
+          type="button"
+          onClick={add}
+          className="text-brand/60 text-xs flex items-center gap-1 mt-2 hover:text-brand transition-colors"
+        >
+          ＋ marcatore
+        </button>
+      )}
+      {players.length === 0 && (
+        <div className="text-[10px] text-white/25 mt-1 italic">Seleziona prima i giocatori</div>
+      )}
     </div>
   )
 }

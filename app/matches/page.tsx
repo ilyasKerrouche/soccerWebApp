@@ -1,10 +1,10 @@
-import { getAllMatches } from '@/lib/queries/matches'
+import { getAllMatchesWithPlayers } from '@/lib/queries/matches'
 import MatchCard from '@/components/MatchCard'
 
 export const revalidate = 60
 
 export default async function MatchesPage() {
-  const matches = await getAllMatches()
+  const matches = await getAllMatchesWithPlayers()
   const upcoming = matches.filter((m) => m.is_upcoming)
   const played = matches.filter((m) => !m.is_upcoming)
 
@@ -20,20 +20,22 @@ export default async function MatchesPage() {
 
       <div className="px-4 pt-4">
         {upcoming.length > 0 && (
-          <>
+          <div className="mb-5">
             <div className="text-[10px] tracking-[2px] uppercase text-white/30 mb-2 font-bold">In programma</div>
-            <div className="flex flex-col gap-2 mb-5">
+            <div className="grid grid-cols-2 gap-2">
               {upcoming.map((m) => <MatchCard key={m.id} match={m} />)}
             </div>
-          </>
+          </div>
         )}
+
         <div className="text-[10px] tracking-[2px] uppercase text-white/30 mb-2 font-bold">Storico</div>
-        <div className="flex flex-col gap-2">
-          {played.length === 0 && (
-            <p className="text-white/25 text-sm py-6 text-center">Nessuna partita ancora.</p>
-          )}
-          {played.map((m) => <MatchCard key={m.id} match={m} />)}
-        </div>
+        {played.length === 0 ? (
+          <p className="text-white/25 text-sm py-6 text-center">Nessuna partita ancora.</p>
+        ) : (
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+            {played.map((m) => <MatchCard key={m.id} match={m} />)}
+          </div>
+        )}
       </div>
     </main>
   )

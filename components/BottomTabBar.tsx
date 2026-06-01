@@ -5,7 +5,6 @@ import { usePathname } from 'next/navigation'
 const tabs = [
   { href: '/', label: 'Home', icon: '🏠' },
   { href: '/matches', label: 'Partite', icon: '⚽' },
-  { href: '/players', label: 'Giocatori', icon: '👥' },
   { href: '/stats', label: 'Stats', icon: '📊' },
 ]
 
@@ -30,12 +29,12 @@ export default function BottomTabBar() {
           <Link
             key={tab.href}
             href={tab.href}
-            className={`flex-1 flex flex-col items-center gap-1 pt-2 text-xs transition-colors ${
+            className={`flex-1 flex flex-col items-center justify-center gap-1 pt-2 text-xs transition-colors text-center ${
               active ? 'text-brand' : 'text-white/30'
             }`}
           >
             <span className="text-xl">{tab.icon}</span>
-            {tab.label}
+            <span>{tab.label}</span>
           </Link>
         )
       })}

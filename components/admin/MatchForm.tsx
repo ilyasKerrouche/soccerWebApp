@@ -24,52 +24,46 @@ type Props = {
   onSave: (data: SaveData) => Promise<void>
 }
 
+const fieldStyle: React.CSSProperties = {
+  background: 'rgba(255,255,255,0.06)',
+  border: '1px solid rgba(255,255,255,0.1)',
+}
+
+const inputClass = 'w-full rounded-xl px-4 py-3 text-white text-sm outline-none focus:ring-1 focus:ring-brand/40 transition-all placeholder-white/25'
+
 export default function MatchForm({ players, existing, onSave }: Props) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [isUpcoming, setIsUpcoming] = useState(existing?.is_upcoming ?? false)
-  const [date, setDate] = useState(
-    existing?.played_at ?? new Date().toISOString().split('T')[0]
-  )
+  const [date, setDate] = useState(existing?.played_at ?? new Date().toISOString().split('T')[0])
   const [teamAName, setTeamAName] = useState(existing?.team_a_name ?? 'Team A')
   const [teamBName, setTeamBName] = useState(existing?.team_b_name ?? 'Team B')
   const [scoreA, setScoreA] = useState<number>(existing?.score_a ?? 0)
   const [scoreB, setScoreB] = useState<number>(existing?.score_b ?? 0)
 
   const [selectedPlayers, setSelectedPlayers] = useState<SelectedPlayer[]>(
-    existing?.match_players.map((mp) => ({
-      player_id: mp.player_id,
-      team: mp.team,
-    })) ?? []
+    existing?.match_players.map((mp) => ({ player_id: mp.player_id, team: mp.team })) ?? []
   )
-
   const [scorersA, setScorersA] = useState<ScorerRow[]>(
-    existing?.match_players
-      .filter((mp) => mp.team === 'a' && mp.goals > 0)
-      .map((mp) => ({ player_id: mp.player_id, goals: mp.goals })) ?? []
+    existing?.match_players.filter((mp) => mp.team === 'a' && mp.goals > 0).map((mp) => ({ player_id: mp.player_id, goals: mp.goals })) ?? []
   )
   const [scorersB, setScorersB] = useState<ScorerRow[]>(
-    existing?.match_players
-      .filter((mp) => mp.team === 'b' && mp.goals > 0)
-      .map((mp) => ({ player_id: mp.player_id, goals: mp.goals })) ?? []
+    existing?.match_players.filter((mp) => mp.team === 'b' && mp.goals > 0).map((mp) => ({ player_id: mp.player_id, goals: mp.goals })) ?? []
   )
 
-  const teamAPlayers = players.filter((p) =>
-    selectedPlayers.find((sp) => sp.player_id === p.id && sp.team === 'a')
-  )
-  const teamBPlayers = players.filter((p) =>
-    selectedPlayers.find((sp) => sp.player_id === p.id && sp.team === 'b')
-  )
+  const teamAPlayers = players.filter((p) => selectedPlayers.find((sp) => sp.player_id === p.id && sp.team === 'a'))
+  const teamBPlayers = players.filter((p) => selectedPlayers.find((sp) => sp.player_id === p.id && sp.team === 'b'))
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
+    setError(null)
     try {
       const scorerMap = new Map<string, number>()
       ;[...scorersA, ...scorersB].forEach((s) => {
         scorerMap.set(s.player_id, (scorerMap.get(s.player_id) ?? 0) + s.goals)
       })
-
       await onSave({
         played_at: date,
         team_a_name: teamAName,
@@ -86,127 +80,121 @@ export default function MatchForm({ players, existing, onSave }: Props) {
       router.push('/admin')
       router.refresh()
     } catch (err) {
-      alert('Errore nel salvataggio: ' + (err as Error).message)
+      setError((err as Error).message)
     } finally {
       setLoading(false)
     }
   }
 
-  const inputClass =
-    'w-full bg-white/6 border border-white/10 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-brand/40'
-
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+
       {/* Upcoming toggle */}
-      <div className="flex items-center gap-3 bg-white/4 border border-white/8 rounded-xl px-4 py-3">
-        <label className="flex-1 text-sm text-white/70">
-          Partita futura (senza risultato)
-        </label>
+      <div className="glass rounded-xl px-4 py-3 flex items-center gap-3">
+        <div className="flex-1">
+          <div className="text-sm font-semibold text-white/80">Partita futura</div>
+          <div className="text-xs text-white/35 mt-0.5">Senza risultato finale</div>
+        </div>
         <button
           type="button"
           onClick={() => setIsUpcoming(!isUpcoming)}
-          className={`w-11 h-6 rounded-full transition-colors ${
-            isUpcoming ? 'bg-brand' : 'bg-white/15'
-          }`}
+          className={`w-12 h-6 rounded-full transition-colors relative flex-shrink-0 ${isUpcoming ? 'bg-brand' : 'bg-white/15'}`}
         >
-          <div
-            className={`w-5 h-5 rounded-full bg-white shadow transition-transform mx-0.5 ${
-              isUpcoming ? 'translate-x-5' : 'translate-x-0'
-            }`}
-          />
+          <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all ${isUpcoming ? 'left-6' : 'left-0.5'}`} />
         </button>
       </div>
 
       {/* Date */}
       <div>
-        <label className="text-[11px] uppercase tracking-wider text-white/40 block mb-2">
-          Data
-        </label>
+        <label className="text-[11px] uppercase tracking-wider text-white/40 block mb-2 font-bold">Data</label>
         <input
           type="date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
           required
           className={inputClass}
+          style={fieldStyle}
         />
       </div>
 
-      {/* Score */}
-      {!isUpcoming && (
-        <div>
-          <label className="text-[11px] uppercase tracking-wider text-white/40 block mb-2">
-            Punteggio
-          </label>
-          <div className="flex gap-3 items-center">
-            <div className="flex-1">
-              <input
-                className={inputClass + ' mb-1.5'}
-                value={teamAName}
-                onChange={(e) => setTeamAName(e.target.value)}
-                placeholder="Nome team A"
-              />
+      {/* Teams & Score */}
+      <div>
+        <label className="text-[11px] uppercase tracking-wider text-white/40 block mb-2 font-bold">
+          {isUpcoming ? 'Nomi team' : 'Punteggio'}
+        </label>
+        <div className="flex gap-3 items-center">
+          <div className="flex-1 flex flex-col gap-2">
+            <input
+              className={inputClass}
+              style={fieldStyle}
+              value={teamAName}
+              onChange={(e) => setTeamAName(e.target.value)}
+              placeholder="Team A"
+            />
+            {!isUpcoming && (
               <input
                 type="number"
                 min={0}
                 value={scoreA}
                 onChange={(e) => setScoreA(Number(e.target.value))}
                 className={inputClass + ' text-center text-2xl font-black'}
+                style={fieldStyle}
               />
-            </div>
-            <span className="text-white/20 text-2xl font-light">–</span>
-            <div className="flex-1">
-              <input
-                className={inputClass + ' mb-1.5'}
-                value={teamBName}
-                onChange={(e) => setTeamBName(e.target.value)}
-                placeholder="Nome team B"
-              />
+            )}
+          </div>
+          <span className="text-white/25 text-2xl font-light pb-1">–</span>
+          <div className="flex-1 flex flex-col gap-2">
+            <input
+              className={inputClass}
+              style={fieldStyle}
+              value={teamBName}
+              onChange={(e) => setTeamBName(e.target.value)}
+              placeholder="Team B"
+            />
+            {!isUpcoming && (
               <input
                 type="number"
                 min={0}
                 value={scoreB}
                 onChange={(e) => setScoreB(Number(e.target.value))}
                 className={inputClass + ' text-center text-2xl font-black'}
+                style={fieldStyle}
               />
-            </div>
+            )}
           </div>
         </div>
-      )}
+      </div>
 
       {/* Players */}
       <div>
-        <label className="text-[11px] uppercase tracking-wider text-white/40 block mb-2">
-          Giocatori presenti (seleziona team A/B)
+        <label className="text-[11px] uppercase tracking-wider text-white/40 block mb-2 font-bold">
+          Giocatori presenti
         </label>
-        <PlayerSelector
-          players={players}
-          value={selectedPlayers}
-          onChange={setSelectedPlayers}
-        />
+        <PlayerSelector players={players} value={selectedPlayers} onChange={setSelectedPlayers} />
       </div>
 
       {/* Scorers */}
       {!isUpcoming && (
-        <div className="grid grid-cols-2 gap-4">
-          <ScorerEntry
-            players={teamAPlayers}
-            value={scorersA}
-            onChange={setScorersA}
-            label={`Marcatori ${teamAName}`}
-          />
-          <ScorerEntry
-            players={teamBPlayers}
-            value={scorersB}
-            onChange={setScorersB}
-            label={`Marcatori ${teamBName}`}
-          />
+        <div>
+          <label className="text-[11px] uppercase tracking-wider text-white/40 block mb-3 font-bold">Marcatori</label>
+          <div className="grid grid-cols-2 gap-4">
+            <ScorerEntry players={teamAPlayers} value={scorersA} onChange={setScorersA} label={teamAName} />
+            <ScorerEntry players={teamBPlayers} value={scorersB} onChange={setScorersB} label={teamBName} />
+          </div>
+        </div>
+      )}
+
+      {error && (
+        <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm text-center py-3 rounded-xl">
+          {error}
         </div>
       )}
 
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-brand text-black font-black py-4 rounded-2xl text-base hover:bg-green-400 transition-colors disabled:opacity-50"
+        className="w-full font-black py-4 rounded-2xl text-sm transition-opacity hover:opacity-90 disabled:opacity-50"
+        style={{ background: 'linear-gradient(135deg,#7c3aed,#6366f1)', color: 'white' }}
       >
         {loading ? 'Salvataggio…' : '💾 Salva partita'}
       </button>

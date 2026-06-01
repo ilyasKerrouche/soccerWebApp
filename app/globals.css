@@ -6,6 +6,16 @@ body {
   background-color: #06060f;
   color: white;
   font-family: 'Segoe UI', system-ui, sans-serif;
+  color-scheme: dark;
+}
+
+input, select, textarea {
+  color-scheme: dark;
+}
+
+select option {
+  background: #0d0d1f;
+  color: white;
 }
 
 /* Glass card utility */
