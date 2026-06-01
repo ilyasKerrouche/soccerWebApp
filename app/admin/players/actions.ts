@@ -3,6 +3,18 @@ import { revalidatePath } from 'next/cache'
 import { updatePlayerName, updatePlayerCardUrl } from '@/lib/queries/players'
 import { createAdminClient } from '@/lib/supabase/admin'
 
+export async function createPlayer(formData: FormData): Promise<void> {
+  const name = (formData.get('name') as string)?.trim()
+  const position = (formData.get('position') as string)?.trim() || null
+  const ovr = formData.get('ovr') ? Number(formData.get('ovr')) : null
+  if (!name) throw new Error('Nome obbligatorio')
+  const supabase = createAdminClient()
+  const { error } = await supabase.from('players').insert({ name, position, ovr })
+  if (error) throw new Error(error.message)
+  revalidatePath('/admin/players')
+  revalidatePath('/stats')
+}
+
 export async function savePlayerName(id: string, name: string): Promise<void> {
   await updatePlayerName(id, name.trim())
   revalidatePath('/admin/players')

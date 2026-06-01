@@ -10,69 +10,42 @@ const tabs = [
 
 export default function BottomTabBar() {
   const pathname = usePathname()
-  if (pathname.startsWith('/admin')) return null
+  const isAdmin = pathname.startsWith('/admin')
 
   const active = (href: string) =>
     href === '/' ? pathname === '/' : pathname.startsWith(href)
 
   return (
-    <>
-      {/* Mobile: bottom fixed */}
-      <nav
-        className="md:hidden fixed bottom-0 left-0 right-0 z-50 flex border-t border-white/8"
-        style={{
-          background: 'rgba(6,6,15,0.97)',
-          backdropFilter: 'blur(20px)',
-          paddingBottom: 'max(14px, env(safe-area-inset-bottom))',
-        }}
-      >
+    <nav
+      className="fixed top-0 left-0 right-0 md:left-auto md:right-auto md:max-w-md md:w-full z-50 flex items-center border-b border-white/8"
+      style={{
+        background: 'rgba(6,6,15,0.97)',
+        backdropFilter: 'blur(20px)',
+        height: 52,
+        paddingTop: 'env(safe-area-inset-top)',
+      }}
+    >
+      {/* Mobile & desktop: stessa nav in cima */}
+      <div className="flex-1 flex items-center">
         {tabs.map((tab) => (
           <Link
             key={tab.href}
             href={tab.href}
-            className={`flex-1 flex flex-col items-center justify-center gap-1 pt-2 text-xs transition-colors text-center ${
-              active(tab.href) ? 'text-brand' : 'text-white/30'
+            className={`flex-1 flex flex-col items-center justify-center gap-0.5 py-2 text-xs font-bold transition-colors ${
+              !isAdmin && active(tab.href) ? 'text-brand' : 'text-white/30'
             }`}
           >
-            <span className="text-xl">{tab.icon}</span>
+            <span className="text-lg">{tab.icon}</span>
             <span>{tab.label}</span>
           </Link>
         ))}
-      </nav>
-
-      {/* Desktop: top fixed dentro il container */}
-      <nav
-        className="hidden md:flex fixed top-0 z-50 w-full max-w-md items-center justify-between px-6 border-b border-white/8"
-        style={{
-          background: 'rgba(6,6,15,0.97)',
-          backdropFilter: 'blur(20px)',
-          height: 56,
-        }}
+      </div>
+      <Link
+        href="/admin"
+        className={`px-4 text-[11px] font-bold transition-colors ${isAdmin ? 'text-brand' : 'text-white/25 hover:text-white/60'}`}
       >
-        <div className="text-sm font-black text-white/50 tracking-widest">⚽</div>
-        <div className="flex items-center gap-1">
-          {tabs.map((tab) => (
-            <Link
-              key={tab.href}
-              href={tab.href}
-              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                active(tab.href)
-                  ? 'bg-brand/15 text-brand'
-                  : 'text-white/30 hover:text-white/60'
-              }`}
-            >
-              <span>{tab.icon}</span>
-              <span>{tab.label}</span>
-            </Link>
-          ))}
-        </div>
-        <Link
-          href="/admin"
-          className="text-[10px] font-bold text-white/30 hover:text-white/60 transition-colors"
-        >
-          Admin ⚙️
-        </Link>
-      </nav>
-    </>
+        ⚙️
+      </Link>
+    </nav>
   )
 }

@@ -20,8 +20,7 @@ export default function RootLayout({
           <div className="w-full md:max-w-md md:min-h-screen relative" style={{ background: '#06060f' }}>
             {/* Top nav su desktop */}
             <BottomTabBar />
-            {/* Padding bottom su mobile per tab bar, top su desktop */}
-            <div className="pb-20 md:pb-6 md:pt-16">
+            <div className="pt-14">
               {children}
             </div>
           </div>

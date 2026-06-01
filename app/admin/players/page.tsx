@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { getAllPlayers } from '@/lib/queries/players'
 import AdminPlayerRow from './AdminPlayerRow'
+import NewPlayerForm from './NewPlayerForm'
 
 export default async function AdminPlayersPage() {
   const players = await getAllPlayers()
@@ -19,6 +20,10 @@ export default async function AdminPlayersPage() {
       </div>
 
       <div className="px-4 pt-4 flex flex-col gap-3">
+        <NewPlayerForm />
+        <div className="text-[10px] tracking-[2px] uppercase text-white/25 font-bold mt-2">
+          {players.length} giocatori
+        </div>
         {players.map(p => (
           <AdminPlayerRow key={p.id} player={p} />
         ))}
