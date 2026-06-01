@@ -55,6 +55,18 @@ export default function MatchForm({ players, existing, onSave }: Props) {
   const teamAPlayers = players.filter((p) => selectedPlayers.find((sp) => sp.player_id === p.id && sp.team === 'a'))
   const teamBPlayers = players.filter((p) => selectedPlayers.find((sp) => sp.player_id === p.id && sp.team === 'b'))
 
+  const shuffle = () => {
+    const ids = selectedPlayers.length > 0
+      ? selectedPlayers.map(sp => sp.player_id)
+      : players.map(p => p.id)
+    const shuffled = [...ids].sort(() => Math.random() - 0.5)
+    const half = Math.ceil(shuffled.length / 2)
+    setSelectedPlayers([
+      ...shuffled.slice(0, half).map(id => ({ player_id: id, team: 'a' as const })),
+      ...shuffled.slice(half).map(id => ({ player_id: id, team: 'b' as const })),
+    ])
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
@@ -167,9 +179,21 @@ export default function MatchForm({ players, existing, onSave }: Props) {
 
       {/* Players */}
       <div>
-        <label className="text-[11px] uppercase tracking-wider text-white/40 block mb-2 font-bold">
-          Giocatori presenti
-        </label>
+        <div className="flex items-center justify-between mb-2">
+          <label className="text-[11px] uppercase tracking-wider text-white/40 font-bold">
+            Giocatori presenti
+          </label>
+          {isUpcoming && (
+            <button
+              type="button"
+              onClick={shuffle}
+              className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl transition-all hover:opacity-80"
+              style={{ background: 'linear-gradient(135deg,rgba(124,58,237,0.25),rgba(99,102,241,0.2))', border: '1px solid rgba(167,139,250,0.3)', color: '#a78bfa' }}
+            >
+              🔀 Shuffle team
+            </button>
+          )}
+        </div>
         <PlayerSelector players={players} value={selectedPlayers} onChange={setSelectedPlayers} />
       </div>
 
