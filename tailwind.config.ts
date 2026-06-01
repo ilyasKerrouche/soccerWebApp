@@ -5,14 +5,16 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        brand: '#4ade80',
-        'brand-dim': 'rgba(74,222,128,0.15)',
-        accent: '#a78bfa',
-        'accent-dim': 'rgba(139,92,246,0.15)',
-        surface: 'rgba(255,255,255,0.04)',
-        border: 'rgba(255,255,255,0.07)',
-        bg: '#0a0f0a',
-        'bg-indigo': '#0d0d1a',
+        brand: '#a78bfa',       // violet - main accent
+        'brand-dim': 'rgba(167,139,250,0.15)',
+        win: '#4ade80',         // green - scores/wins only
+        'win-dim': 'rgba(74,222,128,0.15)',
+        accent: '#6366f1',      // indigo - secondary
+        surface: 'rgba(255,255,255,0.05)',
+        'surface-hi': 'rgba(255,255,255,0.08)',
+        border: 'rgba(255,255,255,0.08)',
+        bg: '#06060f',
+        'bg-card': '#0d0d1f',
       },
     },
   },

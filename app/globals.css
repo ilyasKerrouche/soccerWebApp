@@ -3,7 +3,24 @@
 @tailwind utilities;
 
 body {
-  background-color: #0a0f0a;
+  background-color: #06060f;
   color: white;
   font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+/* Glass card utility */
+.glass {
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+/* Hero gradient orb */
+.hero-gradient {
+  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4c1d95 100%);
+}
+
+.glow-violet {
+  text-shadow: 0 0 24px rgba(167,139,250,0.5);
 }
