@@ -37,3 +37,9 @@ next-env.d.ts
 
 # superpowers brainstorm
 .superpowers/
+
+# card images (caricate su Supabase Storage)
+Card players/
+
+# claude settings
+.claude/
