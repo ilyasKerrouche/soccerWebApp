@@ -21,13 +21,8 @@ export default function AddToCalendar({ date, title = 'Calcetto' }: Props) {
       'END:VCALENDAR',
     ].join('\r\n')
 
-    const blob = new Blob([ics], { type: 'text/calendar' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'calcetto.ics'
-    a.click()
-    URL.revokeObjectURL(url)
+    // data: URI funziona meglio su iOS Safari — apre direttamente l'app Calendario
+    window.location.href = 'data:text/calendar;charset=utf-8,' + encodeURIComponent(ics)
   }
 
   return (

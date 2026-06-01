@@ -69,7 +69,11 @@ export default async function StatsPage() {
                 <span className="flex-1 text-sm font-bold">{p.name}</span>
                 <div className="text-right">
                   <div className={`text-lg font-black leading-none ${i === 0 ? 'text-brand' : 'text-white/50'}`}>{p.total_goals}</div>
-                  <div className="text-[9px] text-white/25">goal</div>
+                  <div className="text-[9px] text-white/25">
+                    {p.total_appearances > 0
+                      ? `${(p.total_goals / p.total_appearances).toFixed(1)} media`
+                      : 'goal'}
+                  </div>
                 </div>
               </Link>
             ))}

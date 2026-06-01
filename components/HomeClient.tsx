@@ -118,7 +118,7 @@ export default function HomeClient({ lastMatch, nextMatch, recentMatches, stats,
                   <div className="text-[10px] tracking-[2px] uppercase text-white/25 mb-2 font-bold">Marcatori ultima partita</div>
                   <div className="flex flex-col gap-1.5">
                     {scorers.map((mp, i) => (
-                      <div key={mp.id} className="flex items-center gap-3 px-3 py-2.5 rounded-xl" style={{
+                      <Link key={mp.id} href={`/players/${mp.player_id}`} className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:border-brand/25" style={{
                         background: i === 0 ? 'rgba(167,139,250,0.08)' : 'rgba(255,255,255,0.03)',
                         border: `1px solid ${i === 0 ? 'rgba(167,139,250,0.15)' : 'rgba(255,255,255,0.06)'}`,
                       }}>
@@ -132,7 +132,7 @@ export default function HomeClient({ lastMatch, nextMatch, recentMatches, stats,
                             <span key={g} className="text-[11px]">⚽</span>
                           ))}
                         </div>
-                      </div>
+                      </Link>
                     ))}
                   </div>
                 </section>
@@ -220,7 +220,7 @@ export default function HomeClient({ lastMatch, nextMatch, recentMatches, stats,
               </div>
               <div className="flex flex-col gap-1.5">
                 {topScorers.map((p, i) => (
-                  <div key={p.id} className="flex items-center gap-3 px-3 py-2.5 rounded-xl" style={{
+                  <Link key={p.id} href={`/players/${p.id}`} className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:border-brand/25" style={{
                     background: i === 0 ? 'rgba(167,139,250,0.08)' : 'rgba(255,255,255,0.03)',
                     border: `1px solid ${i === 0 ? 'rgba(167,139,250,0.2)' : 'rgba(255,255,255,0.06)'}`,
                   }}>
@@ -230,9 +230,11 @@ export default function HomeClient({ lastMatch, nextMatch, recentMatches, stats,
                     <span className="flex-1 text-sm font-bold">{p.name}</span>
                     <div className="text-right">
                       <div className={`text-lg font-black leading-none ${i === 0 ? 'text-brand' : 'text-white/50'}`}>{p.total_goals}</div>
-                      <div className="text-[9px] text-white/25">goal</div>
+                      <div className="text-[9px] text-white/25">
+                        {p.total_appearances > 0 ? `${(p.total_goals / p.total_appearances).toFixed(1)} media` : 'goal'}
+                      </div>
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
             </section>
