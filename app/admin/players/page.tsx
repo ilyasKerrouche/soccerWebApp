@@ -1,6 +1,5 @@
 import Link from 'next/link'
 import { getAllPlayers } from '@/lib/queries/players'
-import PlayerCard from '@/components/PlayerCard'
 import AdminPlayerRow from './AdminPlayerRow'
 
 export default async function AdminPlayersPage() {

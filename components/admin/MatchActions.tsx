@@ -1,6 +1,5 @@
 'use client'
 import { useTransition } from 'react'
-import { useRouter } from 'next/navigation'
 
 type Props = {
   onDelete: () => Promise<void>
@@ -8,7 +7,6 @@ type Props = {
 }
 
 export default function MatchActions({ onDelete, onDuplicate }: Props) {
-  const router = useRouter()
   const [deletePending, startDelete] = useTransition()
   const [dupPending, startDup] = useTransition()
 

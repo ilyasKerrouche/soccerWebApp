@@ -18,7 +18,7 @@ export default async function HomePage() {
     getPlayersWithStats(),
   ])
 
-  const recentMatches = allMatches.filter(m => !m.is_upcoming).slice(0, 5)
+  const recentMatches = allMatches.filter(m => !m.is_upcoming).slice(0, 3)
   const topScorers = [...players].sort((a, b) => b.total_goals - a.total_goals).slice(0, 5)
 
   const lastSA = lastMatch?.score_a ?? 0

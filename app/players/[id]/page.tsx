@@ -58,7 +58,7 @@ export default async function PlayerProfilePage({ params }: { params: { id: stri
           <section>
             <div className="text-[10px] tracking-[2px] uppercase text-white/25 mb-6 font-bold">Goal per partita</div>
             <div className="flex items-end gap-1.5 h-16">
-              {[...matches].reverse().map((m, i) => {
+              {[...matches].reverse().map((m) => {
                 const h = m.goals === 0 ? 4 : Math.round((m.goals / maxGoals) * 56) + 8
                 return (
                   <div key={m.id} className="flex flex-col items-center gap-1 flex-1">
@@ -87,7 +87,7 @@ export default async function PlayerProfilePage({ params }: { params: { id: stri
           )}
           <div className="flex flex-col gap-2">
             {matches.map((m) => {
-              const team = (m as any).playerTeam as 'a' | 'b' | null
+              const team = (m as unknown as { playerTeam: 'a' | 'b' | null }).playerTeam
               const sa = m.score_a ?? 0
               const sb = m.score_b ?? 0
               const aWins = sa > sb
