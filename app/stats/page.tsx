@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { getPlayersWithStats } from '@/lib/queries/players'
 import { getGlobalStats } from '@/lib/queries/stats'
 import PodiumView from '@/components/PodiumView'
@@ -58,7 +59,7 @@ export default async function StatsPage() {
           <div className="text-[10px] tracking-[2px] uppercase text-white/25 mb-2 font-bold">🥇 Classifica marcatori</div>
           <div className="flex flex-col gap-1.5">
             {byGoals.map((p, i) => (
-              <div key={p.id} className="flex items-center gap-3 px-3 py-2.5 rounded-xl" style={{
+              <Link key={p.id} href={`/players/${p.id}`} className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:border-brand/25" style={{
                 background: i === 0 ? 'rgba(167,139,250,0.08)' : 'rgba(255,255,255,0.03)',
                 border: `1px solid ${i === 0 ? 'rgba(167,139,250,0.2)' : 'rgba(255,255,255,0.06)'}`,
               }}>
@@ -70,7 +71,7 @@ export default async function StatsPage() {
                   <div className={`text-lg font-black leading-none ${i === 0 ? 'text-brand' : 'text-white/50'}`}>{p.total_goals}</div>
                   <div className="text-[9px] text-white/25">goal</div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </section>
@@ -80,7 +81,7 @@ export default async function StatsPage() {
           <div className="text-[10px] tracking-[2px] uppercase text-white/25 mb-2 font-bold">👟 Presenze</div>
           <div className="flex flex-col gap-1.5">
             {byAppearances.map((p, i) => (
-              <div key={p.id} className="flex items-center gap-3 px-3 py-2.5 rounded-xl" style={{
+              <Link key={p.id} href={`/players/${p.id}`} className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:border-accent/25" style={{
                 background: i === 0 ? 'rgba(99,102,241,0.08)' : 'rgba(255,255,255,0.03)',
                 border: `1px solid ${i === 0 ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.06)'}`,
               }}>
@@ -92,7 +93,7 @@ export default async function StatsPage() {
                   <div className={`text-lg font-black leading-none ${i === 0 ? 'text-accent' : 'text-white/50'}`}>{p.total_appearances}</div>
                   <div className="text-[9px] text-white/25">presenze</div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </section>

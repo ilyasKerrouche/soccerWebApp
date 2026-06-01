@@ -2,7 +2,8 @@ import Link from 'next/link'
 import { getMatchById } from '@/lib/queries/matches'
 import { getAllPlayers } from '@/lib/queries/players'
 import MatchForm from '@/components/admin/MatchForm'
-import { saveEditMatch, deleteMatchAction } from './actions'
+import MatchActions from '@/components/admin/MatchActions'
+import { saveEditMatch, deleteMatchAction, duplicateMatchAction } from './actions'
 import { notFound } from 'next/navigation'
 
 export default async function EditMatchPage({ params }: { params: { id: string } }) {
@@ -21,6 +22,16 @@ export default async function EditMatchPage({ params }: { params: { id: string }
     await saveEditMatch(params.id, data)
   }
 
+  const onDelete = async () => {
+    'use server'
+    await deleteMatchAction(params.id)
+  }
+
+  const onDuplicate = async () => {
+    'use server'
+    await duplicateMatchAction(params.id)
+  }
+
   return (
     <main className="pb-8">
       <div className="relative overflow-hidden px-4 pt-10 pb-7" style={{ background: 'linear-gradient(135deg,#1e1b4b 0%,#312e81 50%,#4c1d95 100%)' }}>
@@ -33,11 +44,7 @@ export default async function EditMatchPage({ params }: { params: { id: string }
               <h1 className="text-2xl font-black">Modifica partita</h1>
             </div>
           </div>
-          <form action={async () => { 'use server'; await deleteMatchAction(params.id) }}>
-            <button className="text-xs font-bold px-3 py-2 rounded-xl border border-red-500/25 text-red-400 hover:bg-red-500/10 transition-colors" style={{ background: 'rgba(239,68,68,0.07)' }}>
-              🗑 Elimina
-            </button>
-          </form>
+          <MatchActions onDelete={onDelete} onDuplicate={onDuplicate} />
         </div>
       </div>
       <div className="px-4 pt-5">

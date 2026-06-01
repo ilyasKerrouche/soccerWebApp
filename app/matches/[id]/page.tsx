@@ -51,7 +51,7 @@ export default async function MatchDetailPage({ params }: { params: { id: string
             <div className="text-sm font-bold text-white/60 w-20 text-left">{match.team_b_name}</div>
           </div>
           <span className="inline-block glass border-brand/30 text-brand text-[11px] font-bold px-4 py-1.5 rounded-full">
-            🏆 {aWins ? match.team_a_name : match.team_b_name} vince
+            {aWins ? `🏆 ${match.team_a_name} vince` : bWins ? `🏆 ${match.team_b_name} vince` : '🤝 Pareggio'}
           </span>
         </div>
       </div>

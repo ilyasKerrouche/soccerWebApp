@@ -22,7 +22,7 @@ export default async function MatchesPage() {
         {upcoming.length > 0 && (
           <div className="mb-5">
             <div className="text-[10px] tracking-[2px] uppercase text-white/30 mb-2 font-bold">In programma</div>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="flex flex-col gap-2">
               {upcoming.map((m) => <MatchCard key={m.id} match={m} />)}
             </div>
           </div>
@@ -32,7 +32,7 @@ export default async function MatchesPage() {
         {played.length === 0 ? (
           <p className="text-white/25 text-sm py-6 text-center">Nessuna partita ancora.</p>
         ) : (
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+          <div className="flex flex-col gap-2">
             {played.map((m) => <MatchCard key={m.id} match={m} />)}
           </div>
         )}

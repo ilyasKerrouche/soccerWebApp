@@ -14,9 +14,18 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="it">
-      <body className="pb-20">
-        {children}
-        <BottomTabBar />
+      <body>
+        {/* Desktop: centrato con sfondo scuro ai lati */}
+        <div className="min-h-screen md:flex md:items-start md:justify-center" style={{ background: '#03030a' }}>
+          <div className="w-full md:max-w-md md:min-h-screen relative" style={{ background: '#06060f' }}>
+            {/* Top nav su desktop */}
+            <BottomTabBar />
+            {/* Padding bottom su mobile per tab bar, top su desktop */}
+            <div className="pb-20 md:pb-6 md:pt-16">
+              {children}
+            </div>
+          </div>
+        </div>
       </body>
     </html>
   );

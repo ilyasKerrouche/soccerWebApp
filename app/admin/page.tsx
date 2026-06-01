@@ -34,13 +34,22 @@ export default async function AdminPage() {
       </div>
 
       <div className="px-4 pt-5 flex flex-col gap-5">
-        <Link
-          href="/admin/matches/new"
-          className="flex items-center justify-center gap-2 w-full font-black py-4 rounded-2xl text-sm transition-opacity hover:opacity-90"
-          style={{ background: 'linear-gradient(135deg,#7c3aed,#6366f1)', color: 'white' }}
-        >
-          ➕ Nuova partita
-        </Link>
+        <div className="grid grid-cols-2 gap-2">
+          <Link
+            href="/admin/matches/new"
+            className="flex items-center justify-center gap-2 font-black py-4 rounded-2xl text-sm transition-opacity hover:opacity-90"
+            style={{ background: 'linear-gradient(135deg,#7c3aed,#6366f1)', color: 'white' }}
+          >
+            ➕ Nuova partita
+          </Link>
+          <Link
+            href="/admin/players"
+            className="flex items-center justify-center gap-2 font-black py-4 rounded-2xl text-sm transition-opacity hover:opacity-90 border border-white/10"
+            style={{ background: 'rgba(255,255,255,0.05)', color: 'white' }}
+          >
+            👥 Giocatori
+          </Link>
+        </div>
 
         {upcoming.length > 0 && (
           <section>
