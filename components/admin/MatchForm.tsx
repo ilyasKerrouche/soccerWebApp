@@ -10,6 +10,7 @@ type SelectedPlayer = { player_id: string; team: 'a' | 'b' }
 
 type SaveData = {
   played_at: string
+  match_time: string | null
   team_a_name: string
   team_b_name: string
   score_a: number | null
@@ -37,6 +38,7 @@ export default function MatchForm({ players, existing, onSave }: Props) {
   const [error, setError] = useState<string | null>(null)
   const [isUpcoming, setIsUpcoming] = useState(existing?.is_upcoming ?? false)
   const [date, setDate] = useState(existing?.played_at ?? new Date().toISOString().split('T')[0])
+  const [matchTime, setMatchTime] = useState(existing?.match_time?.slice(0, 5) ?? '')
   const [teamAName, setTeamAName] = useState(existing?.team_a_name ?? 'Team A')
   const [teamBName, setTeamBName] = useState(existing?.team_b_name ?? 'Team B')
   const [scoreA, setScoreA] = useState<number>(existing?.score_a ?? 0)
@@ -78,6 +80,7 @@ export default function MatchForm({ players, existing, onSave }: Props) {
       })
       await onSave({
         played_at: date,
+        match_time: matchTime.trim() || null,
         team_a_name: teamAName,
         team_b_name: teamBName,
         score_a: isUpcoming ? null : scoreA,
@@ -116,17 +119,32 @@ export default function MatchForm({ players, existing, onSave }: Props) {
         </button>
       </div>
 
-      {/* Date */}
-      <div>
-        <label className="text-[11px] uppercase tracking-wider text-white/40 block mb-2 font-bold">Data</label>
-        <input
-          type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-          required
-          className={inputClass}
-          style={fieldStyle}
-        />
+      {/* Date + Time */}
+      <div className="flex gap-3">
+        <div className="flex-1">
+          <label className="text-[11px] uppercase tracking-wider text-white/40 block mb-2 font-bold">Data</label>
+          <input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            required
+            className={inputClass}
+            style={fieldStyle}
+          />
+        </div>
+        {isUpcoming && (
+          <div className="w-32">
+            <label className="text-[11px] uppercase tracking-wider text-white/40 block mb-2 font-bold">Orario</label>
+            <input
+              type="time"
+              value={matchTime}
+              onChange={(e) => setMatchTime(e.target.value)}
+              className={inputClass}
+              style={fieldStyle}
+              placeholder="--:--"
+            />
+          </div>
+        )}
       </div>
 
       {/* Teams & Score */}

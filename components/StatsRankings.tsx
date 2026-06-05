@@ -58,6 +58,9 @@ export default function StatsRankings({ players, goalkeepers }: Props) {
                   {i === 0 ? '🥇' : i + 1}
                 </span>
                 <span className="flex-1 text-sm font-bold">{p.name}</span>
+                {p.scoring_streak >= 3 && (
+                  <span className="text-sm" title={`${p.scoring_streak} partite consecutive con gol`}>🔥</span>
+                )}
                 <div className="text-right">
                   <div className={`text-lg font-black leading-none ${i === 0 ? 'text-brand' : 'text-white/50'}`}>{p.total_goals}</div>
                   <div className="text-[9px] text-white/25">

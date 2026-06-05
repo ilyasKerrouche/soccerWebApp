@@ -12,6 +12,7 @@ export type Player = {
 export type Match = {
   id: string
   played_at: string
+  match_time: string | null
   team_a_name: string
   team_b_name: string
   score_a: number | null
@@ -35,6 +36,15 @@ export type MatchWithPlayers = Match & {
 export type PlayerWithStats = Player & {
   total_goals: number
   total_appearances: number
+  scoring_streak: number
+}
+
+export type AvailabilityVote = {
+  id: string
+  match_id: string
+  vote_date: string
+  voter_name: string
+  created_at: string
 }
 
 export type GoalkeeperStats = {

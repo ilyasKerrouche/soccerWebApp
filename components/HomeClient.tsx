@@ -1,9 +1,10 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import type { MatchWithPlayers, PlayerWithStats } from '@/lib/types'
+import type { MatchWithPlayers, PlayerWithStats, AvailabilityVote } from '@/lib/types'
 import type { GlobalStats } from '@/lib/queries/stats'
 import AddToCalendar from './AddToCalendar'
+import AvailabilityPoll from './AvailabilityPoll'
 
 type Props = {
   lastMatch: MatchWithPlayers | null
@@ -11,12 +12,50 @@ type Props = {
   recentMatches: MatchWithPlayers[]
   stats: GlobalStats
   topScorers: PlayerWithStats[]
+  initialVotes: AvailabilityVote[]
 }
 
 const TABS = ['Home', 'Partite', 'Stats'] as const
 type Tab = typeof TABS[number]
 
-export default function HomeClient({ lastMatch, nextMatch, recentMatches, stats, topScorers }: Props) {
+function Countdown({ date, time }: { date: string; time: string | null }) {
+  const [label, setLabel] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!time) return
+    const target = new Date(`${date}T${time}`)
+
+    const tick = () => {
+      const diff = target.getTime() - Date.now()
+      if (diff <= 0) {
+        setLabel('Adesso!')
+        return
+      }
+      const d = Math.floor(diff / 86400000)
+      const h = Math.floor((diff % 86400000) / 3600000)
+      const m = Math.floor((diff % 3600000) / 60000)
+      const s = Math.floor((diff % 60000) / 1000)
+      if (d > 0) setLabel(`${d}g ${h}h ${m}m`)
+      else if (h > 0) setLabel(`${h}h ${m}m ${s}s`)
+      else setLabel(`${m}m ${s}s`)
+    }
+
+    tick()
+    const id = setInterval(tick, 1000)
+    return () => clearInterval(id)
+  }, [date, time])
+
+  if (!time || !label) return null
+
+  return (
+    <div className="mt-3 py-2.5 px-3 rounded-xl text-center" style={{ background: 'rgba(167,139,250,0.1)', border: '1px solid rgba(167,139,250,0.2)' }}>
+      <div className="text-[9px] uppercase tracking-widest text-brand/50 mb-0.5 font-bold">Manca</div>
+      <div className="text-xl font-black text-brand leading-none">{label}</div>
+    </div>
+  )
+}
+
+export default function HomeClient({ lastMatch, nextMatch, recentMatches, stats, topScorers, initialVotes }: Props) {
   const [tab, setTab] = useState<Tab>('Home')
 
   const lastSA = lastMatch?.score_a ?? 0
@@ -64,11 +103,15 @@ export default function HomeClient({ lastMatch, nextMatch, recentMatches, stats,
                       <span className="text-[9px] font-bold tracking-wider uppercase text-brand bg-brand/15 px-2 py-0.5 rounded-full">📅 Upcoming</span>
                       <AddToCalendar date={nextMatch.played_at} title="Calcetto" />
                     </div>
-                    <div className="text-base font-black capitalize mb-3">
+                    <div className="text-base font-black capitalize mb-1">
                       {new Date(nextMatch.played_at).toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })}
                     </div>
+                    {nextMatch.match_time && (
+                      <div className="text-sm font-bold text-brand/70">🕐 {nextMatch.match_time.slice(0, 5)}</div>
+                    )}
+                    <Countdown date={nextMatch.played_at} time={nextMatch.match_time} />
                     {(nextTeamA.length > 0 || nextTeamB.length > 0) && (
-                      <div className="grid grid-cols-2 gap-2">
+                      <div className="grid grid-cols-2 gap-2 mt-3">
                         {[{ name: nextMatch.team_a_name, pl: nextTeamA }, { name: nextMatch.team_b_name, pl: nextTeamB }].map(({ name, pl }) =>
                           pl.length > 0 ? (
                             <div key={name} className="rounded-xl p-2.5" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
@@ -81,6 +124,11 @@ export default function HomeClient({ lastMatch, nextMatch, recentMatches, stats,
                     )}
                   </div>
                 </Link>
+                <AvailabilityPoll
+                  matchId={nextMatch.id}
+                  played_at={nextMatch.played_at}
+                  initialVotes={initialVotes}
+                />
               </section>
             )}
 
@@ -228,6 +276,7 @@ export default function HomeClient({ lastMatch, nextMatch, recentMatches, stats,
                       {i === 0 ? '🥇' : i + 1}
                     </span>
                     <span className="flex-1 text-sm font-bold">{p.name}</span>
+                    {p.scoring_streak >= 3 && <span className="text-sm">🔥</span>}
                     <div className="text-right">
                       <div className={`text-lg font-black leading-none ${i === 0 ? 'text-brand' : 'text-white/50'}`}>{p.total_goals}</div>
                       <div className="text-[9px] text-white/25">

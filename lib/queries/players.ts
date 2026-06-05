@@ -24,16 +24,27 @@ export async function getPlayersWithStats(): Promise<PlayerWithStats[]> {
 
   const { data: mp, error: mpErr } = await supabase
     .from('match_players')
-    .select('player_id, goals')
+    .select('player_id, goals, match:matches(played_at, is_upcoming)')
   if (mpErr) throw new Error(mpErr.message)
 
+  type MpRow = { player_id: string; goals: number; match: { played_at: string; is_upcoming: boolean } | null }
+  const completedMp = (mp as unknown as MpRow[]).filter(r => r.match && !r.match.is_upcoming)
+
   return players.map((p) => {
-    const rows = mp.filter((r) => r.player_id === p.id)
-    return {
-      ...p,
-      total_goals: rows.reduce((sum, r) => sum + r.goals, 0),
-      total_appearances: rows.length,
+    const rows = completedMp.filter((r) => r.player_id === p.id)
+    const total_goals = rows.reduce((sum, r) => sum + r.goals, 0)
+    const total_appearances = rows.length
+
+    const sorted = [...rows].sort((a, b) =>
+      new Date(b.match!.played_at).getTime() - new Date(a.match!.played_at).getTime()
+    )
+    let scoring_streak = 0
+    for (const row of sorted) {
+      if (row.goals > 0) scoring_streak++
+      else break
     }
+
+    return { ...p, total_goals, total_appearances, scoring_streak }
   })
 }
 

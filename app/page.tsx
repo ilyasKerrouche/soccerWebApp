@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { getPlayersWithStats } from '@/lib/queries/players'
 import { getLastMatch, getNextMatch, getAllMatchesWithPlayers } from '@/lib/queries/matches'
 import { getGlobalStats } from '@/lib/queries/stats'
+import { getVotesForMatch } from '@/lib/queries/availability'
 import HomeClient from '@/components/HomeClient'
 import PlayerCard from '@/components/PlayerCard'
 import PullToRefresh from '@/components/PullToRefresh'
@@ -17,6 +18,8 @@ export default async function HomePage() {
     getAllMatchesWithPlayers(),
     getPlayersWithStats(),
   ])
+
+  const initialVotes = nextMatch ? await getVotesForMatch(nextMatch.id) : []
 
   const recentMatches = allMatches.filter(m => !m.is_upcoming).slice(0, 3)
   const topScorers = [...players].sort((a, b) => b.total_goals - a.total_goals).slice(0, 5)
@@ -117,6 +120,7 @@ export default async function HomePage() {
         recentMatches={recentMatches}
         stats={stats}
         topScorers={topScorers}
+        initialVotes={initialVotes}
       />
 
     </main>
