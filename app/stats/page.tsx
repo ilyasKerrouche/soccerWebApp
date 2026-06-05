@@ -1,14 +1,15 @@
 import Link from 'next/link'
-import { getPlayersWithStats } from '@/lib/queries/players'
+import { getPlayersWithStats, getGoalkeeperRanking } from '@/lib/queries/players'
 import { getGlobalStats } from '@/lib/queries/stats'
 import PodiumView from '@/components/PodiumView'
 
 export const revalidate = 60
 
 export default async function StatsPage() {
-  const [globalStats, players] = await Promise.all([
+  const [globalStats, players, goalkeepers] = await Promise.all([
     getGlobalStats(),
     getPlayersWithStats(),
+    getGoalkeeperRanking(),
   ])
 
   const byGoals = [...players].sort((a, b) => b.total_goals - a.total_goals)
@@ -101,6 +102,40 @@ export default async function StatsPage() {
             ))}
           </div>
         </section>
+
+        {/* Classifica portieri */}
+        {goalkeepers.length > 0 && goalkeepers.some(g => g.appearances > 0) && (
+          <section>
+            <div className="text-[10px] tracking-[2px] uppercase text-white/25 mb-2 font-bold">🥅 Classifica portieri</div>
+            <div className="flex flex-col gap-1.5">
+              {goalkeepers.map((p, i) => (
+                <Link key={p.id} href={`/players/${p.id}`} className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all" style={{
+                  background: i === 0 ? 'rgba(74,222,128,0.06)' : 'rgba(255,255,255,0.03)',
+                  border: `1px solid ${i === 0 ? 'rgba(74,222,128,0.18)' : 'rgba(255,255,255,0.06)'}`,
+                }}>
+                  <span className="text-sm font-black w-5 text-center" style={{ color: i === 0 ? '#facc15' : 'rgba(255,255,255,0.2)' }}>
+                    {i === 0 ? '🥇' : i + 1}
+                  </span>
+                  <span className="flex-1 text-sm font-bold">{p.name}</span>
+                  <div className="text-right">
+                    {p.appearances > 0 ? (
+                      <>
+                        <div className={`text-lg font-black leading-none ${i === 0 ? 'text-green-400' : 'text-white/50'}`}>
+                          {p.avg_conceded}
+                        </div>
+                        <div className="text-[9px] text-white/25">
+                          gol/partita · {p.clean_sheets} CS
+                        </div>
+                      </>
+                    ) : (
+                      <div className="text-[9px] text-white/25">nessuna partita</div>
+                    )}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
 
       </div>
     </main>
