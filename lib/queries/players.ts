@@ -123,11 +123,12 @@ export async function getGoalkeeperRanking(): Promise<PlayerWithGoalkeeperStats[
 
   const matchMap: Record<string, { score_a: number | null; score_b: number | null }> = {}
   if (matchIds.length > 0) {
-    const { data: matchData } = await supabase
+    const { data: matchData, error: matchErr } = await supabase
       .from('matches')
       .select('id, score_a, score_b')
       .in('id', matchIds)
       .eq('is_upcoming', false)
+    if (matchErr) throw new Error(matchErr.message)
     for (const m of matchData ?? []) {
       matchMap[m.id] = { score_a: m.score_a, score_b: m.score_b }
     }
