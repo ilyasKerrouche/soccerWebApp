@@ -36,3 +36,12 @@ export type PlayerWithStats = Player & {
   total_goals: number
   total_appearances: number
 }
+
+export type GoalkeeperStats = {
+  goals_conceded: number
+  clean_sheets: number
+  appearances: number
+  avg_conceded: number
+}
+
+export type PlayerWithGoalkeeperStats = Player & GoalkeeperStats
