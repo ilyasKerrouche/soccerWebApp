@@ -1,5 +1,5 @@
 'use client'
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useEffect } from 'react'
 import PlayerCard from '@/components/PlayerCard'
 import { savePlayerName, uploadPlayerCard, updatePlayerPosition } from './actions'
 import type { Player } from '@/lib/types'
@@ -12,6 +12,10 @@ export default function AdminPlayerRow({ player }: { player: Player }) {
   const [uploadPending, startUpload] = useTransition()
   const [gkPending, startGK] = useTransition()
   const [success, setSuccess] = useState(false)
+
+  useEffect(() => {
+    setIsGK(player.position === 'GK')
+  }, [player.position])
 
   const saveName = () => {
     if (!name.trim() || name === player.name) { setEditing(false); return }
