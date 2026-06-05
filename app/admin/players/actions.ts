@@ -42,3 +42,12 @@ export async function uploadPlayerCard(id: string, formData: FormData): Promise<
   revalidatePath('/stats')
   revalidatePath('/')
 }
+
+export async function updatePlayerPosition(id: string, position: string | null): Promise<void> {
+  const supabase = createAdminClient()
+  const { error } = await supabase.from('players').update({ position }).eq('id', id)
+  if (error) throw new Error(error.message)
+  revalidatePath('/admin/players')
+  revalidatePath('/stats')
+  revalidatePath(`/players/${id}`)
+}
