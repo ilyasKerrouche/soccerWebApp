@@ -46,7 +46,7 @@ export default function StatsRankings({ players, goalkeepers }: Props) {
 
       {/* Classifica marcatori */}
       {active === 'marcatori' && (
-        <section>
+        <section className="animate-section">
           <div className="text-[10px] tracking-[2px] uppercase text-white/25 mb-2 font-bold">🥇 Classifica marcatori</div>
           <div className="flex flex-col gap-1.5">
             {byGoals.map((p, i) => (
@@ -74,7 +74,7 @@ export default function StatsRankings({ players, goalkeepers }: Props) {
 
       {/* Presenze */}
       {active === 'presenze' && (
-        <section>
+        <section className="animate-section">
           <div className="text-[10px] tracking-[2px] uppercase text-white/25 mb-2 font-bold">👟 Presenze</div>
           <div className="flex flex-col gap-1.5">
             {byAppearances.map((p, i) => (
@@ -98,7 +98,7 @@ export default function StatsRankings({ players, goalkeepers }: Props) {
 
       {/* Portieri */}
       {active === 'portieri' && hasPortieri && (
-        <section>
+        <section className="animate-section">
           <div className="text-[10px] tracking-[2px] uppercase text-white/25 mb-2 font-bold">🥅 Classifica portieri</div>
           <div className="flex flex-col gap-1.5">
             {goalkeepers.map((p, i) => (
