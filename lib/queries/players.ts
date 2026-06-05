@@ -1,7 +1,7 @@
 // lib/queries/players.ts
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import type { Player, PlayerWithStats, MatchWithPlayers } from '@/lib/types'
+import type { Player, PlayerWithStats, MatchWithPlayers, GoalkeeperStats, PlayerWithGoalkeeperStats } from '@/lib/types'
 
 export async function getAllPlayers(): Promise<Player[]> {
   const supabase = createClient()
@@ -98,4 +98,62 @@ export async function getPlayerProfile(id: string): Promise<{
     player: { ...player, total_goals, total_appearances },
     matches,
   }
+}
+
+export async function getGoalkeeperRanking(): Promise<PlayerWithGoalkeeperStats[]> {
+  const supabase = createClient()
+
+  const { data: gkPlayers, error: pErr } = await supabase
+    .from('players')
+    .select('*')
+    .eq('position', 'GK')
+  if (pErr) throw new Error(pErr.message)
+  if (!gkPlayers || gkPlayers.length === 0) return []
+
+  const gkIds = gkPlayers.map(p => p.id)
+
+  const { data: mpRows, error: mpErr } = await supabase
+    .from('match_players')
+    .select('player_id, team, match_id')
+    .in('player_id', gkIds)
+  if (mpErr) throw new Error(mpErr.message)
+
+  const allMp = mpRows ?? []
+  const matchIds = Array.from(new Set(allMp.map(r => r.match_id)))
+
+  const matchMap: Record<string, { score_a: number | null; score_b: number | null }> = {}
+  if (matchIds.length > 0) {
+    const { data: matchData } = await supabase
+      .from('matches')
+      .select('id, score_a, score_b')
+      .in('id', matchIds)
+      .eq('is_upcoming', false)
+    for (const m of matchData ?? []) {
+      matchMap[m.id] = { score_a: m.score_a, score_b: m.score_b }
+    }
+  }
+
+  const completedMp = allMp.filter(r => matchMap[r.match_id] !== undefined)
+
+  const result = gkPlayers.map(p => {
+    const playerRows = completedMp.filter(r => r.player_id === p.id)
+    const appearances = playerRows.length
+    let goals_conceded = 0
+    let clean_sheets = 0
+    for (const r of playerRows) {
+      const m = matchMap[r.match_id]
+      const conceded = r.team === 'a' ? (m.score_b ?? 0) : (m.score_a ?? 0)
+      goals_conceded += conceded
+      if (conceded === 0) clean_sheets++
+    }
+    const avg_conceded = appearances > 0 ? Math.round((goals_conceded / appearances) * 10) / 10 : 0
+    return { ...p, goals_conceded, clean_sheets, appearances, avg_conceded }
+  })
+
+  return result.sort((a, b) => {
+    if (a.appearances === 0 && b.appearances === 0) return 0
+    if (a.appearances === 0) return 1
+    if (b.appearances === 0) return -1
+    return a.avg_conceded - b.avg_conceded
+  })
 }
