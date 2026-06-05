@@ -17,23 +17,14 @@ const CHIPS = [
 type ChipKey = typeof CHIPS[number]['key']
 
 export default function StatsRankings({ players, goalkeepers }: Props) {
-  const [active, setActive] = useState<Set<ChipKey>>(new Set<ChipKey>(['marcatori']))
+  const [active, setActive] = useState<ChipKey>('marcatori')
 
   const hasPortieri = goalkeepers.some(g => g.appearances > 0)
 
   const byGoals = [...players].sort((a, b) => b.total_goals - a.total_goals)
   const byAppearances = [...players].sort((a, b) => b.total_appearances - a.total_appearances)
 
-  const toggle = (key: ChipKey) => {
-    setActive(prev => {
-      const next = new Set(prev)
-      if (next.has(key)) next.delete(key)
-      else next.add(key)
-      return next
-    })
-  }
-
-  const chipStyle = (key: ChipKey): React.CSSProperties => active.has(key)
+  const chipStyle = (key: ChipKey): React.CSSProperties => active === key
     ? { background: 'rgba(167,139,250,0.15)', border: '1px solid rgba(167,139,250,0.35)', color: '#a78bfa' }
     : { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.35)' }
 
@@ -44,7 +35,7 @@ export default function StatsRankings({ players, goalkeepers }: Props) {
         {CHIPS.filter(c => c.key !== 'portieri' || hasPortieri).map(({ key, label }) => (
           <button
             key={key}
-            onClick={() => toggle(key)}
+            onClick={() => setActive(key)}
             className="rounded-full px-3 py-1 text-[10px] font-bold transition-all"
             style={chipStyle(key)}
           >
@@ -54,7 +45,7 @@ export default function StatsRankings({ players, goalkeepers }: Props) {
       </div>
 
       {/* Classifica marcatori */}
-      {active.has('marcatori') && (
+      {active === 'marcatori' && (
         <section>
           <div className="text-[10px] tracking-[2px] uppercase text-white/25 mb-2 font-bold">🥇 Classifica marcatori</div>
           <div className="flex flex-col gap-1.5">
@@ -82,7 +73,7 @@ export default function StatsRankings({ players, goalkeepers }: Props) {
       )}
 
       {/* Presenze */}
-      {active.has('presenze') && (
+      {active === 'presenze' && (
         <section>
           <div className="text-[10px] tracking-[2px] uppercase text-white/25 mb-2 font-bold">👟 Presenze</div>
           <div className="flex flex-col gap-1.5">
@@ -106,7 +97,7 @@ export default function StatsRankings({ players, goalkeepers }: Props) {
       )}
 
       {/* Portieri */}
-      {active.has('portieri') && hasPortieri && (
+      {active === 'portieri' && hasPortieri && (
         <section>
           <div className="text-[10px] tracking-[2px] uppercase text-white/25 mb-2 font-bold">🥅 Classifica portieri</div>
           <div className="flex flex-col gap-1.5">
