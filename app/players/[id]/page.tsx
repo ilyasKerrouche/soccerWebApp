@@ -10,7 +10,7 @@ export default async function PlayerProfilePage({ params }: { params: { id: stri
   const data = await getPlayerProfile(params.id)
   if (!data) notFound()
 
-  const { player, matches } = data
+  const { player, matches, goalkeeper_stats } = data
   const maxGoals = Math.max(...matches.map(m => m.goals), 1)
 
   return (
@@ -48,6 +48,27 @@ export default async function PlayerProfilePage({ params }: { params: { id: stri
               </div>
             </div>
           </div>
+            {goalkeeper_stats && (
+              <div className="mt-4 pt-4 border-t border-white/10">
+                <div className="text-[9px] text-brand/50 font-bold uppercase tracking-wider mb-2">Stats portiere</div>
+                <div className="flex gap-3">
+                  <div className="text-center">
+                    <div className="text-xl font-black text-green-400 leading-none">{goalkeeper_stats.avg_conceded}</div>
+                    <div className="text-[9px] text-white/35 mt-0.5">gol/partita</div>
+                  </div>
+                  <div className="w-px bg-white/10" />
+                  <div className="text-center">
+                    <div className="text-xl font-black text-white/70 leading-none">{goalkeeper_stats.goals_conceded}</div>
+                    <div className="text-[9px] text-white/35 mt-0.5">gol subiti</div>
+                  </div>
+                  <div className="w-px bg-white/10" />
+                  <div className="text-center">
+                    <div className="text-xl font-black text-white/70 leading-none">{goalkeeper_stats.clean_sheets}</div>
+                    <div className="text-[9px] text-white/35 mt-0.5">clean sheet</div>
+                  </div>
+                </div>
+              </div>
+            )}
         </div>
       </div>
 
