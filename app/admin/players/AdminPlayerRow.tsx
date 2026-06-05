@@ -1,14 +1,16 @@
 'use client'
 import { useState, useTransition } from 'react'
 import PlayerCard from '@/components/PlayerCard'
-import { savePlayerName, uploadPlayerCard } from './actions'
+import { savePlayerName, uploadPlayerCard, updatePlayerPosition } from './actions'
 import type { Player } from '@/lib/types'
 
 export default function AdminPlayerRow({ player }: { player: Player }) {
   const [editing, setEditing] = useState(false)
   const [name, setName] = useState(player.name)
+  const [isGK, setIsGK] = useState(player.position === 'GK')
   const [pending, startTransition] = useTransition()
   const [uploadPending, startUpload] = useTransition()
+  const [gkPending, startGK] = useTransition()
   const [success, setSuccess] = useState(false)
 
   const saveName = () => {
@@ -28,6 +30,16 @@ export default function AdminPlayerRow({ player }: { player: Player }) {
     fd.append('card', file)
     startUpload(async () => {
       await uploadPlayerCard(player.id, fd)
+      setSuccess(true)
+      setTimeout(() => setSuccess(false), 2000)
+    })
+  }
+
+  const toggleGK = () => {
+    const newPosition = isGK ? null : 'GK'
+    startGK(async () => {
+      await updatePlayerPosition(player.id, newPosition)
+      setIsGK(!isGK)
       setSuccess(true)
       setTimeout(() => setSuccess(false), 2000)
     })
@@ -63,11 +75,26 @@ export default function AdminPlayerRow({ player }: { player: Player }) {
             <span className="text-white/20 text-[10px] ml-1.5">✏️</span>
           </button>
         )}
-        {player.position && <div className="text-[9px] text-white/30 mt-0.5">{player.position}</div>}
+        {isGK && <div className="text-[9px] text-brand/60 mt-0.5 font-bold">Portiere</div>}
       </div>
 
+      {/* Toggle GK */}
+      <button
+        onClick={toggleGK}
+        disabled={gkPending}
+        title={isGK ? 'Rimuovi portiere' : 'Imposta come portiere'}
+        className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-all text-base"
+        style={{
+          background: isGK ? 'rgba(167,139,250,0.15)' : 'rgba(255,255,255,0.04)',
+          border: `1px solid ${isGK ? 'rgba(167,139,250,0.3)' : 'rgba(255,255,255,0.08)'}`,
+          opacity: gkPending ? 0.5 : 1,
+        }}
+      >
+        🥅
+      </button>
+
       {/* Status */}
-      {(pending || uploadPending) && <span className="text-[10px] text-white/40 animate-pulse">salvo…</span>}
+      {(pending || uploadPending || gkPending) && <span className="text-[10px] text-white/40 animate-pulse">salvo…</span>}
       {success && <span className="text-[10px] text-win">✓</span>}
     </div>
   )
