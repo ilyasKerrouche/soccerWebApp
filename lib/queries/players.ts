@@ -52,6 +52,7 @@ export async function updatePlayerCardUrl(id: string, card_url: string): Promise
 export async function getPlayerProfile(id: string): Promise<{
   player: PlayerWithStats
   matches: (MatchWithPlayers & { goals: number })[]
+  goalkeeper_stats?: GoalkeeperStats
 } | null> {
   const supabase = createClient()
 
@@ -94,9 +95,29 @@ export async function getPlayerProfile(id: string): Promise<{
     })
   }
 
+  let goalkeeper_stats: GoalkeeperStats | undefined
+  if (player.position === 'GK' && matches.length > 0) {
+    let goals_conceded = 0
+    let clean_sheets = 0
+    for (const m of matches) {
+      const team = (m as unknown as { playerTeam: 'a' | 'b' | null }).playerTeam
+      const conceded = team === 'a' ? (m.score_b ?? 0) : (m.score_a ?? 0)
+      goals_conceded += conceded
+      if (conceded === 0) clean_sheets++
+    }
+    const appearances = matches.length
+    goalkeeper_stats = {
+      goals_conceded,
+      clean_sheets,
+      appearances,
+      avg_conceded: Math.round((goals_conceded / appearances) * 10) / 10,
+    }
+  }
+
   return {
     player: { ...player, total_goals, total_appearances },
     matches,
+    goalkeeper_stats,
   }
 }
 
