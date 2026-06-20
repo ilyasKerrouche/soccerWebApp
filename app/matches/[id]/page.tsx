@@ -87,13 +87,18 @@ export default async function MatchDetailPage({ params }: { params: { id: string
           ].map(({ label, players }) => (
             <div key={label} className="flex-1 glass rounded-2xl p-3">
               <div className="text-[9px] tracking-wider uppercase text-white/30 mb-2">{label}</div>
-              {players.filter((mp) => mp.goals > 0).map((mp) => (
-                <div key={mp.player_id} className="flex items-center text-sm mb-1.5">
+              {players.filter((mp) => mp.goals > 0 || mp.own_goals > 0).map((mp) => (
+                <div key={mp.player_id} className="flex items-center gap-1.5 text-sm mb-1.5">
                   <span className="flex-1 text-white/70">{mp.player.name}</span>
-                  <span className="bg-brand/15 text-brand text-[11px] font-bold px-2 py-0.5 rounded-full">{mp.goals}</span>
+                  {mp.goals > 0 && (
+                    <span className="bg-brand/15 text-brand text-[11px] font-bold px-2 py-0.5 rounded-full">{mp.goals} ⚽</span>
+                  )}
+                  {mp.own_goals > 0 && (
+                    <span className="bg-red-500/15 text-red-400 text-[11px] font-bold px-2 py-0.5 rounded-full">{mp.own_goals} OG</span>
+                  )}
                 </div>
               ))}
-              {players.filter((mp) => mp.goals > 0).length === 0 && (
+              {players.filter((mp) => mp.goals > 0 || mp.own_goals > 0).length === 0 && (
                 <div className="text-xs text-white/20">Nessun goal</div>
               )}
             </div>

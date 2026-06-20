@@ -94,20 +94,26 @@ export default function MatchCard({ match }: { match: MatchWithPlayers }) {
             </div>
           )}
 
-          {/* Top scorers */}
-          {(bestA || bestB) && (
-            <div className="flex flex-col gap-1">
-              <div className="text-[9px] uppercase tracking-wider text-white/20 font-bold mb-0.5">Marcatori</div>
-              {[bestA, bestB].filter(Boolean).map((mp) => (
-                <div key={mp!.id} className="flex items-center gap-2 px-2 py-1.5 rounded-lg" style={{ background: 'rgba(167,139,250,0.07)', border: '1px solid rgba(167,139,250,0.12)' }}>
-                  <span className="text-[10px]">⚽</span>
-                  <span className="text-[11px] font-bold flex-1">{mp!.player.name}</span>
-                  <span className="text-[9px] text-white/30">{mp!.team === 'a' ? match.team_a_name : match.team_b_name}</span>
-                  <span className="text-[10px] font-black text-brand">{mp!.goals} ⚽</span>
-                </div>
-              ))}
-            </div>
-          )}
+          {/* Top scorers + OG */}
+          {(() => {
+            const scorers = match.match_players.filter((mp) => mp.goals > 0 || mp.own_goals > 0)
+            if (scorers.length === 0) return null
+            return (
+              <div className="flex flex-col gap-1">
+                <div className="text-[9px] uppercase tracking-wider text-white/20 font-bold mb-0.5">Marcatori</div>
+                {scorers.map((mp) => (
+                  <div key={mp.id} className="flex items-center gap-2 px-2 py-1.5 rounded-lg" style={{ background: 'rgba(167,139,250,0.07)', border: '1px solid rgba(167,139,250,0.12)' }}>
+                    <span className="text-[11px] font-bold flex-1">{mp.player.name}</span>
+                    <span className="text-[9px] text-white/30">{mp.team === 'a' ? match.team_a_name : match.team_b_name}</span>
+                    <div className="flex items-center gap-1">
+                      {mp.goals > 0 && <span className="text-[10px] font-black text-brand">{mp.goals} ⚽</span>}
+                      {mp.own_goals > 0 && <span className="text-[10px] font-black text-red-400">{mp.own_goals} OG</span>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )
+          })()}
 
           {/* Link dettaglio */}
           <Link
