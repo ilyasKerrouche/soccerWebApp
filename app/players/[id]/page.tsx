@@ -139,12 +139,20 @@ export default async function PlayerProfilePage({ params }: { params: { id: stri
                       <div className="text-[9px] text-white/25">{date}</div>
                     </div>
                     {/* Goal */}
-                    {m.goals > 0 && (
-                      <div className="flex items-center gap-1 flex-shrink-0">
-                        <span className="text-sm font-black text-brand">{m.goals}</span>
-                        <span className="text-xs">⚽</span>
-                      </div>
-                    )}
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                      {m.goals > 0 && (
+                        <div className="flex items-center gap-0.5">
+                          <span className="text-sm font-black text-brand">{m.goals}</span>
+                          <span className="text-xs">⚽</span>
+                        </div>
+                      )}
+                      {m.own_goals > 0 && (
+                        <div className="flex items-center gap-0.5">
+                          <span className="text-sm font-black text-red-400">{m.own_goals}</span>
+                          <span className="text-[10px] font-black text-red-400/70">OG</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </Link>
               )
