@@ -5,7 +5,7 @@ import PlayerSelector from './PlayerSelector'
 import ScorerEntry from './ScorerEntry'
 import type { Player, MatchWithPlayers } from '@/lib/types'
 
-type ScorerRow = { player_id: string; goals: number }
+type ScorerRow = { player_id: string; goals: number; is_own_goal: boolean }
 type SelectedPlayer = { player_id: string; team: 'a' | 'b' }
 
 type SaveData = {
@@ -48,10 +48,10 @@ export default function MatchForm({ players, existing, onSave }: Props) {
     existing?.match_players.map((mp) => ({ player_id: mp.player_id, team: mp.team })) ?? []
   )
   const [scorersA, setScorersA] = useState<ScorerRow[]>(
-    existing?.match_players.filter((mp) => mp.team === 'a' && mp.goals > 0).map((mp) => ({ player_id: mp.player_id, goals: mp.goals })) ?? []
+    existing?.match_players.filter((mp) => mp.team === 'a' && mp.goals > 0).map((mp) => ({ player_id: mp.player_id, goals: mp.goals, is_own_goal: false })) ?? []
   )
   const [scorersB, setScorersB] = useState<ScorerRow[]>(
-    existing?.match_players.filter((mp) => mp.team === 'b' && mp.goals > 0).map((mp) => ({ player_id: mp.player_id, goals: mp.goals })) ?? []
+    existing?.match_players.filter((mp) => mp.team === 'b' && mp.goals > 0).map((mp) => ({ player_id: mp.player_id, goals: mp.goals, is_own_goal: false })) ?? []
   )
 
   const teamAPlayers = players.filter((p) => selectedPlayers.find((sp) => sp.player_id === p.id && sp.team === 'a'))
