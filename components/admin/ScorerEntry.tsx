@@ -16,7 +16,7 @@ export default function ScorerEntry({ players, value, onChange, label }: Props) 
     onChange([...value, { player_id: players[0].id, goals: 1, is_own_goal: false }])
   }
 
-  const update = (index: number, field: keyof ScorerRow, val: string | number) => {
+  const update = (index: number, field: 'player_id' | 'goals', val: string | number) => {
     onChange(value.map((row, i) => (i === index ? { ...row, [field]: val } : row)))
   }
 
