@@ -16,7 +16,7 @@ type SaveData = {
   score_a: number | null
   score_b: number | null
   is_upcoming: boolean
-  players: { player_id: string; team: 'a' | 'b'; goals: number }[]
+  players: { player_id: string; team: 'a' | 'b'; goals: number; own_goals: number }[]
 }
 
 type Props = {
@@ -90,6 +90,7 @@ export default function MatchForm({ players, existing, onSave }: Props) {
           player_id: sp.player_id,
           team: sp.team,
           goals: scorerMap.get(sp.player_id) ?? 0,
+          own_goals: 0,
         })),
       })
       router.push('/admin')

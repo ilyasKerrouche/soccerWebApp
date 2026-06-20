@@ -27,6 +27,7 @@ export async function duplicateMatchAction(id: string): Promise<void> {
       player_id: mp.player_id,
       team: mp.team,
       goals: 0,
+      own_goals: 0,
     })),
   })
   redirect(`/admin/matches/${newId}`)

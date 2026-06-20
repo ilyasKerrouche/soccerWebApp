@@ -27,6 +27,7 @@ export type MatchPlayer = {
   player_id: string
   team: 'a' | 'b'
   goals: number
+  own_goals: number
 }
 
 export type MatchWithPlayers = Match & {

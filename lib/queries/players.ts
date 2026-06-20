@@ -62,7 +62,7 @@ export async function updatePlayerCardUrl(id: string, card_url: string): Promise
 
 export async function getPlayerProfile(id: string): Promise<{
   player: PlayerWithStats
-  matches: (MatchWithPlayers & { goals: number })[]
+  matches: (MatchWithPlayers & { goals: number; own_goals: number })[]
   goalkeeper_stats?: GoalkeeperStats
 } | null> {
   const supabase = createClient()
@@ -77,7 +77,7 @@ export async function getPlayerProfile(id: string): Promise<{
   // Fetch player's match_players rows
   const { data: mpRows } = await supabase
     .from('match_players')
-    .select('match_id, goals, team')
+    .select('match_id, goals, own_goals, team')
     .eq('player_id', id)
 
   const allMp = mpRows ?? []
@@ -86,7 +86,7 @@ export async function getPlayerProfile(id: string): Promise<{
 
   // Fetch the full match data for each match
   const matchIds = allMp.map(r => r.match_id)
-  let matches: (MatchWithPlayers & { goals: number })[] = []
+  let matches: (MatchWithPlayers & { goals: number; own_goals: number })[] = []
 
   if (matchIds.length > 0) {
     const { data: matchData } = await supabase
@@ -101,6 +101,7 @@ export async function getPlayerProfile(id: string): Promise<{
       return {
         ...(m as unknown as MatchWithPlayers),
         goals: mp?.goals ?? 0,
+        own_goals: mp?.own_goals ?? 0,
         playerTeam: mp?.team ?? null,
       }
     })

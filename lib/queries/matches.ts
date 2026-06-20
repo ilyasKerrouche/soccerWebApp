@@ -66,7 +66,7 @@ export async function createMatch(formData: {
   score_a: number | null
   score_b: number | null
   is_upcoming: boolean
-  players: { player_id: string; team: 'a' | 'b'; goals: number }[]
+  players: { player_id: string; team: 'a' | 'b'; goals: number; own_goals: number }[]
 }): Promise<string> {
   'use server'
   const supabase = createAdminClient()
@@ -106,7 +106,7 @@ export async function updateMatch(
     score_a: number | null
     score_b: number | null
     is_upcoming: boolean
-    players: { player_id: string; team: 'a' | 'b'; goals: number }[]
+    players: { player_id: string; team: 'a' | 'b'; goals: number; own_goals: number }[]
   }
 ): Promise<void> {
   'use server'
