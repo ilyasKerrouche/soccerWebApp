@@ -3,11 +3,6 @@ import { useState } from 'react'
 import Link from 'next/link'
 import type { MatchWithPlayers } from '@/lib/types'
 
-function topScorer(match: MatchWithPlayers, team: 'a' | 'b') {
-  const players = match.match_players.filter((mp) => mp.team === team && mp.goals > 0)
-  if (players.length === 0) return null
-  return players.reduce((a, b) => (b.goals > a.goals ? b : a))
-}
 
 export default function MatchCard({ match }: { match: MatchWithPlayers }) {
   const [expanded, setExpanded] = useState(false)
@@ -32,8 +27,6 @@ export default function MatchCard({ match }: { match: MatchWithPlayers }) {
   const isDraw = sa === sb
   const teamAPlayers = match.match_players.filter((mp) => mp.team === 'a').map((mp) => mp.player.name)
   const teamBPlayers = match.match_players.filter((mp) => mp.team === 'b').map((mp) => mp.player.name)
-  const bestA = topScorer(match, 'a')
-  const bestB = topScorer(match, 'b')
 
   return (
     <div
