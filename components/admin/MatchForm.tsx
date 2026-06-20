@@ -74,10 +74,24 @@ export default function MatchForm({ players, existing, onSave }: Props) {
     setLoading(true)
     setError(null)
     try {
-      const scorerMap = new Map<string, number>()
-      ;[...scorersA, ...scorersB].forEach((s) => {
-        scorerMap.set(s.player_id, (scorerMap.get(s.player_id) ?? 0) + s.goals)
+      const goalsMap = new Map<string, number>()
+      const ownGoalsMap = new Map<string, number>()
+
+      scorersA.forEach((s) => {
+        if (s.is_own_goal) {
+          ownGoalsMap.set(s.player_id, (ownGoalsMap.get(s.player_id) ?? 0) + s.goals)
+        } else {
+          goalsMap.set(s.player_id, (goalsMap.get(s.player_id) ?? 0) + s.goals)
+        }
       })
+      scorersB.forEach((s) => {
+        if (s.is_own_goal) {
+          ownGoalsMap.set(s.player_id, (ownGoalsMap.get(s.player_id) ?? 0) + s.goals)
+        } else {
+          goalsMap.set(s.player_id, (goalsMap.get(s.player_id) ?? 0) + s.goals)
+        }
+      })
+
       await onSave({
         played_at: date,
         match_time: matchTime.trim() || null,
@@ -89,8 +103,8 @@ export default function MatchForm({ players, existing, onSave }: Props) {
         players: selectedPlayers.map((sp) => ({
           player_id: sp.player_id,
           team: sp.team,
-          goals: scorerMap.get(sp.player_id) ?? 0,
-          own_goals: 0,
+          goals: goalsMap.get(sp.player_id) ?? 0,
+          own_goals: ownGoalsMap.get(sp.player_id) ?? 0,
         })),
       })
       router.push('/admin')
