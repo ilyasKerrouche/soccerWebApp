@@ -48,9 +48,9 @@ function Countdown({ date, time }: { date: string; time: string | null }) {
   if (!time || !label) return null
 
   return (
-    <div className="mt-3 py-2.5 px-3 rounded-xl text-center" style={{ background: 'rgba(167,139,250,0.1)', border: '1px solid rgba(167,139,250,0.2)' }}>
-      <div className="text-[9px] uppercase tracking-widest text-brand/50 mb-0.5 font-bold">Manca</div>
-      <div className="text-xl font-black text-brand leading-none">{label}</div>
+    <div className="mt-3 flex items-baseline gap-2">
+      <span className="text-[12px] text-white/35">Manca</span>
+      <span className="text-lg font-semibold text-brand leading-none tracking-[-0.02em]">{label}</span>
     </div>
   )
 }
@@ -76,12 +76,13 @@ export default function HomeClient({ lastMatch, nextMatch, recentMatches, stats,
           <button
             key={t}
             onClick={() => setTab(t)}
-            className="flex-1 py-3 text-xs font-bold transition-colors relative"
-            style={{ color: tab === t ? '#a78bfa' : 'rgba(255,255,255,0.3)' }}
+            className={`flex-1 min-w-0 py-3 text-[11.5px] whitespace-nowrap transition-colors relative ${
+              tab === t ? 'text-white font-semibold' : 'text-white/35 font-medium hover:text-white/60'
+            }`}
           >
             {t}
             {tab === t && (
-              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full bg-brand" />
+              <div className="absolute bottom-0 left-0 right-0 h-[2px] rounded-full" style={{ background: '#a78bfa' }} />
             )}
           </button>
         ))}
@@ -96,27 +97,27 @@ export default function HomeClient({ lastMatch, nextMatch, recentMatches, stats,
             {/* Prossima partita */}
             {nextMatch && (
               <section>
-                <div className="text-[10px] tracking-[2px] uppercase text-white/25 mb-2 font-bold">Prossima partita</div>
+                <div className="text-[13px] font-semibold text-white/45 mb-2">Prossima partita</div>
                 <Link href={`/matches/${nextMatch.id}`}>
-                  <div className="rounded-2xl p-4 transition-all hover:opacity-90" style={{ background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.2)' }}>
+                  <div className="rounded-xl p-4 transition-colors hover:bg-white/[0.02]" style={{ border: '1px solid rgba(167,139,250,0.28)' }}>
                     <div className="flex items-center justify-between mb-3">
-                      <span className="text-[9px] font-bold tracking-wider uppercase text-brand bg-brand/15 px-2 py-0.5 rounded-full">📅 Upcoming</span>
+                      <span className="text-[12px] text-brand">Da giocare</span>
                       <AddToCalendar date={nextMatch.played_at} title="Calcetto" />
                     </div>
-                    <div className="text-base font-black capitalize mb-1">
+                    <div className="text-base font-semibold capitalize mb-1">
                       {new Date(nextMatch.played_at).toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })}
                     </div>
                     {nextMatch.match_time && (
-                      <div className="text-sm font-bold text-brand/70">🕐 {nextMatch.match_time.slice(0, 5)}</div>
+                      <div className="text-[13px] text-white/45">{nextMatch.match_time.slice(0, 5)}</div>
                     )}
                     <Countdown date={nextMatch.played_at} time={nextMatch.match_time} />
                     {(nextTeamA.length > 0 || nextTeamB.length > 0) && (
                       <div className="grid grid-cols-2 gap-2 mt-3">
                         {[{ name: nextMatch.team_a_name, pl: nextTeamA }, { name: nextMatch.team_b_name, pl: nextTeamB }].map(({ name, pl }) =>
                           pl.length > 0 ? (
-                            <div key={name} className="rounded-xl p-2.5" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                              <div className="text-[9px] font-bold text-brand/60 mb-1.5">{name}</div>
-                              {pl.map(n => <div key={n} className="text-[10px] text-white/50 truncate">{n}</div>)}
+                            <div key={name} className="rounded-lg p-2.5" style={{ border: '1px solid rgba(255,255,255,0.07)' }}>
+                              <div className="text-[11px] font-medium text-white/45 mb-1.5">{name}</div>
+                              {pl.map(n => <div key={n} className="text-[11px] text-white/60 truncate">{n}</div>)}
                             </div>
                           ) : null
                         )}
@@ -135,7 +136,7 @@ export default function HomeClient({ lastMatch, nextMatch, recentMatches, stats,
             {/* Team blocks ultima partita */}
             {lastMatch && (lastTeamA.length > 0 || lastTeamB.length > 0) && (
               <section>
-                <div className="text-[10px] tracking-[2px] uppercase text-white/25 mb-2 font-bold">Ultima partita — giocatori</div>
+                <div className="text-[13px] font-semibold text-white/45 mb-2">Ultima partita — giocatori</div>
                 <div className="grid grid-cols-2 gap-2">
                   {[
                     { name: lastMatch.team_a_name, pl: lastTeamA, wins: lastAWins && !lastIsDraw },
@@ -146,7 +147,7 @@ export default function HomeClient({ lastMatch, nextMatch, recentMatches, stats,
                       border: `1px solid ${wins ? 'rgba(74,222,128,0.18)' : 'rgba(255,255,255,0.07)'}`,
                     }}>
                       <div className={`text-[9px] font-black uppercase tracking-wider mb-2 ${wins ? 'text-win/70' : 'text-white/30'}`}>
-                        {wins && '🏆 '}{name}
+                        {name}
                       </div>
                       {pl.map(n => <div key={n} className={`text-[11px] leading-relaxed truncate ${wins ? 'text-win/60' : 'text-white/40'}`}>{n}</div>)}
                     </div>
@@ -163,7 +164,7 @@ export default function HomeClient({ lastMatch, nextMatch, recentMatches, stats,
               if (scorers.length === 0) return null
               return (
                 <section>
-                  <div className="text-[10px] tracking-[2px] uppercase text-white/25 mb-2 font-bold">Marcatori ultima partita</div>
+                  <div className="text-[13px] font-semibold text-white/45 mb-2">Marcatori ultima partita</div>
                   <div className="flex flex-col gap-1.5">
                     {scorers.map((mp, i) => (
                       <Link key={mp.id} href={`/players/${mp.player_id}`} className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:border-brand/25" style={{
@@ -193,7 +194,7 @@ export default function HomeClient({ lastMatch, nextMatch, recentMatches, stats,
         {tab === 'Partite' && (
           <section>
             <div className="flex items-center justify-between mb-3">
-              <div className="text-[10px] tracking-[2px] uppercase text-white/25 font-bold">Ultime partite</div>
+              <div className="text-[13px] font-semibold text-white/45">Ultime partite</div>
               <Link href="/matches" className="text-[10px] text-brand/60 hover:text-brand transition-colors">Tutte →</Link>
             </div>
             <div className="flex flex-col gap-2">
@@ -215,7 +216,7 @@ export default function HomeClient({ lastMatch, nextMatch, recentMatches, stats,
                       <div className="px-3 pt-2.5 pb-1 flex items-center justify-between">
                         <span className="text-[9px] text-white/25">{date}</span>
                         <span className={`text-[9px] font-bold ${isDraw ? 'text-brand' : 'text-win'}`}>
-                          {isDraw ? '🤝 Pareggio' : `🏆 ${aWins ? m.team_a_name : m.team_b_name}`}
+                          {isDraw ? 'Pareggio' : `Vince ${aWins ? m.team_a_name : m.team_b_name}`}
                         </span>
                       </div>
                       <div className="flex">
@@ -245,7 +246,7 @@ export default function HomeClient({ lastMatch, nextMatch, recentMatches, stats,
         {tab === 'Stats' && (
           <>
             <section>
-              <div className="text-[10px] tracking-[2px] uppercase text-white/25 mb-2 font-bold">Stagione</div>
+              <div className="text-[13px] font-semibold text-white/45 mb-2">Stagione</div>
               <div className="grid grid-cols-2 gap-2">
                 {[
                   { val: stats.total_matches, lbl: 'Partite giocate' },
@@ -263,7 +264,7 @@ export default function HomeClient({ lastMatch, nextMatch, recentMatches, stats,
 
             <section>
               <div className="flex items-center justify-between mb-3">
-                <div className="text-[10px] tracking-[2px] uppercase text-white/25 font-bold">Top marcatori</div>
+                <div className="text-[13px] font-semibold text-white/45">Top marcatori</div>
                 <Link href="/stats" className="text-[10px] text-brand/60 hover:text-brand transition-colors">Tutte →</Link>
               </div>
               <div className="flex flex-col gap-1.5">

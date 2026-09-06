@@ -17,112 +17,95 @@ export default async function PlayerProfilePage({ params }: { params: { id: stri
   return (
     <main className="pb-6">
       <SwipeBack />
-      {/* Hero */}
-      <div className="relative overflow-hidden px-4 pt-10 pb-8" style={{ background: 'linear-gradient(135deg,#1e1b4b 0%,#312e81 50%,#4c1d95 100%)' }}>
-        <div className="absolute -top-10 -right-8 w-48 h-48 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle,rgba(167,139,250,.35) 0%,transparent 70%)' }} />
-        <div className="relative z-10">
-          <Link href="/stats" className="text-white/40 hover:text-white text-sm mb-4 inline-block transition-colors">‹ Stats</Link>
-          <div className="flex items-end gap-5">
-            <div className="w-24 rounded-xl overflow-hidden shadow-2xl flex-shrink-0" style={{ boxShadow: '0 0 30px rgba(167,139,250,0.3)' }}>
-              <PlayerCard player={player} width={96} />
-            </div>
-            <div>
-              <div className="text-2xl font-black mb-1">{player.name}</div>
-              {player.position && <div className="text-xs text-brand/70 font-bold uppercase tracking-wider mb-3">{player.position}</div>}
-              <div className="flex gap-3">
-                <div className="text-center">
-                  <div className="text-2xl font-black text-brand leading-none">{player.total_goals}</div>
-                  <div className="text-[9px] text-white/35 mt-0.5">goal</div>
-                </div>
-                <div className="w-px bg-white/10" />
-                <div className="text-center">
-                  <div className="text-2xl font-black text-white/70 leading-none">{player.total_appearances}</div>
-                  <div className="text-[9px] text-white/35 mt-0.5">presenze</div>
-                </div>
-                <div className="w-px bg-white/10" />
-                <div className="text-center">
-                  <div className="text-2xl font-black text-white/70 leading-none">
-                    {player.total_appearances > 0 ? (player.total_goals / player.total_appearances).toFixed(1) : '0'}
-                  </div>
-                  <div className="text-[9px] text-white/35 mt-0.5">media</div>
-                </div>
-                {player.record && player.record.played > 0 && (
-                  <>
-                    <div className="w-px bg-white/10" />
-                    <div className="text-center">
-                      <div className="text-2xl font-black text-green-400 leading-none">
-                        {Math.round(player.record.win_rate * 100)}%
-                      </div>
-                      <div className="text-[9px] text-white/35 mt-0.5 tabular-nums">
-                        {player.record.wins}V {player.record.draws}N {player.record.losses}P
-                      </div>
-                    </div>
-                  </>
-                )}
-              </div>
-              {player.record && player.record.form.length > 0 && (
-                <div className="flex items-center gap-2 mt-3">
-                  <span className="text-[9px] uppercase tracking-wider text-white/30 font-bold">Form</span>
-                  <FormDots form={player.record.form} size={7} />
-                </div>
-              )}
-            </div>
+      <div className="px-4">
+        <Link href="/stats" className="text-[13px] text-white/35 hover:text-white/60 inline-block pt-6 transition-colors">
+          ‹ Statistiche
+        </Link>
+
+        <div className="flex items-end gap-4 mt-4">
+          <div className="w-20 flex-shrink-0" style={{ filter: 'drop-shadow(0 10px 24px rgba(0,0,0,0.7))' }}>
+            <PlayerCard player={player} width={80} />
           </div>
-            {goalkeeper_stats && (
-              <div className="mt-4 pt-4 border-t border-white/10">
-                <div className="text-[9px] text-brand/50 font-bold uppercase tracking-wider mb-2">Stats portiere</div>
-                <div className="flex gap-3">
-                  <div className="text-center">
-                    <div className="text-xl font-black text-green-400 leading-none">{goalkeeper_stats.avg_conceded}</div>
-                    <div className="text-[9px] text-white/35 mt-0.5">gol/partita</div>
-                  </div>
-                  <div className="w-px bg-white/10" />
-                  <div className="text-center">
-                    <div className="text-xl font-black text-white/70 leading-none">{goalkeeper_stats.goals_conceded}</div>
-                    <div className="text-[9px] text-white/35 mt-0.5">gol subiti</div>
-                  </div>
-                  <div className="w-px bg-white/10" />
-                  <div className="text-center">
-                    <div className="text-xl font-black text-white/70 leading-none">{goalkeeper_stats.clean_sheets}</div>
-                    <div className="text-[9px] text-white/35 mt-0.5">clean sheet</div>
-                  </div>
-                </div>
-              </div>
+          <div className="min-w-0 pb-0.5">
+            <h1 className="text-[26px] font-bold tracking-[-0.02em] leading-tight truncate">{player.name}</h1>
+            {player.position && <div className="text-[13px] text-white/35 mt-0.5">{player.position}</div>}
+            {player.record && player.record.form.length > 0 && (
+              <div className="mt-2"><FormDots form={player.record.form} size={7} /></div>
             )}
+          </div>
+        </div>
+
+        <div className="flex rule mt-5 pt-3 pb-1">
+          {[
+            { v: player.total_goals, l: 'gol' },
+            { v: player.total_appearances, l: 'presenze' },
+            { v: player.total_appearances > 0 ? (player.total_goals / player.total_appearances).toFixed(1) : '0', l: 'a partita' },
+            ...(player.record && player.record.played > 0
+              ? [{ v: `${Math.round(player.record.win_rate * 100)}%`, l: `${player.record.wins}V ${player.record.draws}N ${player.record.losses}P` }]
+              : []),
+          ].map(({ v, l }) => (
+            <div key={l} className="flex-1 text-center min-w-0">
+              <div className="text-xl font-semibold text-white/85 leading-none tracking-[-0.02em]">{v}</div>
+              <div className="text-[10px] text-white/30 mt-1 truncate">{l}</div>
+            </div>
+          ))}
         </div>
       </div>
+
+      {goalkeeper_stats && (
+        <div className="px-4">
+          <div className="flex rule pt-3 pb-1">
+            {[
+              { v: goalkeeper_stats.avg_conceded, l: 'subiti a partita' },
+              { v: goalkeeper_stats.goals_conceded, l: 'gol subiti' },
+              { v: goalkeeper_stats.clean_sheets, l: 'porta inviolata' },
+            ].map(({ v, l }) => (
+              <div key={l} className="flex-1 text-center min-w-0">
+                <div className="text-xl font-semibold leading-none tracking-[-0.02em] text-win">{v}</div>
+                <div className="text-[10px] text-white/30 mt-1 truncate">{l}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="px-4 pt-5 flex flex-col gap-5">
 
         {/* Goal per partita — trend */}
         {matches.length > 0 && (
           <section>
-            <div className="text-[10px] tracking-[2px] uppercase text-white/25 mb-6 font-bold">Goal per partita</div>
-            <div className="flex items-end gap-1.5 h-16">
+            <h2 className="text-[13px] font-semibold text-white/45 mb-4">Goal per partita</h2>
+            <div className="flex items-end gap-[3px] h-16">
               {[...matches].reverse().map((m) => {
-                const h = m.goals === 0 ? 4 : Math.round((m.goals / maxGoals) * 56) + 8
+                // Le barre a zero restano un moncone sulla linea di base: assente
+                // e' diverso da zero, e va comunque visto.
+                const h = m.goals === 0 ? 2 : Math.max(6, Math.round((m.goals / maxGoals) * 60))
+                const date = new Date(m.played_at).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })
                 return (
-                  <div key={m.id} className="flex flex-col items-center gap-1 flex-1">
+                  <div key={m.id} className="flex-1 flex flex-col items-center justify-end h-full">
+                    {/* Nessuna etichetta sulle barre: con numeri piccoli i pari
+                        merito sono la norma e finirebbero su quasi tutte. I valori
+                        esatti stanno nello storico qui sotto. */}
                     <div
-                      className="w-full rounded-t-md transition-all"
+                      className="w-full"
+                      title={`${date}: ${m.goals} ${m.goals === 1 ? 'gol' : 'gol'}`}
                       style={{
                         height: h,
-                        background: m.goals > 0 ? 'rgba(167,139,250,0.7)' : 'rgba(255,255,255,0.08)',
-                        boxShadow: m.goals > 0 ? '0 0 8px rgba(167,139,250,0.4)' : 'none',
+                        borderRadius: '4px 4px 0 0',
+                        background: m.goals > 0 ? 'rgba(167,139,250,0.55)' : 'rgba(255,255,255,0.1)',
                       }}
                     />
-                    {m.goals > 0 && <div className="text-[8px] font-black text-brand/70">{m.goals}</div>}
                   </div>
                 )
               })}
             </div>
-            <div className="text-[8px] text-white/20 text-center mt-3">ultime {matches.length} partite</div>
+            <div className="text-[10px] text-white/25 mt-2">Ultime {matches.length} partite, dalla più vecchia</div>
           </section>
         )}
 
         {/* Storico partite */}
         <section>
-          <div className="text-[10px] tracking-[2px] uppercase text-white/25 mb-2 font-bold">Storico partite</div>
+          <div className="text-[13px] font-semibold text-white/45 mb-2">Storico partite</div>
           {matches.length === 0 && (
             <p className="text-white/25 text-sm text-center py-6">Nessuna partita ancora.</p>
           )}

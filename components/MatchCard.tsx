@@ -13,9 +13,13 @@ export default function MatchCard({ match }: { match: MatchWithPlayers }) {
 
   if (match.is_upcoming) {
     return (
-      <Link href={`/matches/${match.id}`} className="flex flex-col rounded-2xl p-3 border border-brand/20 hover:border-brand/40 transition-all" style={{ background: 'rgba(167,139,250,0.06)' }}>
-        <span className="inline-block text-[9px] font-bold tracking-wider uppercase bg-brand/15 text-brand px-2 py-0.5 rounded-full mb-1.5 self-start">📅 Upcoming</span>
-        <div className="text-xs font-black">{date}</div>
+      <Link
+        href={`/matches/${match.id}`}
+        className="flex items-center justify-between rounded-xl px-3 py-3 transition-colors hover:bg-white/[0.03]"
+        style={{ border: '1px solid rgba(167,139,250,0.28)' }}
+      >
+        <span className="text-[13px] font-medium text-white/85">{date}</span>
+        <span className="text-[12px] text-brand">Da giocare</span>
       </Link>
     )
   }
@@ -29,10 +33,7 @@ export default function MatchCard({ match }: { match: MatchWithPlayers }) {
   const teamBPlayers = match.match_players.filter((mp) => mp.team === 'b').map((mp) => mp.player.name)
 
   return (
-    <div
-      className="rounded-2xl border border-white/8 transition-all overflow-hidden"
-      style={{ background: 'rgba(255,255,255,0.04)' }}
-    >
+    <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.07)' }}>
       {/* Compact row — sempre visibile */}
       <button
         className="w-full flex items-center gap-3 px-3 py-3 text-left"
@@ -40,17 +41,17 @@ export default function MatchCard({ match }: { match: MatchWithPlayers }) {
       >
         {/* Score */}
         <div className="flex items-center gap-1.5 flex-shrink-0">
-          <span className={`text-xl font-black leading-none ${aWins ? 'text-win' : isDraw ? 'text-brand' : 'text-white/30'}`}>{match.score_a}</span>
+          <span className={`text-xl font-semibold leading-none tracking-[-0.02em] ${aWins ? 'text-win' : isDraw ? 'text-white/70' : 'text-white/30'}`}>{match.score_a}</span>
           <span className="text-white/15 text-sm">–</span>
-          <span className={`text-xl font-black leading-none ${bWins ? 'text-win' : isDraw ? 'text-brand' : 'text-white/30'}`}>{match.score_b}</span>
+          <span className={`text-xl font-semibold leading-none tracking-[-0.02em] ${bWins ? 'text-win' : isDraw ? 'text-white/70' : 'text-white/30'}`}>{match.score_b}</span>
         </div>
 
         {/* Info */}
         <div className="flex-1 min-w-0">
-          <div className={`text-[10px] font-bold truncate ${isDraw ? 'text-brand' : 'text-win'}`}>
-            {isDraw ? '🤝 Pareggio' : `🏆 ${aWins ? match.team_a_name : match.team_b_name}`}
+          <div className={`text-[12px] font-medium truncate ${isDraw ? 'text-white/60' : 'text-win'}`}>
+            {isDraw ? 'Pareggio' : `Vince ${aWins ? match.team_a_name : match.team_b_name}`}
           </div>
-          <div className="text-[9px] text-white/25">{date}</div>
+          <div className="text-[11px] text-white/30 mt-0.5">{date}</div>
         </div>
 
         {/* Expand arrow */}
@@ -77,7 +78,7 @@ export default function MatchCard({ match }: { match: MatchWithPlayers }) {
                   border: `1px solid ${wins ? 'rgba(74,222,128,0.15)' : 'rgba(255,255,255,0.06)'}`,
                 }}>
                   <div className={`text-[9px] font-black uppercase tracking-wider mb-1.5 ${wins ? 'text-win/70' : 'text-white/30'}`}>
-                    {wins && '🏆 '}{name}
+                    {name}
                   </div>
                   {players.map(n => (
                     <div key={n} className={`text-[10px] leading-relaxed truncate ${wins ? 'text-win/55' : 'text-white/40'}`}>{n}</div>

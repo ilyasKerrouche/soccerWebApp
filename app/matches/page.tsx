@@ -1,5 +1,6 @@
 import { getAllMatchesWithPlayers } from '@/lib/queries/matches'
 import MatchCard from '@/components/MatchCard'
+import PageHeader from '@/components/PageHeader'
 
 export const revalidate = 60
 
@@ -9,33 +10,35 @@ export default async function MatchesPage() {
   const played = matches.filter((m) => !m.is_upcoming)
 
   return (
-    <main className="pb-4">
-      <div className="relative overflow-hidden px-4 pt-10 pb-6" style={{ background: 'linear-gradient(135deg,#1e1b4b,#2d1b69)' }}>
-        <div className="absolute -top-10 right-0 w-40 h-40 rounded-full" style={{ background: 'radial-gradient(circle,rgba(167,139,250,.3) 0%,transparent 70%)' }} />
-        <div className="relative z-10">
-          <h1 className="text-3xl font-black">⚽ Partite</h1>
-          <div className="text-sm text-white/40 mt-1">{played.length} partite giocate</div>
-        </div>
-      </div>
+    <main className="pb-6 px-4">
+      <PageHeader
+        eyebrow="Stagione 2025/26"
+        title="Partite"
+        aside={<span className="text-[13px] text-white/30">{played.length} giocate</span>}
+      />
 
-      <div className="px-4 pt-4">
+      <div className="pt-5 flex flex-col gap-6">
         {upcoming.length > 0 && (
-          <div className="mb-5">
-            <div className="text-[10px] tracking-[2px] uppercase text-white/30 mb-2 font-bold">In programma</div>
+          <section>
+            <h2 className="text-[13px] font-semibold text-white/45 mb-2">In programma</h2>
             <div className="flex flex-col gap-2">
               {upcoming.map((m) => <MatchCard key={m.id} match={m} />)}
             </div>
-          </div>
+          </section>
         )}
 
-        <div className="text-[10px] tracking-[2px] uppercase text-white/30 mb-2 font-bold">Storico</div>
-        {played.length === 0 ? (
-          <p className="text-white/25 text-sm py-6 text-center">Nessuna partita ancora.</p>
-        ) : (
-          <div className="flex flex-col gap-2">
-            {played.map((m) => <MatchCard key={m.id} match={m} />)}
-          </div>
-        )}
+        <section>
+          {upcoming.length > 0 && <h2 className="text-[13px] font-semibold text-white/45 mb-2">Storico</h2>}
+          {played.length === 0 ? (
+            <p className="text-white/30 text-[13px] py-8 text-center">
+              Nessuna partita registrata. Aggiungine una dall&apos;area admin.
+            </p>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {played.map((m) => <MatchCard key={m.id} match={m} />)}
+            </div>
+          )}
+        </section>
       </div>
     </main>
   )

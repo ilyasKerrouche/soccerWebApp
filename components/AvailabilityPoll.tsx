@@ -77,7 +77,7 @@ export default function AvailabilityPoll({ matchId, played_at, initialVotes }: P
   return (
     <div className="mt-3 rounded-2xl p-4" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
       <div className="flex items-center justify-between mb-3">
-        <div className="text-[10px] tracking-[2px] uppercase text-white/25 font-bold">📅 Disponibilità settimana dopo</div>
+        <div className="text-[13px] font-semibold text-white/45">Disponibilità settimana dopo</div>
         {name && (
           <button
             onClick={() => { localStorage.removeItem('calcetto_voter_name'); setName('') }}

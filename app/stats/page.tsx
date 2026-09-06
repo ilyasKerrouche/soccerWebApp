@@ -3,6 +3,7 @@ import { getGlobalStats } from '@/lib/queries/stats'
 import PodiumView from '@/components/PodiumView'
 import { buildRankDeltas, comparePlayers } from '@/components/RankDelta'
 import StatsRankings from '@/components/StatsRankings'
+import PageHeader from '@/components/PageHeader'
 
 export const revalidate = 60
 
@@ -25,10 +26,7 @@ export default async function StatsPage() {
 
   return (
     <main className="pb-6 px-4">
-      <header className="pt-7 pb-1">
-        <div className="text-[13px] text-white/35">Stagione 2025/26</div>
-        <h1 className="text-[30px] font-bold tracking-[-0.02em] leading-none mt-1">Statistiche</h1>
-      </header>
+      <PageHeader eyebrow="Stagione 2025/26" title="Statistiche" />
 
       {top3.length > 0 && <PodiumView players={top3} deltas={deltas} />}
 

@@ -25,7 +25,7 @@ export default async function MatchDetailPage({ params }: { params: { id: string
         <div className="relative overflow-hidden px-4 pt-10 pb-8 text-center" style={{ background: 'linear-gradient(135deg,#1e1b4b,#312e81)' }}>
           <div className="absolute -top-10 right-0 w-40 h-40 rounded-full" style={{ background: 'radial-gradient(circle,rgba(167,139,250,.3) 0%,transparent 70%)' }} />
           <div className="relative z-10">
-            <div className="text-[11px] tracking-[2px] uppercase text-white/40 mb-3 capitalize">{date}</div>
+            <div className="text-[13px] text-white/40 mb-3 capitalize">{date}</div>
             <span className="inline-block glass border-brand/20 text-brand text-sm font-bold px-5 py-2 rounded-full">📅 Partita in programma</span>
           </div>
         </div>
@@ -40,7 +40,7 @@ export default async function MatchDetailPage({ params }: { params: { id: string
         <div className="absolute -top-16 -right-10 w-56 h-56 rounded-full" style={{ background: 'radial-gradient(circle,rgba(167,139,250,.4) 0%,transparent 70%)' }} />
         <div className="absolute -bottom-8 -left-6 w-36 h-36 rounded-full" style={{ background: 'radial-gradient(circle,rgba(99,102,241,.3) 0%,transparent 70%)' }} />
         <div className="relative z-10">
-          <div className="text-[10px] tracking-[2px] uppercase text-white/40 mb-3 capitalize">{date}</div>
+          <div className="text-[13px] font-semibold text-white/45 mb-3 capitalize">{date}</div>
           <div className="flex items-center justify-center gap-4 mb-3">
             <div className="text-sm font-bold text-white/60 w-20 text-right">{match.team_a_name}</div>
             <div className="flex items-center gap-2 text-5xl font-black leading-none">
