@@ -37,11 +37,14 @@ export function buildRankDeltas(players: PlayerWithStats[], sort: SortKey): Map<
 type Props = {
   delta: number | null
   isNew?: boolean
+  /** Nelle liste il trattino tiene ferma la colonna; dove non c'e' colonna e' solo rumore. */
+  hideEmpty?: boolean
   className?: string
 }
 
-export default function RankDelta({ delta, isNew = false, className = '' }: Props) {
+export default function RankDelta({ delta, isNew = false, hideEmpty = false, className = '' }: Props) {
   if (isNew) {
+    if (hideEmpty) return null
     return (
       <span
         className={`text-[8px] font-black tracking-wide px-1.5 py-0.5 rounded ${className}`}
@@ -51,8 +54,10 @@ export default function RankDelta({ delta, isNew = false, className = '' }: Prop
       </span>
     )
   }
-  if (delta === null) return <span className={`text-[10px] text-white/15 ${className}`}>–</span>
-  if (delta === 0) return <span className={`text-[10px] text-white/20 ${className}`}>–</span>
+  if (delta === null || delta === 0) {
+    if (hideEmpty) return null
+    return <span className={`text-[10px] text-white/20 ${className}`}>–</span>
+  }
 
   const up = delta > 0
   return (
