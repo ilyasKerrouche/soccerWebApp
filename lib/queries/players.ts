@@ -30,10 +30,20 @@ export async function getPlayersWithStats(): Promise<PlayerWithStats[]> {
   type MpRow = { player_id: string; goals: number; match: { played_at: string; is_upcoming: boolean } | null }
   const completedMp = (mp as unknown as MpRow[]).filter(r => r.match && !r.match.is_upcoming)
 
+  // Giornata più recente giocata: le partite dello stesso giorno contano come
+  // un'unica giornata. Serve a ricostruire la classifica "di prima" per il movimento.
+  const matchday = (r: MpRow) => r.match!.played_at.slice(0, 10)
+  const lastMatchday = completedMp.reduce((max, r) => (matchday(r) > max ? matchday(r) : max), '')
+  const previousMp = completedMp.filter((r) => matchday(r) < lastMatchday)
+
   return players.map((p) => {
     const rows = completedMp.filter((r) => r.player_id === p.id)
     const total_goals = rows.reduce((sum, r) => sum + r.goals, 0)
     const total_appearances = rows.length
+
+    const prevRows = previousMp.filter((r) => r.player_id === p.id)
+    const prev_goals = prevRows.reduce((sum, r) => sum + r.goals, 0)
+    const prev_appearances = prevRows.length
 
     const sorted = [...rows].sort((a, b) =>
       new Date(b.match!.played_at).getTime() - new Date(a.match!.played_at).getTime()
@@ -44,7 +54,7 @@ export async function getPlayersWithStats(): Promise<PlayerWithStats[]> {
       else break
     }
 
-    return { ...p, total_goals, total_appearances, scoring_streak }
+    return { ...p, total_goals, total_appearances, scoring_streak, prev_goals, prev_appearances }
   })
 }
 

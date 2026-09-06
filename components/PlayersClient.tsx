@@ -2,16 +2,14 @@
 import { useState } from 'react'
 import PodiumView from './PodiumView'
 import PlayerCard from './PlayerCard'
+import RankDelta, { buildRankDeltas, comparePlayers, type SortKey } from './RankDelta'
 import type { PlayerWithStats } from '@/lib/types'
 
 export default function PlayersClient({ initialPlayers }: { initialPlayers: PlayerWithStats[] }) {
-  const [sort, setSort] = useState<'goals' | 'appearances' | 'name'>('goals')
+  const [sort, setSort] = useState<SortKey>('goals')
 
-  const sorted = [...initialPlayers].sort((a, b) => {
-    if (sort === 'goals') return b.total_goals - a.total_goals
-    if (sort === 'appearances') return b.total_appearances - a.total_appearances
-    return a.name.localeCompare(b.name)
-  })
+  const sorted = [...initialPlayers].sort(comparePlayers(sort))
+  const deltas = buildRankDeltas(initialPlayers, sort)
 
   const podium = sorted.slice(0, 3)
   const rest = sorted.slice(3)
@@ -49,7 +47,7 @@ export default function PlayersClient({ initialPlayers }: { initialPlayers: Play
 
         {/* Podium */}
         <div className="text-[10px] tracking-[2px] uppercase text-white/30 mb-4 font-bold">🏆 Classifica</div>
-        <PodiumView players={podium} />
+        <PodiumView players={podium} deltas={deltas} />
 
         {/* Rest */}
         {rest.length > 0 && (
@@ -59,6 +57,9 @@ export default function PlayersClient({ initialPlayers }: { initialPlayers: Play
               {rest.map((p, i) => (
                 <div key={p.id} className="flex items-center gap-3 glass rounded-2xl px-3 py-2.5 hover:border-brand/20 transition-all">
                   <span className="text-sm font-black text-white/20 w-5 text-center">{i + 4}</span>
+                  <span className="w-7 flex justify-center flex-shrink-0">
+                    <RankDelta delta={deltas.get(p.id) ?? null} isNew={sort !== 'name' && (p.prev_appearances ?? 0) === 0} />
+                  </span>
                   <div className="w-10 h-12 rounded-lg overflow-hidden flex-shrink-0 shadow-md">
                     <PlayerCard player={p} width={40} />
                   </div>

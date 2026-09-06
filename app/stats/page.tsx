@@ -1,6 +1,7 @@
 import { getPlayersWithStats, getGoalkeeperRanking } from '@/lib/queries/players'
 import { getGlobalStats } from '@/lib/queries/stats'
 import PodiumView from '@/components/PodiumView'
+import { buildRankDeltas, comparePlayers } from '@/components/RankDelta'
 import StatsRankings from '@/components/StatsRankings'
 
 export const revalidate = 60
@@ -12,8 +13,9 @@ export default async function StatsPage() {
     getGoalkeeperRanking(),
   ])
 
-  const byGoals = [...players].sort((a, b) => b.total_goals - a.total_goals)
+  const byGoals = [...players].sort(comparePlayers('goals'))
   const top3 = byGoals.slice(0, 3)
+  const deltas = buildRankDeltas(players, 'goals')
 
   return (
     <main className="pb-4">
@@ -32,7 +34,7 @@ export default async function StatsPage() {
         {top3.length > 0 && (
           <section>
             <div className="text-[10px] tracking-[2px] uppercase text-white/25 mb-4 font-bold">🏆 Top marcatori</div>
-            <PodiumView players={top3} />
+            <PodiumView players={top3} deltas={deltas} />
           </section>
         )}
 
