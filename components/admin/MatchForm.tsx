@@ -3,7 +3,9 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import PlayerSelector from './PlayerSelector'
 import ScorerEntry from './ScorerEntry'
-import type { Player, MatchWithPlayers } from '@/lib/types'
+import { balanceTeams } from '@/lib/teamBalancer'
+import { balancingRating, groupAverage } from '@/lib/rating'
+import type { PlayerWithStats, MatchWithPlayers } from '@/lib/types'
 
 type ScorerRow = { player_id: string; goals: number; is_own_goal: boolean }
 type SelectedPlayer = { player_id: string; team: 'a' | 'b' }
@@ -20,7 +22,7 @@ type SaveData = {
 }
 
 type Props = {
-  players: Player[]
+  players: PlayerWithStats[]
   existing?: MatchWithPlayers
   onSave: (data: SaveData) => Promise<void>
 }
@@ -57,16 +59,31 @@ export default function MatchForm({ players, existing, onSave }: Props) {
   const teamAPlayers = players.filter((p) => selectedPlayers.find((sp) => sp.player_id === p.id && sp.team === 'a'))
   const teamBPlayers = players.filter((p) => selectedPlayers.find((sp) => sp.player_id === p.id && sp.team === 'b'))
 
+  const [balance, setBalance] = useState<{ a: number; b: number } | null>(null)
+
   const shuffle = () => {
     const ids = selectedPlayers.length > 0
       ? selectedPlayers.map(sp => sp.player_id)
       : players.map(p => p.id)
-    const shuffled = [...ids].sort(() => Math.random() - 0.5)
-    const half = Math.ceil(shuffled.length / 2)
+    const pool = players.filter(p => ids.includes(p.id))
+
+    // La media va calcolata su tutti i giocatori, non solo sui convocati:
+    // e' il livello del gruppo, non quello della singola partita.
+    const groupAvg = groupAverage(players.map(p => p.record).filter((r): r is NonNullable<typeof r> => !!r))
+
+    const { teamA, teamB, ratingA, ratingB } = balanceTeams(
+      pool.map(p => ({ id: p.id, position: p.position, rating: balancingRating(p.record, groupAvg) }))
+    )
+
     setSelectedPlayers([
-      ...shuffled.slice(0, half).map(id => ({ player_id: id, team: 'a' as const })),
-      ...shuffled.slice(half).map(id => ({ player_id: id, team: 'b' as const })),
+      ...teamA.map(id => ({ player_id: id, team: 'a' as const })),
+      ...teamB.map(id => ({ player_id: id, team: 'b' as const })),
     ])
+    setBalance(
+      teamA.length > 0 && teamB.length > 0
+        ? { a: ratingA / teamA.length, b: ratingB / teamB.length }
+        : null
+    )
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -227,6 +244,11 @@ export default function MatchForm({ players, existing, onSave }: Props) {
             </button>
           )}
         </div>
+        {isUpcoming && balance && (
+          <div className="text-[10px] text-white/30 mb-2 tabular-nums">
+            Equilibrio: {Math.round(balance.a * 100)}% vs {Math.round(balance.b * 100)}% di rendimento medio
+          </div>
+        )}
         <PlayerSelector players={players} value={selectedPlayers} onChange={setSelectedPlayers} />
       </div>
 

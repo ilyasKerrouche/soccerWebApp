@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { getMatchById } from '@/lib/queries/matches'
-import { getAllPlayers } from '@/lib/queries/players'
+import { getPlayersWithStats } from '@/lib/queries/players'
 import MatchForm from '@/components/admin/MatchForm'
 import MatchActions from '@/components/admin/MatchActions'
 import { saveEditMatch, deleteMatchAction, duplicateMatchAction } from './actions'
@@ -11,7 +11,7 @@ export default async function EditMatchPage({ params }: { params: { id: string }
   try {
     ;[match, players] = await Promise.all([
       getMatchById(params.id),
-      getAllPlayers(),
+      getPlayersWithStats(),
     ])
   } catch {
     notFound()

@@ -1,4 +1,5 @@
 // lib/types.ts
+import type { PlayerRecord } from '@/lib/rating'
 
 export type Player = {
   id: string
@@ -42,6 +43,8 @@ export type PlayerWithStats = Player & {
   // calcolare il movimento in classifica. Assenti fuori dalla classifica.
   prev_goals?: number
   prev_appearances?: number
+  // Vittorie, pareggi, sconfitte e form recente. Assente dove non serve.
+  record?: PlayerRecord
 }
 
 export type AvailabilityVote = {

@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { getPlayerProfile } from '@/lib/queries/players'
 import PlayerCard from '@/components/PlayerCard'
+import FormDots from '@/components/FormDots'
 import SwipeBack from '@/components/SwipeBack'
 
 export const revalidate = 60
@@ -45,7 +46,26 @@ export default async function PlayerProfilePage({ params }: { params: { id: stri
                   </div>
                   <div className="text-[9px] text-white/35 mt-0.5">media</div>
                 </div>
+                {player.record && player.record.played > 0 && (
+                  <>
+                    <div className="w-px bg-white/10" />
+                    <div className="text-center">
+                      <div className="text-2xl font-black text-green-400 leading-none">
+                        {Math.round(player.record.win_rate * 100)}%
+                      </div>
+                      <div className="text-[9px] text-white/35 mt-0.5 tabular-nums">
+                        {player.record.wins}V {player.record.draws}N {player.record.losses}P
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
+              {player.record && player.record.form.length > 0 && (
+                <div className="flex items-center gap-2 mt-3">
+                  <span className="text-[9px] uppercase tracking-wider text-white/30 font-bold">Form</span>
+                  <FormDots form={player.record.form} size={7} />
+                </div>
+              )}
             </div>
           </div>
             {goalkeeper_stats && (

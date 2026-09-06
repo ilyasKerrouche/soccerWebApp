@@ -1,6 +1,7 @@
 // lib/queries/players.ts
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { computeRecord } from '@/lib/rating'
 import type { Player, PlayerWithStats, MatchWithPlayers, GoalkeeperStats, PlayerWithGoalkeeperStats } from '@/lib/types'
 
 export async function getAllPlayers(): Promise<Player[]> {
@@ -24,10 +25,15 @@ export async function getPlayersWithStats(): Promise<PlayerWithStats[]> {
 
   const { data: mp, error: mpErr } = await supabase
     .from('match_players')
-    .select('player_id, goals, match:matches(played_at, is_upcoming)')
+    .select('player_id, goals, team, match:matches(played_at, is_upcoming, score_a, score_b)')
   if (mpErr) throw new Error(mpErr.message)
 
-  type MpRow = { player_id: string; goals: number; match: { played_at: string; is_upcoming: boolean } | null }
+  type MpRow = {
+    player_id: string
+    goals: number
+    team: 'a' | 'b'
+    match: { played_at: string; is_upcoming: boolean; score_a: number | null; score_b: number | null } | null
+  }
   const completedMp = (mp as unknown as MpRow[]).filter(r => r.match && !r.match.is_upcoming)
 
   // Giornata più recente giocata: le partite dello stesso giorno contano come
@@ -54,7 +60,16 @@ export async function getPlayersWithStats(): Promise<PlayerWithStats[]> {
       else break
     }
 
-    return { ...p, total_goals, total_appearances, scoring_streak, prev_goals, prev_appearances }
+    const record = computeRecord(
+      rows.map((r) => ({
+        team: r.team,
+        score_a: r.match!.score_a,
+        score_b: r.match!.score_b,
+        played_at: r.match!.played_at,
+      }))
+    )
+
+    return { ...p, total_goals, total_appearances, scoring_streak, prev_goals, prev_appearances, record }
   })
 }
 
@@ -136,8 +151,22 @@ export async function getPlayerProfile(id: string): Promise<{
     }
   }
 
+  // Il record si ricava dalle partite gia' caricate: hanno squadra e punteggio,
+  // gli stessi dati usati per le statistiche del portiere.
+  const record = computeRecord(
+    matches
+      .map((m) => ({
+        team: (m as unknown as { playerTeam: 'a' | 'b' | null }).playerTeam,
+        score_a: m.score_a,
+        score_b: m.score_b,
+        played_at: m.played_at,
+      }))
+      // Senza squadra non si puo' dire chi ha vinto: meglio escludere che indovinare.
+      .filter((r): r is { team: 'a' | 'b'; score_a: number | null; score_b: number | null; played_at: string } => r.team !== null)
+  )
+
   return {
-    player: { ...player, total_goals, total_appearances },
+    player: { ...player, total_goals, total_appearances, record },
     matches,
     goalkeeper_stats,
   }

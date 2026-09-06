@@ -1,10 +1,10 @@
 import Link from 'next/link'
-import { getAllPlayers } from '@/lib/queries/players'
+import { getPlayersWithStats } from '@/lib/queries/players'
 import MatchForm from '@/components/admin/MatchForm'
 import { saveNewMatch } from './actions'
 
 export default async function NewMatchPage() {
-  const players = await getAllPlayers()
+  const players = await getPlayersWithStats()
   return (
     <main className="pb-8">
       <div className="relative overflow-hidden px-4 pt-10 pb-7" style={{ background: 'linear-gradient(135deg,#1e1b4b 0%,#312e81 50%,#4c1d95 100%)' }}>
