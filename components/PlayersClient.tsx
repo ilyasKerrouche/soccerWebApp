@@ -5,7 +5,7 @@ import PodiumView from './PodiumView'
 import PlayerCard from './PlayerCard'
 import PageHeader from './PageHeader'
 import FormDots from './FormDots'
-import RankDelta, { buildRankDeltas, comparePlayers, type SortKey } from './RankDelta'
+import { comparePlayers, type SortKey } from '@/lib/ranking'
 import type { PlayerWithStats } from '@/lib/types'
 
 const SORTS = [
@@ -18,7 +18,6 @@ export default function PlayersClient({ initialPlayers }: { initialPlayers: Play
   const [sort, setSort] = useState<SortKey>('goals')
 
   const sorted = [...initialPlayers].sort(comparePlayers(sort))
-  const deltas = buildRankDeltas(initialPlayers, sort)
 
   // Con l'ordine alfabetico un podio non ha senso: e' un elenco, non una classifica.
   const isRanking = sort !== 'name'
@@ -50,7 +49,7 @@ export default function PlayersClient({ initialPlayers }: { initialPlayers: Play
         ))}
       </div>
 
-      {isRanking && <PodiumView players={podium} deltas={deltas} />}
+      {isRanking && <PodiumView players={podium} />}
 
       <div className={isRanking ? 'mt-2' : ''}>
         {rest.map((p, i) => (
@@ -60,9 +59,6 @@ export default function PlayersClient({ initialPlayers }: { initialPlayers: Play
             className="flex items-center gap-2.5 py-2 px-1 rule transition-colors hover:bg-white/[0.025]"
           >
             <span className="numeric text-xs w-5 text-right text-white/25">{isRanking ? i + 4 : i + 1}</span>
-            <span className="w-6 flex justify-center flex-shrink-0">
-              <RankDelta delta={deltas.get(p.id) ?? null} isNew={isRanking && (p.record?.played ?? 0) === 0} />
-            </span>
             <span className="w-8 flex-shrink-0">
               <PlayerCard player={p} width={32} />
             </span>

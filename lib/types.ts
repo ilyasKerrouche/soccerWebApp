@@ -39,10 +39,6 @@ export type PlayerWithStats = Player & {
   total_goals: number
   total_appearances: number
   scoring_streak: number
-  // Statistiche congelate a prima dell'ultima giornata giocata, usate per
-  // calcolare il movimento in classifica. Assenti fuori dalla classifica.
-  prev_goals?: number
-  prev_appearances?: number
   // Vittorie, pareggi, sconfitte e form recente. Assente dove non serve.
   record?: PlayerRecord
 }

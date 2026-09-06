@@ -1,7 +1,7 @@
 import { getPlayersWithStats, getGoalkeeperRanking } from '@/lib/queries/players'
 import { getGlobalStats } from '@/lib/queries/stats'
 import PodiumView from '@/components/PodiumView'
-import { buildRankDeltas, comparePlayers } from '@/components/RankDelta'
+import { comparePlayers } from '@/lib/ranking'
 import StatsRankings from '@/components/StatsRankings'
 import PageHeader from '@/components/PageHeader'
 
@@ -16,7 +16,6 @@ export default async function StatsPage() {
 
   const byGoals = [...players].sort(comparePlayers('goals'))
   const top3 = byGoals.slice(0, 3)
-  const deltas = buildRankDeltas(players, 'goals')
 
   const season = [
     { val: globalStats.total_matches, lbl: 'partite' },
@@ -28,7 +27,7 @@ export default async function StatsPage() {
     <main className="pb-6 px-4">
       <PageHeader eyebrow="Stagione 2025/26" title="Statistiche" />
 
-      {top3.length > 0 && <PodiumView players={top3} deltas={deltas} />}
+      {top3.length > 0 && <PodiumView players={top3} />}
 
       {/* I numeri di stagione fanno da contesto, non competono col podio. */}
       <div className="flex rule pt-3 pb-4">

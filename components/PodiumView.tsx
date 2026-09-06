@@ -1,13 +1,11 @@
 'use client'
 import PlayerCard from './PlayerCard'
-import RankDelta from './RankDelta'
 import FormDots from './FormDots'
 import type { PlayerWithStats } from '@/lib/types'
 
 type PodiumSlotProps = {
   player: PlayerWithStats | undefined
   rank: 1 | 2 | 3
-  delta: number | null
 }
 
 // La card e' l'unico oggetto in rilievo della schermata: il primo posto si
@@ -18,7 +16,7 @@ const RANK_CONFIG = {
   3: { cardWidth: 78, nameSize: 'text-[11px]', goalSize: 'text-[19px]', dim: 'text-white/75' },
 }
 
-function PodiumSlot({ player, rank, delta }: PodiumSlotProps) {
+function PodiumSlot({ player, rank }: PodiumSlotProps) {
   const cfg = RANK_CONFIG[rank]
   const first = rank === 1
 
@@ -50,23 +48,15 @@ function PodiumSlot({ player, rank, delta }: PodiumSlotProps) {
         {player?.total_goals ?? 0}
       </div>
 
-      <div className="h-4 flex items-center justify-center gap-1.5 mt-1.5">
+      <div className="h-4 flex items-center justify-center mt-1.5">
         {player && <FormDots form={player.record?.form} size={5} />}
-        {player && <RankDelta delta={delta} isNew={(player.record?.played ?? 0) === 0} hideEmpty />}
       </div>
     </div>
   )
 }
 
-export default function PodiumView({
-  players,
-  deltas,
-}: {
-  players: PlayerWithStats[]
-  deltas?: Map<string, number | null>
-}) {
+export default function PodiumView({ players }: { players: PlayerWithStats[] }) {
   const [first, second, third] = players
-  const deltaOf = (p: PlayerWithStats | undefined) => (p ? deltas?.get(p.id) ?? null : null)
 
   return (
     <div className="relative">
@@ -81,9 +71,9 @@ export default function PodiumView({
         }}
       />
       <div className="relative flex items-end justify-center gap-3" style={{ minHeight: 250 }}>
-        <PodiumSlot player={second} rank={2} delta={deltaOf(second)} />
-        <PodiumSlot player={first} rank={1} delta={deltaOf(first)} />
-        <PodiumSlot player={third} rank={3} delta={deltaOf(third)} />
+        <PodiumSlot player={second} rank={2} />
+        <PodiumSlot player={first} rank={1} />
+        <PodiumSlot player={third} rank={3} />
       </div>
     </div>
   )
