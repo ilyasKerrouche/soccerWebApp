@@ -1,6 +1,12 @@
+import { redirect } from 'next/navigation'
+import { createAuthClient } from '@/lib/supabase/server'
 import ResetForm from './ResetForm'
 
-export default function ReimpostaPasswordPage() {
+export const dynamic = 'force-dynamic'
+
+export default async function ReimpostaPasswordPage() {
+  const { data: { user } } = await createAuthClient().auth.getUser()
+  if (!user) redirect('/password-dimenticata')
   return (
     <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden" style={{ background: 'linear-gradient(135deg,#06060f 0%,#0d0d1f 100%)' }}>
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle,rgba(167,139,250,.15) 0%,transparent 70%)' }} />

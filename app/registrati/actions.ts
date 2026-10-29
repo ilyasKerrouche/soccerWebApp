@@ -4,6 +4,22 @@ import { redirect } from 'next/navigation'
 import { createAuthClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 
+function signUpErrorMessage(error: { code?: string } | null): string {
+  switch (error?.code) {
+    case 'user_already_exists':
+    case 'email_exists':
+      return 'Esiste già un account con questa email: accedi o recupera la password'
+    case 'weak_password':
+      return 'Password troppo debole (minimo 8 caratteri)'
+    case 'over_request_rate_limit':
+    case 'over_email_send_rate_limit':
+      return 'Troppi tentativi, riprova tra qualche minuto'
+    default:
+      console.error('signUp failed', error)
+      return 'Registrazione non riuscita, riprova'
+  }
+}
+
 export async function signUpAction(formData: FormData): Promise<{ error?: string }> {
   const email = String(formData.get('email') ?? '').trim()
   const password = String(formData.get('password') ?? '')
@@ -18,6 +34,8 @@ export async function signUpAction(formData: FormData): Promise<{ error?: string
   const position = String(formData.get('position') ?? '').trim()
   if (mode === 'existing' && !playerId) return { error: 'Scegli il tuo nome dall\'elenco' }
   if (mode === 'new' && !name) return { error: 'Inserisci il tuo nome' }
+  if (mode === 'new' && name.length > 40) return { error: 'Il nome può avere al massimo 40 caratteri' }
+  if (mode === 'new' && position.length > 10) return { error: 'Il ruolo può avere al massimo 10 caratteri' }
 
   const admin = createAdminClient()
 
@@ -45,15 +63,20 @@ export async function signUpAction(formData: FormData): Promise<{ error?: string
   const auth = createAuthClient()
   const { data, error } = await auth.auth.signUp({ email, password })
   if (error || !data.user) {
-    return { error: error?.message ?? 'Registrazione non riuscita' }
+    return { error: signUpErrorMessage(error) }
   }
   const userId = data.user.id
 
   // Se un passo dopo il signUp fallisce, l'utente auth non deve restare orfano
   const rollback = async (createdPlayerId?: string) => {
-    if (createdPlayerId) await admin.from('players').delete().eq('id', createdPlayerId)
-    await admin.auth.admin.deleteUser(userId)
-    await auth.auth.signOut()
+    const { error: outErr } = await auth.auth.signOut()
+    if (outErr) console.error('signUp rollback: signOut failed', outErr)
+    if (createdPlayerId) {
+      const { error: delPlayerErr } = await admin.from('players').delete().eq('id', createdPlayerId)
+      if (delPlayerErr) console.error('signUp rollback: delete player failed', delPlayerErr)
+    }
+    const { error: delUserErr } = await admin.auth.admin.deleteUser(userId)
+    if (delUserErr) console.error('signUp rollback: delete user failed', delUserErr)
   }
 
   let linkedPlayerId = playerId
