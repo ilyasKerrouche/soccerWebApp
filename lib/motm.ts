@@ -42,17 +42,16 @@ export function tallyMotm(votes: VoteRow[], lineupIds: string[]): Tally {
   const valid = votes.filter(
     (v) => lineup.has(v.voter_player_id) && lineup.has(v.voted_player_id),
   )
-  const counts = new Map<string, number>()
+  const counts: Record<string, number> = {}
   for (const v of valid) {
-    counts.set(v.voted_player_id, (counts.get(v.voted_player_id) ?? 0) + 1)
+    counts[v.voted_player_id] = (counts[v.voted_player_id] ?? 0) + 1
   }
-  const topVotes = Math.max(0, ...counts.values())
+  const topVotes = Math.max(0, ...Object.values(counts))
   const winners =
     topVotes === 0
       ? []
-      : [...counts.entries()]
-          .filter(([, n]) => n === topVotes)
-          .map(([id]) => id)
+      : Object.keys(counts)
+          .filter((id) => counts[id] === topVotes)
           .sort()
   return { winners, topVotes, votersCount: valid.length }
 }
