@@ -1,10 +1,12 @@
 import Link from 'next/link'
 import { getAllMatches } from '@/lib/queries/matches'
+import { listPendingAccounts } from '@/lib/queries/accounts'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 
 export default async function AdminPage() {
   const matches = await getAllMatches()
+  const pendingCount = (await listPendingAccounts()).length
   const played = matches.filter((m) => !m.is_upcoming)
   const upcoming = matches.filter((m) => m.is_upcoming)
 
@@ -48,6 +50,16 @@ export default async function AdminPage() {
             style={{ background: 'rgba(255,255,255,0.05)', color: 'white' }}
           >
             👥 Giocatori
+          </Link>
+          <Link
+            href="/admin/accounts"
+            className="col-span-2 flex items-center justify-center gap-2 font-black py-4 rounded-2xl text-sm transition-opacity hover:opacity-90 border border-white/10"
+            style={{ background: 'rgba(255,255,255,0.05)', color: 'white' }}
+          >
+            🔑 Richieste account
+            {pendingCount > 0 && (
+              <span className="text-[10px] bg-brand/20 text-brand px-2 py-0.5 rounded-full font-bold">{pendingCount}</span>
+            )}
           </Link>
         </div>
 

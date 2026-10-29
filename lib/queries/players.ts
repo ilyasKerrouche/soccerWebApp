@@ -9,6 +9,7 @@ export async function getAllPlayers(): Promise<Player[]> {
   const { data, error } = await supabase
     .from('players')
     .select('*')
+    .eq('is_active', true)
     .order('name')
   if (error) throw new Error(error.message)
   return data
@@ -20,6 +21,7 @@ export async function getPlayersWithStats(): Promise<PlayerWithStats[]> {
   const { data: players, error: pErr } = await supabase
     .from('players')
     .select('*')
+    .eq('is_active', true)
     .order('name')
   if (pErr) throw new Error(pErr.message)
 
@@ -86,6 +88,7 @@ export async function getPlayerProfile(id: string): Promise<{
     .from('players')
     .select('*')
     .eq('id', id)
+    .eq('is_active', true)
     .single()
   if (error || !player) return null
 
@@ -169,6 +172,7 @@ export async function getGoalkeeperRanking(): Promise<PlayerWithGoalkeeperStats[
     .from('players')
     .select('*')
     .eq('position', 'GK')
+    .eq('is_active', true)
   if (pErr) throw new Error(pErr.message)
   if (!gkPlayers || gkPlayers.length === 0) return []
 
