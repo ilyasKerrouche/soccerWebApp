@@ -7,22 +7,24 @@ type AccountWithPlayer = PlayerAccount & { email: string; player: Player }
 
 export async function getAccountByUser(userId: string): Promise<PlayerAccount | null> {
   const supabase = createAdminClient()
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('player_accounts')
     .select('*')
     .eq('user_id', userId)
     .maybeSingle()
+  if (error) throw new Error(error.message)
   return (data as PlayerAccount | null) ?? null
 }
 
 async function listAccountsByStatus(status: PlayerAccount['status']): Promise<AccountWithPlayer[]> {
   const supabase = createAdminClient()
   // Include anche i giocatori non attivi: i nuovi iscritti nascono inattivi
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('player_accounts')
     .select('*, player:players(*)')
     .eq('status', status)
     .order('created_at', { ascending: true })
+  if (error) throw new Error(error.message)
   const rows = (data ?? []) as (PlayerAccount & { player: Player })[]
 
   return Promise.all(
@@ -45,10 +47,11 @@ export function listApprovedAccounts() {
 export async function getApprovedPlayerIds(playerIds: string[]): Promise<string[]> {
   if (playerIds.length === 0) return []
   const supabase = createAdminClient()
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('player_accounts')
     .select('player_id')
     .eq('status', 'approved')
     .in('player_id', playerIds)
+  if (error) throw new Error(error.message)
   return (data ?? []).map(r => r.player_id as string)
 }

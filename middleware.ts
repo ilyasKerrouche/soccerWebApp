@@ -25,16 +25,23 @@ export async function middleware(req: NextRequest) {
   )
   await supabase.auth.getUser()
 
+  // I redirect devono portare con sé i cookie di sessione appena rinfrescati
+  const redirectTo = (path: string) => {
+    const r = NextResponse.redirect(new URL(path, req.url))
+    res.cookies.getAll().forEach(c => r.cookies.set(c))
+    return r
+  }
+
   const isAdminRoute = req.nextUrl.pathname.startsWith('/admin')
   const isLoginPage = req.nextUrl.pathname === '/admin/login'
 
   if (isAdminRoute && !isLoginPage) {
     const token = req.cookies.get('calc_admin')?.value
-    if (!token) return NextResponse.redirect(new URL('/admin/login', req.url))
+    if (!token) return redirectTo('/admin/login')
     try {
       await jwtVerify(token, secret())
     } catch {
-      return NextResponse.redirect(new URL('/admin/login', req.url))
+      return redirectTo('/admin/login')
     }
   }
   return res
