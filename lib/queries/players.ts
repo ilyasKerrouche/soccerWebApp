@@ -220,3 +220,24 @@ export async function getGoalkeeperRanking(): Promise<PlayerWithGoalkeeperStats[
     return a.avg_conceded - b.avg_conceded
   })
 }
+
+// Giocatori attivi che nessuno ha ancora reclamato (nessun account approvato o in attesa).
+// player_accounts ha RLS senza policy: la lettura passa dal service role.
+export async function getClaimablePlayers(): Promise<Player[]> {
+  const admin = createAdminClient()
+  const { data: players, error } = await admin
+    .from('players')
+    .select('*')
+    .eq('is_active', true)
+    .order('name')
+  if (error) throw new Error(error.message)
+
+  const { data: taken, error: aErr } = await admin
+    .from('player_accounts')
+    .select('player_id')
+    .in('status', ['approved', 'pending'])
+  if (aErr) throw new Error(aErr.message)
+
+  const takenIds = new Set((taken ?? []).map(r => r.player_id as string))
+  return (players as Player[]).filter(p => !takenIds.has(p.id))
+}
