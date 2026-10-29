@@ -7,7 +7,10 @@ export function safeNext(next: unknown, fallback: string): string {
   try {
     const u = new URL(next, 'http://x')
     if (u.origin !== 'http://x') return fallback
-    return u.pathname + u.search + u.hash
+    const out = u.pathname + u.search + u.hash
+    // La normalizzazione dei dot-segment può produrre "//host" (es. "/.//evil.com")
+    if (out.startsWith('//') || out.includes('\\')) return fallback
+    return out
   } catch {
     return fallback
   }
