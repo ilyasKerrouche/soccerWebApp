@@ -116,7 +116,8 @@ select option {
 
 .stadium-ad-prev { clip-path: inset(0 0 0 0); }
 
-html:not([data-stadium-seen]) .stadium-card-rise { animation: stadium-rise .7s cubic-bezier(.2,1.2,.4,1) backwards; }
+html:not([data-stadium-seen]) .stadium-card-rise { animation: stadium-land .8s cubic-bezier(.25,.8,.35,1) backwards; }
+html:not([data-stadium-seen]) .stadium-card-shadow { animation: stadium-shadow .8s ease-out backwards; }
 
 .stadium-zoom {
   position: fixed; inset: 0; z-index: 60; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;
@@ -125,12 +126,19 @@ html:not([data-stadium-seen]) .stadium-card-rise { animation: stadium-rise .7s c
 .stadium-zoom-card { animation: stadium-flip .55s cubic-bezier(.2,1.2,.3,1); }
 
 @keyframes stadium-scroll { from { transform: translateX(0); } to { transform: translateX(-100%); } }
-@keyframes stadium-rise { from { opacity: 0; transform: translateY(40px) scaleY(.2); } }
+@keyframes stadium-shadow { 0% { opacity: 0; transform: rotateX(75deg) scale(.3); } 80% { opacity: 1; transform: rotateX(75deg) scale(1.05); } }
+/* Le card scendono dall'alto in dissolvenza e "atterrano" con un piccolo assestamento */
+@keyframes stadium-land {
+  0%   { opacity: 0; transform: translateY(-160px); }
+  60%  { opacity: 1; }
+  80%  { transform: translateY(6px); }
+  100% { transform: translateY(0); }
+}
 @keyframes stadium-fade { from { opacity: 0; } }
 @keyframes stadium-flip { from { transform: perspective(700px) rotateY(180deg) scale(.4); opacity: 0; } }
 
 @media (prefers-reduced-motion: reduce) {
-  html .stadium-card-rise, .stadium-zoom, .stadium-zoom-card { animation: none !important; }
+  html .stadium-card-rise, html .stadium-card-shadow, .stadium-zoom, .stadium-zoom-card { animation: none !important; }
   .stadium-led-text { animation: none; padding-left: 12px; }
   .stadium-ad-on { transition: none; }
 }

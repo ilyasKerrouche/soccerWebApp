@@ -121,8 +121,9 @@ export default function StadiumPitch({ match, motmIds, stats, ledText }: Props) 
                 className={`stadium-card ${motm ? 'stadium-card-motm' : ''}`}
                 style={{ left: (slot.x / 100) * PW - CARD_W / 2, top: (slot.y / 100) * PH - CARD_W / 0.72 }}
               >
+                {/* L'ombra resta a terra e si allarga mentre la card scende */}
+                <span className="stadium-card-shadow" style={{ animationDelay: `${0.15 + i * 0.1}s` }} />
                 <span className="stadium-card-rise" style={{ animationDelay: `${0.15 + i * 0.1}s` }}>
-                  <span className="stadium-card-shadow" />
                   <PlayerCard player={mp.player} width={CARD_W} className="stadium-card-img" />
                   <span className="stadium-plate">{motm ? '★ ' : ''}{mp.player.name}</span>
                 </span>
