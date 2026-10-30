@@ -122,9 +122,9 @@ html:not([data-stadium-seen]) .stadium-card-shadow { animation: stadium-shadow .
 
 .stadium-zoom {
   position: fixed; inset: 0; z-index: 60; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;
-  background: rgba(8,12,18,.85); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); animation: stadium-fade .2s;
+  background: rgba(8,12,18,.85); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
 }
-.stadium-zoom-card { animation: stadium-flip .55s cubic-bezier(.2,1.2,.3,1); }
+.stadium-card-lifted { visibility: hidden; }
 
 @keyframes stadium-scroll { from { transform: translateX(0); } to { transform: translateX(-100%); } }
 @keyframes stadium-shadow { 0% { opacity: 0; transform: rotateX(75deg) scale(.3); } 80% { opacity: 1; transform: rotateX(75deg) scale(1.05); } }
@@ -135,11 +135,9 @@ html:not([data-stadium-seen]) .stadium-card-shadow { animation: stadium-shadow .
   80%  { transform: translateY(6px); }
   100% { transform: translateY(0); }
 }
-@keyframes stadium-fade { from { opacity: 0; } }
-@keyframes stadium-flip { from { transform: perspective(700px) rotateY(180deg) scale(.4); opacity: 0; } }
 
 @media (prefers-reduced-motion: reduce) {
-  html .stadium-card-rise, html .stadium-card-shadow, .stadium-zoom, .stadium-zoom-card { animation: none !important; }
+  html .stadium-card-rise, html .stadium-card-shadow { animation: none !important; }
   .stadium-led-text { animation: none; padding-left: 12px; }
   .stadium-ad-on { transition: none; }
 }

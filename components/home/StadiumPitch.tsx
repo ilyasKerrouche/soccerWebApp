@@ -1,8 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
-import Link from 'next/link'
 import PlayerCard from '@/components/PlayerCard'
-import FormDots from '@/components/FormDots'
+import CardZoom from './CardZoom'
 import { holoSlots } from '@/lib/holoLayout'
 import { SPONSORS } from '@/lib/sponsors'
 import { STADIUM_SEEN_KEY } from '@/lib/stadiumSeen'
@@ -58,7 +57,7 @@ function SponsorBoard({ offset, reduced }: { offset: number; reduced: boolean })
 
 export default function StadiumPitch({ match, motmIds, stats, ledText }: Props) {
   const reduced = useReducedMotion()
-  const [zoomed, setZoomed] = useState<Player | null>(null)
+  const [zoomed, setZoomed] = useState<{ player: Player; origin: DOMRect } | null>(null)
 
   // Le card salgono dal prato una volta per sessione. L'animazione e' decisa dal CSS prima del primo disegno
   // (attributo data-stadium-seen sull'html, impostato dallo script in app/layout.tsx); qui la si segna come vista.
@@ -83,8 +82,6 @@ export default function StadiumPitch({ match, motmIds, stats, ledText }: Props) 
   })
   // Prima i giocatori lontani: cosi' quelli vicini restano sopra
   placed.sort((x, y) => x.slot.y - y.slot.y)
-
-  const zs = zoomed ? stats[zoomed.id] : undefined
 
   return (
     <>
@@ -122,8 +119,12 @@ export default function StadiumPitch({ match, motmIds, stats, ledText }: Props) 
                 key={mp.player_id}
                 type="button"
                 aria-label={`${mp.player.name}: apri le statistiche`}
-                onClick={() => setZoomed(mp.player)}
-                className={`stadium-card ${motm ? 'stadium-card-motm' : ''}`}
+                onClick={(e) => {
+                  const img = e.currentTarget.querySelector('.stadium-card-img') ?? e.currentTarget
+                  setZoomed({ player: mp.player, origin: img.getBoundingClientRect() })
+                }}
+                // Mentre e' ingrandita, la card sul campo si nasconde: sembra che si sollevi da li'
+                className={`stadium-card ${motm ? 'stadium-card-motm' : ''} ${zoomed?.player.id === mp.player_id ? 'stadium-card-lifted' : ''}`}
                 style={{ left: (slot.x / 100) * PW - CARD_W / 2, top: (slot.y / 100) * PH - CARD_W / 0.72 }}
               >
                 {/* L'ombra resta a terra e si allarga mentre la card scende */}
@@ -139,40 +140,13 @@ export default function StadiumPitch({ match, motmIds, stats, ledText }: Props) 
       </div>
 
       {zoomed && (
-        <div className="stadium-zoom" onClick={() => setZoomed(null)} role="dialog" aria-label={zoomed.name}>
-          <div className="stadium-zoom-card">
-            <PlayerCard player={zoomed} width={180} className="stadium-card-img" />
-          </div>
-          <div className="text-lg font-semibold">{zoomed.name}</div>
-          {zs && (
-            <div className="grid grid-cols-3 gap-x-6 gap-y-3 text-center">
-              {[
-                { v: zs.goals, l: 'gol' },
-                { v: zs.appearances, l: 'presenze' },
-                { v: zs.winRate === null ? '—' : `${Math.round(zs.winRate * 100)}%`, l: 'vittorie' },
-                { v: zs.motm, l: 'MOTM' },
-              ].map(({ v, l }) => (
-                <div key={l}>
-                  <div className="text-xl font-semibold leading-none tabular-nums">{v}</div>
-                  <div className="text-[11px] mt-1" style={{ color: '#8a96a8' }}>{l}</div>
-                </div>
-              ))}
-              <div className="col-span-2 flex flex-col items-center justify-center">
-                <FormDots form={zs.form} size={8} />
-                <div className="text-[11px] mt-1.5" style={{ color: '#8a96a8' }}>forma</div>
-              </div>
-            </div>
-          )}
-          <Link
-            href={`/players/${zoomed.id}`}
-            onClick={(e) => e.stopPropagation()}
-            className="text-[13px] font-semibold px-4 py-2 rounded-full"
-            style={{ background: 'rgba(91,156,255,0.15)', color: '#5b9cff', border: '1px solid rgba(91,156,255,0.35)' }}
-          >
-            Vedi profilo
-          </Link>
-          <div className="text-[11px]" style={{ color: '#8a96a8' }}>tocca per chiudere</div>
-        </div>
+        <CardZoom
+          player={zoomed.player}
+          stats={stats[zoomed.player.id]}
+          origin={zoomed.origin}
+          reduced={reduced}
+          onClosed={() => setZoomed(null)}
+        />
       )}
     </>
   )
