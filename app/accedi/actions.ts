@@ -13,6 +13,7 @@ export async function signInAction(formData: FormData): Promise<{ error?: string
 }
 
 export async function signOutAction(): Promise<void> {
-  await createAuthClient().auth.signOut()
+  // Solo questo dispositivo: le altre sessioni dell'utente restano attive
+  await createAuthClient().auth.signOut({ scope: 'local' })
   redirect('/')
 }

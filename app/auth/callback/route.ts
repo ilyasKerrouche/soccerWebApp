@@ -12,5 +12,5 @@ export async function GET(req: NextRequest) {
     const { error } = await createAuthClient().auth.exchangeCodeForSession(code)
     if (!error) return NextResponse.redirect(`${origin}${target}`)
   }
-  return NextResponse.redirect(`${origin}/accedi`)
+  return NextResponse.redirect(`${origin}/accedi?errore=link`)
 }
