@@ -2,7 +2,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { computeRecord } from '@/lib/rating'
-import { cardExtension } from '@/lib/cardFile'
+import { cardExtension, sniffImageType } from '@/lib/cardFile'
 import type { Player, PlayerWithStats, MatchWithPlayers, GoalkeeperStats, PlayerWithGoalkeeperStats } from '@/lib/types'
 
 export async function getAllPlayers(): Promise<Player[]> {
@@ -83,6 +83,8 @@ export async function updatePlayerCardUrl(id: string, card_url: string): Promise
 export async function storePlayerCard(playerId: string, file: File): Promise<string> {
   const ext = cardExtension(file.type)
   if (!ext) throw new Error('Formato non supportato (usa PNG, JPG o WEBP)')
+  const head = new Uint8Array(await file.slice(0, 12).arrayBuffer())
+  if (sniffImageType(head) !== file.type) throw new Error('Formato non supportato (usa PNG, JPG o WEBP)')
   const supabase = createAdminClient()
   const path = `${playerId}.${ext}`
 
@@ -94,6 +96,11 @@ export async function storePlayerCard(playerId: string, file: File): Promise<str
   const { data } = supabase.storage.from('player-cards').getPublicUrl(path)
   const url = `${data.publicUrl}?v=${Date.now()}`
   await updatePlayerCardUrl(playerId, url)
+
+  // Toglie le card con altra estensione, altrimenti restano orfane nel bucket.
+  const stale = ['png', 'jpg', 'webp'].filter((e) => e !== ext).map((e) => `${playerId}.${e}`)
+  const { error: rmError } = await supabase.storage.from('player-cards').remove(stale)
+  if (rmError) console.error('storePlayerCard: pulizia vecchie card fallita', rmError.message)
   return url
 }
 

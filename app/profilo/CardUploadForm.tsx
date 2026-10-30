@@ -16,9 +16,16 @@ export default function CardUploadForm() {
     fd.set('card', file)
     setError(null)
     startTransition(async () => {
-      const res = await uploadMyCard(fd)
-      if (res.error) setError(res.error)
-      else router.refresh()
+      try {
+        const res = await uploadMyCard(fd)
+        if (res.error) setError(res.error)
+        else {
+          router.refresh()
+          window.dispatchEvent(new CustomEvent('calcetto:card-updated'))
+        }
+      } catch {
+        setError('Caricamento non riuscito, riprova')
+      }
       if (ref.current) ref.current.value = ''
     })
   }

@@ -20,10 +20,17 @@ export default function BottomTabBar() {
 
   useEffect(() => {
     let cancelled = false
-    getHeaderCard()
-      .then((c) => { if (!cancelled) setHeaderCard(c) })
-      .catch(() => { if (!cancelled) setHeaderCard(null) })
-    return () => { cancelled = true }
+    const load = () =>
+      getHeaderCard()
+        .then((c) => { if (!cancelled) setHeaderCard(c) })
+        .catch(() => { if (!cancelled) setHeaderCard(null) })
+    load()
+    // Dopo un nuovo caricamento la miniatura va riletta.
+    window.addEventListener('calcetto:card-updated', load)
+    return () => {
+      cancelled = true
+      window.removeEventListener('calcetto:card-updated', load)
+    }
   }, [pathname])
   const isAdmin = pathname.startsWith('/admin')
 
