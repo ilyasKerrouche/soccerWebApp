@@ -109,6 +109,11 @@ export function getMotmWinnersByMatch(matchIds: string[]): Promise<Record<string
   return computeWinners(matchIds)
 }
 
+// match_id -> vincitori per tutte le partite chiuse, senza lista id nell'URL.
+export function getAllMotmWinners(): Promise<Record<string, string[]>> {
+  return computeWinners()
+}
+
 // player_id -> numero di MOTM vinti (un co-MOTM conta 1 per ciascun vincitore).
 export async function getMotmCounts(): Promise<Record<string, number>> {
   const winners = await computeWinners()
