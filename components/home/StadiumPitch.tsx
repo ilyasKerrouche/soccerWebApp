@@ -5,6 +5,7 @@ import PlayerCard from '@/components/PlayerCard'
 import FormDots from '@/components/FormDots'
 import { holoSlots } from '@/lib/holoLayout'
 import { SPONSORS } from '@/lib/sponsors'
+import { STADIUM_SEEN_KEY } from '@/lib/stadiumSeen'
 import type { MatchWithPlayers, Player, PlayerHomeStats } from '@/lib/types'
 
 type Props = {
@@ -20,8 +21,9 @@ const PH = 580
 const GAP = 40
 const BOARD_H = 46
 const CARD_W = 72
-const SEEN_KEY = 'stadium-entry-seen'
 const SPONSOR_MS = 3500
+// Durata dell'entrata (ritardi + animazione): dopo, il campo si segna come gia' visto
+const ENTRY_MS = 2200
 
 function useReducedMotion() {
   const [reduced, setReduced] = useState(false)
@@ -34,7 +36,7 @@ function SponsorBoard({ offset, reduced }: { offset: number; reduced: boolean })
   const [state, setState] = useState({ cur: offset % SPONSORS.length, prev: -1 })
   useEffect(() => {
     if (reduced) return
-    const id = setInterval(() => setState((s) => ({ prev: s.cur, cur: (s.cur + 1) % SPONSORS.length })), SPONSOR_MS + offset * 400)
+    const id = setInterval(() => setState((s) => ({ prev: s.cur, cur: (s.cur + 1) % SPONSORS.length })), SPONSOR_MS)
     return () => clearInterval(id)
   }, [offset, reduced])
   return (
@@ -42,7 +44,7 @@ function SponsorBoard({ offset, reduced }: { offset: number; reduced: boolean })
       {SPONSORS.map((s, i) => (
         <div
           key={s.name}
-          className={`stadium-ad ${i === state.cur ? 'stadium-ad-on' : ''}`}
+          className={`stadium-ad ${i === state.cur ? 'stadium-ad-on' : i === state.prev ? 'stadium-ad-prev' : ''}`}
           style={{ background: s.bg, color: s.fg, zIndex: i === state.cur ? 2 : i === state.prev ? 1 : 0, visibility: i === state.cur || i === state.prev ? 'visible' : 'hidden' }}
         >
           <span className="stadium-ad-emoji">{s.emoji}</span>
@@ -56,14 +58,17 @@ function SponsorBoard({ offset, reduced }: { offset: number; reduced: boolean })
 
 export default function StadiumPitch({ match, motmIds, stats, ledText }: Props) {
   const reduced = useReducedMotion()
-  const [entry, setEntry] = useState(false)
   const [zoomed, setZoomed] = useState<Player | null>(null)
 
-  // Le card salgono dal prato una volta per sessione
+  // Le card salgono dal prato una volta per sessione. L'animazione e' decisa dal CSS prima del primo disegno
+  // (attributo data-stadium-seen sull'html, impostato dallo script in app/layout.tsx); qui la si segna come vista.
   useEffect(() => {
-    let seen = false
-    try { seen = sessionStorage.getItem(SEEN_KEY) === '1'; sessionStorage.setItem(SEEN_KEY, '1') } catch {}
-    setEntry(!seen && !window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+    if (document.documentElement.dataset.stadiumSeen) return
+    const id = setTimeout(() => {
+      document.documentElement.dataset.stadiumSeen = '1'
+      try { sessionStorage.setItem(STADIUM_SEEN_KEY, '1') } catch {}
+    }, ENTRY_MS)
+    return () => clearTimeout(id)
   }, [])
 
   const placed = (['a', 'b'] as const).flatMap((side) => {
@@ -78,7 +83,7 @@ export default function StadiumPitch({ match, motmIds, stats, ledText }: Props) 
 
   return (
     <>
-      <div className={`stadium-scene ${entry ? 'stadium-entry' : ''}`}>
+      <div className="stadium-scene">
         <div className="stadium-pitch" style={{ width: PW, height: PH, marginLeft: -PW / 2 }}>
           <div className="stadium-apron" />
           <div className="stadium-grass" />

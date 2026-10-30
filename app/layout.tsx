@@ -17,6 +17,7 @@ const geistMono = localFont({
   display: "swap",
 });
 import BottomTabBar from "@/components/BottomTabBar";
+import { STADIUM_SEEN_SCRIPT } from "@/lib/stadiumSeen";
 
 export const metadata: Metadata = {
   title: "⚽ Calcetto",
@@ -29,8 +30,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="it" className={`${geist.variable} ${geistMono.variable}`}>
+    <html lang="it" className={`${geist.variable} ${geistMono.variable}`} suppressHydrationWarning>
       <body>
+        {/* Prima del primo disegno: decide se le card del campo in home fanno l'entrata */}
+        <script dangerouslySetInnerHTML={{ __html: STADIUM_SEEN_SCRIPT }} />
         {/* Desktop: centrato con sfondo scuro ai lati */}
         <div className="min-h-screen md:flex md:items-start md:justify-center" style={{ background: '#03030a' }}>
           <div className="w-full md:max-w-md md:min-h-screen relative" style={{ background: '#06060f' }}>

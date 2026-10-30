@@ -58,11 +58,11 @@ select option {
 /* ── Campo 3D della home (components/home/StadiumPitch.tsx) ──
    Disegnato a dimensione doppia e allontanato con translateZ: con perspective 900px torna a circa meta grandezza, nitido. */
 .stadium-scene {
-  position: relative; height: 262px; overflow: hidden;
+  position: relative; height: 296px; overflow: hidden;
   perspective: 900px; perspective-origin: 50% 5%;
   background: radial-gradient(ellipse at 50% 60%, rgba(255,250,230,.08) 0%, transparent 60%);
 }
-.stadium-pitch { position: absolute; left: 50%; top: -30px; transform-style: preserve-3d; transform: translateZ(-1150px) rotateX(58deg); }
+.stadium-pitch { position: absolute; left: 50%; top: -38px; transform-style: preserve-3d; transform: translateZ(-820px) rotateX(58deg); }
 .stadium-apron { position: absolute; inset: -32px; background: #2a6e30; box-shadow: 0 60px 120px rgba(0,0,0,.6); }
 .stadium-grass { position: absolute; inset: 0; background: repeating-linear-gradient(0deg, #2e7a35 0 48px, #33853a 48px 96px); box-shadow: inset 0 0 120px rgba(0,0,0,.3); }
 .stadium-ln { position: absolute; border: 3px solid rgba(255,255,255,.88); }
@@ -114,7 +114,9 @@ select option {
 }
 .stadium-card-motm .stadium-plate { background: #f5c451; color: #2b1f05; }
 
-.stadium-entry .stadium-card-rise { animation: stadium-rise .7s cubic-bezier(.2,1.2,.4,1) backwards; }
+.stadium-ad-prev { clip-path: inset(0 0 0 0); }
+
+html:not([data-stadium-seen]) .stadium-card-rise { animation: stadium-rise .7s cubic-bezier(.2,1.2,.4,1) backwards; }
 
 .stadium-zoom {
   position: fixed; inset: 0; z-index: 60; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;
@@ -128,6 +130,7 @@ select option {
 @keyframes stadium-flip { from { transform: perspective(700px) rotateY(180deg) scale(.4); opacity: 0; } }
 
 @media (prefers-reduced-motion: reduce) {
+  html .stadium-card-rise, .stadium-zoom, .stadium-zoom-card { animation: none !important; }
   .stadium-led-text { animation: none; padding-left: 12px; }
   .stadium-ad-on { transition: none; }
 }

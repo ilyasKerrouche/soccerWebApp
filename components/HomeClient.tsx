@@ -44,9 +44,12 @@ function Card({ children, className = '' }: { children: React.ReactNode; classNa
 /** Conto alla rovescia in giorni / ore / minuti verso la prossima partita (ora italiana). */
 function NextCountdown({ date, time }: { date: string; time: string }) {
   const target = romeInstant(date, time).getTime()
-  const [parts, setParts] = useState(() => countdownParts(target - Date.now()))
+  // Calcolato solo nel client: l'HTML in cache puo' essere vecchio
+  const [parts, setParts] = useState<ReturnType<typeof countdownParts> | undefined>(undefined)
   useEffect(() => {
-    const id = setInterval(() => setParts(countdownParts(target - Date.now())), 30_000)
+    const tick = () => setParts(countdownParts(target - Date.now()))
+    tick()
+    const id = setInterval(tick, 30_000)
     return () => clearInterval(id)
   }, [target])
   if (!parts) return null
@@ -65,14 +68,15 @@ function NextCountdown({ date, time }: { date: string; time: string }) {
 export default function HomeClient({ lastMatch, nextMatch, recentMatches, stats, topScorers, players, playerStats, voteOpen }: Props) {
   const [tab, setTab] = useState<Tab>('Riepilogo')
   // undefined finche' non sappiamo chi guarda: la pagina e' in cache uguale per tutti
-  const [viewer, setViewer] = useState<HomeViewer | null | undefined>(undefined)
+  const [viewer, setViewer] = useState<HomeViewer | undefined>(undefined)
 
   const viewerMatchId = voteOpen?.matchId ?? lastMatch?.id ?? null
   useEffect(() => {
     let cancelled = false
+    // Se non sappiamo chi guarda (errore) si resta su undefined: nessun pulsante, mai un "Accedi" sbagliato
     getHomeViewer(viewerMatchId)
-      .then((v) => { if (!cancelled) setViewer(v) })
-      .catch(() => { if (!cancelled) setViewer(null) })
+      .then((v) => { if (!cancelled && v) setViewer(v) })
+      .catch(() => {})
     return () => { cancelled = true }
   }, [viewerMatchId])
 

@@ -10,8 +10,8 @@ import type { HomeViewer } from '@/lib/homeText'
 const ANON: HomeViewer = { kind: 'anon', playerId: null, inLineup: false, voted: false }
 
 // Chi sta guardando la home: la pagina e' in cache per tutti, i dati personali arrivano da qui.
-// Restituisce solo se l'utente ha votato, mai per chi.
-export async function getHomeViewer(matchId: string | null): Promise<HomeViewer> {
+// Restituisce solo se l'utente ha votato, mai per chi. null se non si riesce a saperlo.
+export async function getHomeViewer(matchId: string | null): Promise<HomeViewer | null> {
   try {
     const session = await getSessionAccount()
     if (session?.account?.status === 'approved') {
@@ -31,6 +31,6 @@ export async function getHomeViewer(matchId: string | null): Promise<HomeViewer>
     return ANON
   } catch (e) {
     console.error('getHomeViewer failed', e)
-    return ANON
+    return null
   }
 }

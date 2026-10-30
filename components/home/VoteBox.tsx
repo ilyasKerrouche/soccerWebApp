@@ -11,9 +11,12 @@ function left(closesAt: string) {
 
 /** Riquadro del voto MOTM sotto il campo. Sparisce da solo quando il voto chiude. */
 export default function VoteBox({ matchId, closesAt, teamA, teamB, viewer }: Props) {
-  const [parts, setParts] = useState(() => left(closesAt))
+  // Calcolato solo nel client: l'HTML in cache puo' essere vecchio e non deve contenere il tempo rimasto
+  const [parts, setParts] = useState<ReturnType<typeof left> | undefined>(undefined)
   useEffect(() => {
-    const id = setInterval(() => setParts(left(closesAt)), 30_000)
+    const tick = () => setParts(left(closesAt))
+    tick()
+    const id = setInterval(tick, 30_000)
     return () => clearInterval(id)
   }, [closesAt])
   if (!parts) return null
