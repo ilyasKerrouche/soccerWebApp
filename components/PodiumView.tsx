@@ -25,13 +25,11 @@ function PodiumSlot({ player, rank }: PodiumSlotProps) {
       <div className="flex-1" />
 
       <div
-        className="overflow-hidden mb-2.5"
+        className="card-shield mb-2.5"
         style={{
           width: cfg.cardWidth,
-          borderRadius: 10,
-          boxShadow: first
-            ? '0 16px 40px -10px rgba(0,0,0,0.75)'
-            : '0 8px 20px -10px rgba(0,0,0,0.9)',
+          // Card ritagliate a scudo come sul campo della home: l'ombra segue la sagoma
+          filter: first ? 'drop-shadow(0 14px 22px rgba(0,0,0,0.6))' : 'drop-shadow(0 8px 14px rgba(0,0,0,0.6))',
           opacity: player ? 1 : 0.35,
         }}
       >

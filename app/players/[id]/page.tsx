@@ -41,7 +41,7 @@ export default async function PlayerProfilePage({ params }: { params: { id: stri
 
       {/* La card e' la protagonista: grande, al centro, con una luce blu leggera */}
       <div className="text-center px-4 pt-2.5" style={{ background: 'radial-gradient(ellipse at 50% 45%, rgba(91,156,255,.14) 0%, transparent 62%)' }}>
-        <div className="inline-block" style={{ width: 118, filter: 'drop-shadow(0 16px 30px rgba(0,0,0,0.6))' }}>
+        <div className="inline-block card-shield" style={{ width: 118, filter: 'drop-shadow(0 16px 30px rgba(0,0,0,0.6))' }}>
           <PlayerCard player={player} width={118} eager />
         </div>
         <h1 className="text-[24px] font-bold tracking-[-0.02em] leading-tight mt-2.5 truncate">{player.name}</h1>

@@ -29,7 +29,7 @@ export default async function StatsPage() {
   const season = [
     { val: globalStats.total_matches, lbl: 'partite' },
     { val: globalStats.total_goals, lbl: 'gol' },
-    { val: globalStats.avg_goals_per_match, lbl: 'a partita' },
+    { val: String(globalStats.avg_goals_per_match).replace('.', ','), lbl: 'a partita' },
   ]
 
   return (
