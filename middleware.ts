@@ -7,6 +7,8 @@ const secret = () => new TextEncoder().encode(process.env.ADMIN_SECRET!)
 
 export async function middleware(req: NextRequest) {
   let res = NextResponse.next({ request: req })
+  // Header anti-cache che Supabase richiede insieme ai cookie di sessione
+  let authHeaders: Record<string, string> = {}
 
   // Rinfresca la sessione Supabase Auth e propaga i cookie aggiornati sulla risposta
   const supabase = createServerClient(
@@ -15,20 +17,23 @@ export async function middleware(req: NextRequest) {
     {
       cookies: {
         getAll() { return req.cookies.getAll() },
-        setAll(toSet) {
+        setAll(toSet, headers) {
           toSet.forEach(({ name, value }) => req.cookies.set(name, value))
           res = NextResponse.next({ request: req })
           toSet.forEach(({ name, value, options }) => res.cookies.set(name, value, options))
+          authHeaders = headers ?? {}
+          Object.entries(authHeaders).forEach(([k, v]) => res.headers.set(k, v))
         },
       },
     }
   )
   await supabase.auth.getUser()
 
-  // I redirect devono portare con sé i cookie di sessione appena rinfrescati
+  // I redirect devono portare con sé i cookie di sessione appena rinfrescati (e i loro header)
   const redirectTo = (path: string) => {
     const r = NextResponse.redirect(new URL(path, req.url))
     res.cookies.getAll().forEach(c => r.cookies.set(c))
+    Object.entries(authHeaders).forEach(([k, v]) => r.headers.set(k, v))
     return r
   }
 
