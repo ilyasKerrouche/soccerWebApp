@@ -37,7 +37,7 @@ export default function CardZoom({ player, stats, origin, reduced, onClosed }: P
     const start = fromOrigin(card.current.getBoundingClientRect(), origin)
     card.current.animate([{ transform: start }, { transform: 'none' }], { duration: OPEN_MS, easing: EASE })
     backdrop.current?.animate([{ opacity: 0 }, { opacity: 1 }], { duration: OPEN_MS * 0.7, easing: 'ease-out' })
-    details.current?.animate([{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'none' }], { duration: 260, delay: OPEN_MS * 0.6, easing: 'ease-out', fill: 'backwards' })
+    details.current?.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 220, delay: OPEN_MS * 0.6, easing: 'ease-out', fill: 'backwards' })
   }, [origin, reduced])
 
   // Chiusura: il percorso inverso, poi si smonta
@@ -54,8 +54,9 @@ export default function CardZoom({ player, stats, origin, reduced, onClosed }: P
 
   return (
     <div ref={backdrop} className="stadium-zoom" onClick={close} role="dialog" aria-label={player.name}>
-      <div ref={card}>
-        <PlayerCard player={player} width={180} className="stadium-card-img" />
+      {/* Senza filter: un drop-shadow ricalcolato a ogni fotogramma mentre la card cambia scala rende l'animazione a scatti */}
+      <div ref={card} className="stadium-zoom-card">
+        <PlayerCard player={player} width={180} className="stadium-zoom-img" />
       </div>
       <div ref={details} className="flex flex-col items-center gap-4">
         {stats && (

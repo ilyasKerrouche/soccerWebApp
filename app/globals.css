@@ -103,7 +103,8 @@ select option {
 .stadium-card-img { position: relative; filter: drop-shadow(0 8px 10px rgba(0,0,0,.45)); }
 .stadium-card-motm .stadium-card-img { filter: drop-shadow(0 0 12px rgba(245,196,81,.9)) drop-shadow(0 8px 10px rgba(0,0,0,.45)); }
 /* Le card caricate hanno il fondo bianco: si ritaglia lo scudo. La card provvisoria (SVG) e' gia' trasparente. */
-.stadium-card-img img { clip-path: polygon(50% 10.5%, 62% 13%, 92% 13%, 95% 22%, 95% 86%, 50% 93%, 5% 86%, 5% 22%, 8% 13%, 38% 13%); transform: scale(1.12); transform-origin: 50% 55%; }
+.stadium-zoom-card { will-change: transform; }
+.stadium-card-img img, .stadium-zoom-img img { clip-path: polygon(50% 10.5%, 62% 13%, 92% 13%, 95% 22%, 95% 86%, 50% 93%, 5% 86%, 5% 22%, 8% 13%, 38% 13%); transform: scale(1.12); transform-origin: 50% 55%; }
 .stadium-card-shadow {
   position: absolute; left: 50%; bottom: -6px; width: 76px; height: 22px; margin-left: -38px; border-radius: 50%;
   background: radial-gradient(rgba(0,0,0,.55), transparent 70%); transform: rotateX(75deg);
@@ -122,7 +123,8 @@ html:not([data-stadium-seen]) .stadium-card-shadow { animation: stadium-shadow .
 
 .stadium-zoom {
   position: fixed; inset: 0; z-index: 60; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;
-  background: rgba(8,12,18,.85); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  /* Niente backdrop-filter: animarne l'opacita' costa troppo e rende il movimento a scatti */
+  background: rgba(8,12,18,.92); will-change: opacity;
 }
 .stadium-card-lifted { visibility: hidden; }
 
