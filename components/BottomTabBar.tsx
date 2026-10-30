@@ -1,6 +1,9 @@
 'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import PlayerCard from '@/components/PlayerCard'
+import { getHeaderCard } from '@/app/profilo/actions'
 
 const tabs = [
   { href: '/', label: 'Home' },
@@ -8,8 +11,20 @@ const tabs = [
   { href: '/stats', label: 'Statistiche' },
 ]
 
+type HeaderCard = Awaited<ReturnType<typeof getHeaderCard>>
+
 export default function BottomTabBar() {
   const pathname = usePathname()
+  // undefined = in caricamento: si riserva lo spazio per non far saltare l'header.
+  const [headerCard, setHeaderCard] = useState<HeaderCard | undefined>(undefined)
+
+  useEffect(() => {
+    let cancelled = false
+    getHeaderCard()
+      .then((c) => { if (!cancelled) setHeaderCard(c) })
+      .catch(() => { if (!cancelled) setHeaderCard(null) })
+    return () => { cancelled = true }
+  }, [pathname])
   const isAdmin = pathname.startsWith('/admin')
 
   const active = (href: string) =>
@@ -47,6 +62,21 @@ export default function BottomTabBar() {
             </Link>
           )
         })}
+
+        <div className="flex items-center justify-center flex-shrink-0 pl-2" style={{ width: 44 }}>
+          {headerCard === undefined ? null : headerCard === null ? (
+            <Link href="/accedi" className="text-[12px] font-medium text-white/60 hover:text-white transition-colors">
+              Accedi
+            </Link>
+          ) : (
+            <Link href="/profilo" aria-label="Il tuo profilo">
+              <PlayerCard
+                player={{ id: '', ovr: null, is_active: true, created_at: '', ...headerCard }}
+                width={22}
+              />
+            </Link>
+          )}
+        </div>
 
         <Link
           href="/admin"

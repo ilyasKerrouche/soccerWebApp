@@ -2,6 +2,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { computeRecord } from '@/lib/rating'
+import { cardExtension } from '@/lib/cardFile'
 import type { Player, PlayerWithStats, MatchWithPlayers, GoalkeeperStats, PlayerWithGoalkeeperStats } from '@/lib/types'
 
 export async function getAllPlayers(): Promise<Player[]> {
@@ -75,6 +76,25 @@ export async function updatePlayerCardUrl(id: string, card_url: string): Promise
   const supabase = createAdminClient()
   const { error } = await supabase.from('players').update({ card_url }).eq('id', id)
   if (error) throw new Error(error.message)
+}
+
+// Carica la card nello storage e aggiorna players.card_url. Il file va gia' validato
+// con cardFileError. Il ?v= evita che CDN/browser servano la card precedente.
+export async function storePlayerCard(playerId: string, file: File): Promise<string> {
+  const ext = cardExtension(file.type)
+  if (!ext) throw new Error('Formato non supportato (usa PNG, JPG o WEBP)')
+  const supabase = createAdminClient()
+  const path = `${playerId}.${ext}`
+
+  const { error: uploadError } = await supabase.storage
+    .from('player-cards')
+    .upload(path, file, { upsert: true, contentType: file.type })
+  if (uploadError) throw new Error(uploadError.message)
+
+  const { data } = supabase.storage.from('player-cards').getPublicUrl(path)
+  const url = `${data.publicUrl}?v=${Date.now()}`
+  await updatePlayerCardUrl(playerId, url)
+  return url
 }
 
 export async function getPlayerProfile(id: string): Promise<{
