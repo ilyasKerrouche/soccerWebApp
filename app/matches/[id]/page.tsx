@@ -1,8 +1,9 @@
 import { getMatchById } from '@/lib/queries/matches'
 import FieldView from '@/components/FieldView'
+import MotmSection from '@/components/motm/MotmSection'
 import { notFound } from 'next/navigation'
 
-export const revalidate = 60
+export const dynamic = 'force-dynamic'
 
 export default async function MatchDetailPage({ params }: { params: { id: string } }) {
   let match
@@ -78,6 +79,8 @@ export default async function MatchDetailPage({ params }: { params: { id: string
 
         {/* Field */}
         <div className="mb-4"><FieldView match={match} /></div>
+
+        <div className="mb-4"><MotmSection match={match} /></div>
 
         {/* Scorers */}
         <div className="flex gap-2.5">
