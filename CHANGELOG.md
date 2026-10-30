@@ -7,6 +7,15 @@ il primo numero cambia con un restyling o un cambiamento grosso, il secondo con 
 
 Restyling completo dell'app.
 
+### Nuova homepage
+- Ultima partita su un campo 3D realistico con le card vere dei giocatori e targhette con i nomi (dorata per il MOTM)
+- Cartellone LED con risultato, MOTM, marcatori e prossima partita; sponsor inventati a rotazione sui lati
+- Tocco su una card per vedere gol, presenze, vittorie, MOTM e forma
+- Riquadro per votare il Man of the Match mentre il voto è aperto
+- "Il tuo riepilogo" per chi ha fatto login
+- Schede Riepilogo · Risultati · Classifica con conto alla rovescia della prossima partita
+- Rimosso il sondaggio sulle disponibilità dalla home
+
 ## [1.0.0] — 2026-10-30
 
 Prima versione numerata: lo stato dell'app in produzione a questa data.

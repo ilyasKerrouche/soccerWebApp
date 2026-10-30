@@ -54,3 +54,93 @@ select option {
 .animate-section {
   animation: fadeInUp 0.18s ease-out both;
 }
+
+/* ── Campo 3D della home (components/home/StadiumPitch.tsx) ──
+   Disegnato a dimensione doppia e allontanato con translateZ: con perspective 900px torna a circa meta grandezza, nitido. */
+.stadium-scene {
+  position: relative; height: 296px; overflow: hidden;
+  perspective: 900px; perspective-origin: 50% 5%;
+  background: radial-gradient(ellipse at 50% 60%, rgba(255,250,230,.08) 0%, transparent 60%);
+}
+.stadium-pitch { position: absolute; left: 50%; top: -38px; transform-style: preserve-3d; transform: translateZ(-820px) rotateX(58deg); }
+.stadium-apron { position: absolute; inset: -32px; background: #2a6e30; box-shadow: 0 60px 120px rgba(0,0,0,.6); }
+.stadium-grass { position: absolute; inset: 0; background: repeating-linear-gradient(0deg, #2e7a35 0 48px, #33853a 48px 96px); box-shadow: inset 0 0 120px rgba(0,0,0,.3); }
+.stadium-ln { position: absolute; border: 3px solid rgba(255,255,255,.88); }
+.stadium-ln-out { inset: 14px; }
+.stadium-ln-mid { left: 14px; right: 14px; top: 50%; height: 0; border-width: 3px 0 0; }
+.stadium-ln-circ { left: 50%; top: 50%; width: 112px; height: 112px; margin: -56px; border-radius: 50%; }
+.stadium-ln-bt { left: 50%; top: 14px; width: 192px; height: 68px; margin-left: -96px; border-top: none; }
+.stadium-ln-bb { left: 50%; bottom: 14px; width: 192px; height: 68px; margin-left: -96px; border-bottom: none; }
+.stadium-ln-gt { left: 50%; top: 14px; width: 96px; height: 26px; margin-left: -48px; border-top: none; }
+.stadium-ln-gb { left: 50%; bottom: 14px; width: 96px; height: 26px; margin-left: -48px; border-bottom: none; }
+
+/* Cartelloni: un perno al centro per lato, il cartellone sul bordo inclinato all'indietro come quelli veri */
+.stadium-pivot { position: absolute; width: 0; height: 0; transform-style: preserve-3d; }
+.stadium-board {
+  position: absolute; overflow: hidden; white-space: nowrap; display: flex; align-items: center;
+  transform-origin: 50% 100%; transform: rotateX(-62deg); backface-visibility: hidden;
+  background: #05080f; border-top: 3px solid #2a3344; border-bottom: 2px solid #11161f;
+}
+.stadium-board-led::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 1;
+  background: radial-gradient(rgba(255,255,255,.06) .6px, transparent .8px) 0 0/3px 3px;
+}
+.stadium-led-text {
+  display: inline-block; padding-left: 100%; font-weight: 800; font-size: 24px; letter-spacing: 2px;
+  color: #eaf2ff; text-shadow: 0 0 6px rgba(120,170,255,.8); animation: stadium-scroll linear infinite;
+}
+.stadium-ad {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 10px;
+  font-weight: 900; font-size: 21px; letter-spacing: 1px; clip-path: inset(0 100% 0 0);
+}
+.stadium-ad-on { clip-path: inset(0 0 0 0); transition: clip-path .45s ease; }
+.stadium-ad-emoji { font-size: 22px; }
+.stadium-ad small { font-size: 12px; font-weight: 700; opacity: .85; letter-spacing: 2px; }
+
+/* Card in piedi: compensano l'inclinazione del campo */
+.stadium-card { position: absolute; padding: 0; border: 0; background: none; cursor: pointer; transform-origin: 50% 100%; transform: rotateX(-58deg); }
+.stadium-card-rise { position: relative; display: block; }
+.stadium-card-img { position: relative; filter: drop-shadow(0 8px 10px rgba(0,0,0,.45)); }
+.stadium-card-motm .stadium-card-img { filter: drop-shadow(0 0 12px rgba(245,196,81,.9)) drop-shadow(0 8px 10px rgba(0,0,0,.45)); }
+/* Le card caricate hanno il fondo bianco: si ritaglia lo scudo. La card provvisoria (SVG) e' gia' trasparente. */
+.stadium-zoom-card { will-change: transform; }
+.stadium-card-img img, .stadium-zoom-img img { clip-path: polygon(50% 10.5%, 62% 13%, 92% 13%, 95% 22%, 95% 86%, 50% 93%, 5% 86%, 5% 22%, 8% 13%, 38% 13%); transform: scale(1.12); transform-origin: 50% 55%; }
+.stadium-card-shadow {
+  position: absolute; left: 50%; bottom: -6px; width: 76px; height: 22px; margin-left: -38px; border-radius: 50%;
+  background: radial-gradient(rgba(0,0,0,.55), transparent 70%); transform: rotateX(75deg);
+}
+.stadium-plate {
+  /* Sopra la parte bassa della card: sotto il bordo inferiore finirebbe dentro il prato */
+  position: absolute; left: 50%; bottom: 4px; transform: translateX(-50%); white-space: nowrap; z-index: 1;
+  font-size: 13px; font-weight: 600; padding: 2px 8px; border-radius: 6px; color: #e8ecf2; background: rgba(8,12,18,.8);
+}
+.stadium-card-motm .stadium-plate { background: #f5c451; color: #2b1f05; }
+
+.stadium-ad-prev { clip-path: inset(0 0 0 0); }
+
+html:not([data-stadium-seen]) .stadium-card-rise { animation: stadium-land .8s cubic-bezier(.25,.8,.35,1) backwards; }
+html:not([data-stadium-seen]) .stadium-card-shadow { animation: stadium-shadow .8s ease-out backwards; }
+
+.stadium-zoom {
+  position: fixed; inset: 0; z-index: 60; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;
+  /* Niente backdrop-filter: animarne l'opacita' costa troppo e rende il movimento a scatti */
+  background: rgba(8,12,18,.92); will-change: opacity;
+}
+.stadium-card-lifted { visibility: hidden; }
+
+@keyframes stadium-scroll { from { transform: translateX(0); } to { transform: translateX(-100%); } }
+@keyframes stadium-shadow { 0% { opacity: 0; transform: rotateX(75deg) scale(.3); } 80% { opacity: 1; transform: rotateX(75deg) scale(1.05); } }
+/* Le card scendono dall'alto in dissolvenza e "atterrano" con un piccolo assestamento */
+@keyframes stadium-land {
+  0%   { opacity: 0; transform: translateY(-160px); }
+  60%  { opacity: 1; }
+  80%  { transform: translateY(6px); }
+  100% { transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html .stadium-card-rise, html .stadium-card-shadow { animation: none !important; }
+  .stadium-led-text { animation: none; padding-left: 12px; }
+  .stadium-ad-on { transition: none; }
+}
+
