@@ -28,10 +28,10 @@ export default function AddToCalendar({ date, title = 'Calcetto' }: Props) {
   return (
     <button
       onClick={download}
-      className="flex items-center gap-1.5 text-[10px] font-bold px-3 py-1.5 rounded-xl transition-all hover:opacity-80"
-      style={{ background: 'rgba(167,139,250,0.12)', border: '1px solid rgba(167,139,250,0.25)', color: '#a78bfa' }}
+      className="flex items-center gap-1.5 text-[12px] font-semibold transition-opacity hover:opacity-80"
+      style={{ color: '#5b9cff' }}
     >
-      📆 Aggiungi al calendario
+      📅 Aggiungi al calendario
     </button>
   )
 }

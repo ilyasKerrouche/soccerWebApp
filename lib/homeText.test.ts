@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { buildLedText, voteCta, countdownParts, formatRomeDay, formatRomeTime, romeInstant, type LedInput, type HomeViewer } from './homeText.ts'
+import { buildLedText, sortScorers, topScorers, voteCta, countdownParts, formatRomeDay, formatRomeTime, romeInstant, type LedInput, type HomeViewer } from './homeText.ts'
 
 const base: LedInput = { teamA: 'Viola', teamB: 'Azzurri', scoreA: 5, scoreB: 3, motmNames: [], scorers: [], next: null }
 
@@ -53,4 +53,16 @@ test('orari in Europe/Rome', () => {
 test('romeInstant converte giorno e ora italiani in un istante', () => {
   assert.equal(romeInstant('2026-11-05', '21:00:00').toISOString(), '2026-11-05T20:00:00.000Z') // ora solare
   assert.equal(romeInstant('2026-07-10', '21:00').toISOString(), '2026-07-10T19:00:00.000Z') // ora legale
+})
+
+test('sortScorers: piu gol prima, a parita in ordine alfabetico (come il LED)', () => {
+  const s = sortScorers([{ name: 'Simone', goals: 1 }, { name: 'Marco', goals: 2 }, { name: 'Andrea', goals: 1 }], (x) => x)
+  assert.deepEqual(s.map((x) => x.name), ['Marco', 'Andrea', 'Simone'])
+})
+
+test('topScorers: niente giocatori a 0 gol, massimo n, stesso ordine', () => {
+  const players = [{ name: 'Zeno', total_goals: 3 }, { name: 'Bea', total_goals: 0 }, { name: 'Ada', total_goals: 3 }, { name: 'Ugo', total_goals: 1 }]
+  assert.deepEqual(topScorers(players, 2).map((p) => p.name), ['Ada', 'Zeno'])
+  assert.deepEqual(topScorers(players, 5).map((p) => p.name), ['Ada', 'Zeno', 'Ugo'])
+  assert.deepEqual(topScorers([{ name: 'Bea', total_goals: 0 }], 5), [])
 })

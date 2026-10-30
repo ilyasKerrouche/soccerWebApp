@@ -9,7 +9,7 @@ export function SkeletonBlock({ className = '', style }: { className?: string; s
 
 export function SkeletonHero() {
   return (
-    <div className="px-4 pt-10 pb-8" style={{ background: 'linear-gradient(180deg,#1a0533 0%,#0d0d1f 100%)' }}>
+    <div className="px-4 pt-10 pb-8" >
       <SkeletonBlock className="h-3 w-24 mb-6" />
       <div className="flex justify-center gap-8 mb-4">
         <SkeletonBlock style={{ width: 64, height: 80 }} />

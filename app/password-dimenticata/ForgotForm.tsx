@@ -9,8 +9,8 @@ function Submit() {
     <button
       type="submit"
       disabled={pending}
-      className="w-full font-black py-3 rounded-xl text-sm disabled:opacity-50 transition-opacity"
-      style={{ background: 'linear-gradient(135deg,#7c3aed,#6366f1)', color: 'white' }}
+      className="w-full font-semibold py-3 rounded-xl text-sm disabled:opacity-50 transition-opacity"
+      style={{ background: '#5b9cff', color: 'white' }}
     >
       {pending ? 'Invio…' : 'Invia link'}
     </button>
@@ -40,7 +40,7 @@ export default function ForgotForm() {
           required
           autoComplete="email"
           className="w-full rounded-xl px-4 py-3 text-white text-sm outline-none focus:ring-1 focus:ring-brand/50 transition-all"
-          style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)' }}
+          style={{ background: '#1a2536', border: '1px solid rgba(255,255,255,0.08)' }}
         />
       </div>
       <Submit />

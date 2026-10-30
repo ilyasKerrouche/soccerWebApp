@@ -3,9 +3,10 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import type { MatchWithPlayers, Player, PlayerHomeStats, PlayerWithStats } from '@/lib/types'
 import type { GlobalStats } from '@/lib/queries/stats'
-import { countdownParts, formatRomeDay, formatRomeTime, romeInstant, type HomeViewer } from '@/lib/homeText'
+import { sortScorers, type HomeViewer } from '@/lib/homeText'
 import { getHomeViewer } from '@/app/homeActions'
-import AddToCalendar from './AddToCalendar'
+import NextMatchCard from './NextMatchCard'
+import { C, Card, Section } from './ui'
 import VoteBox from './home/VoteBox'
 import MySummary from './home/MySummary'
 
@@ -22,48 +23,6 @@ type Props = {
 
 const TABS = ['Riepilogo', 'Risultati', 'Classifica'] as const
 type Tab = typeof TABS[number]
-
-const C = { surf: '#141d2b', surf2: '#1a2536', line: 'rgba(255,255,255,.08)', muted: '#8a96a8', acc: '#5b9cff' }
-
-function Section({ title, link, children }: { title: string; link?: { href: string; label: string }; children: React.ReactNode }) {
-  return (
-    <section>
-      <div className="flex items-baseline justify-between mb-2.5">
-        <h3 className="text-[15px] font-semibold">{title}</h3>
-        {link && <Link href={link.href} className="text-[12px]" style={{ color: C.acc }}>{link.label}</Link>}
-      </div>
-      {children}
-    </section>
-  )
-}
-
-function Card({ children, className = '' }: { children: React.ReactNode; className?: string }) {
-  return <div className={`rounded-2xl ${className}`} style={{ background: C.surf, border: `1px solid ${C.line}` }}>{children}</div>
-}
-
-/** Conto alla rovescia in giorni / ore / minuti verso la prossima partita (ora italiana). */
-function NextCountdown({ date, time }: { date: string; time: string }) {
-  const target = romeInstant(date, time).getTime()
-  // Calcolato solo nel client: l'HTML in cache puo' essere vecchio
-  const [parts, setParts] = useState<ReturnType<typeof countdownParts> | undefined>(undefined)
-  useEffect(() => {
-    const tick = () => setParts(countdownParts(target - Date.now()))
-    tick()
-    const id = setInterval(tick, 30_000)
-    return () => clearInterval(id)
-  }, [target])
-  if (!parts) return null
-  return (
-    <div className="flex gap-2 mt-3">
-      {[{ v: parts.d, l: 'giorni' }, { v: parts.h, l: 'ore' }, { v: parts.m, l: 'min' }].map(({ v, l }) => (
-        <div key={l} className="flex-1 rounded-[10px] py-2 text-center" style={{ background: C.surf2 }}>
-          <div className="text-[18px] font-semibold leading-none tabular-nums">{l === 'giorni' ? v : String(v).padStart(2, '0')}</div>
-          <div className="text-[10px] mt-1" style={{ color: C.muted }}>{l}</div>
-        </div>
-      ))}
-    </div>
-  )
-}
 
 export default function HomeClient({ lastMatch, nextMatch, recentMatches, stats, topScorers, players, playerStats, voteOpen }: Props) {
   const [tab, setTab] = useState<Tab>('Riepilogo')
@@ -82,8 +41,7 @@ export default function HomeClient({ lastMatch, nextMatch, recentMatches, stats,
 
   const me = viewer?.kind === 'player' && viewer.playerId ? players.find((p) => p.id === viewer.playerId) : undefined
   const myStats = me ? playerStats[me.id] : undefined
-  const scorers = lastMatch?.match_players.filter((mp) => mp.goals > 0).sort((a, b) => b.goals - a.goals) ?? []
-  const nextTime = nextMatch ? formatRomeTime(nextMatch.match_time) : null
+  const scorers = sortScorers(lastMatch?.match_players.filter((mp) => mp.goals > 0) ?? [], (mp) => ({ name: mp.player.name, goals: mp.goals }))
 
   return (
     <>
@@ -112,13 +70,7 @@ export default function HomeClient({ lastMatch, nextMatch, recentMatches, stats,
 
             {nextMatch && (
               <Section title="Prossima partita">
-                <Card className="p-3.5">
-                  <div className="text-[11px] font-semibold" style={{ color: C.acc }}>Da giocare</div>
-                  <div className="text-[17px] font-semibold capitalize mt-0.5">{formatRomeDay(nextMatch.played_at)}</div>
-                  {nextTime && <div className="text-[13px]" style={{ color: C.muted }}>{nextTime}</div>}
-                  {nextMatch.match_time && <NextCountdown date={nextMatch.played_at} time={nextMatch.match_time} />}
-                  <div className="mt-3"><AddToCalendar date={nextMatch.played_at} title="Calcetto" /></div>
-                </Card>
+                <NextMatchCard match={nextMatch} />
               </Section>
             )}
 
@@ -191,6 +143,9 @@ export default function HomeClient({ lastMatch, nextMatch, recentMatches, stats,
             </Section>
 
             <Section title="Top marcatori" link={{ href: '/stats', label: 'Classifiche' }}>
+              {topScorers.length === 0 ? (
+                <p className="text-[13px] text-center py-6" style={{ color: C.muted }}>Ancora nessun gol.</p>
+              ) : (
               <Card>
                 {topScorers.map((p, i) => (
                   <Link key={p.id} href={`/players/${p.id}`} className="flex items-center gap-3 px-3.5 py-3 text-[14px]"
@@ -201,6 +156,7 @@ export default function HomeClient({ lastMatch, nextMatch, recentMatches, stats,
                   </Link>
                 ))}
               </Card>
+              )}
             </Section>
           </>
         )}

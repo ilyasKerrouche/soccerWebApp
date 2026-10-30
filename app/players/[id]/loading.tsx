@@ -3,7 +3,7 @@ import { SkeletonBlock, SkeletonList } from '@/components/Skeleton'
 export default function PlayerLoading() {
   return (
     <main className="pb-6">
-      <div className="px-4 pt-10 pb-8" style={{ background: 'linear-gradient(135deg,#1e1b4b 0%,#312e81 50%,#4c1d95 100%)' }}>
+      <div className="px-4 pt-10 pb-8">
         <SkeletonBlock className="h-3 w-16 mb-4" />
         <div className="flex items-end gap-5">
           <SkeletonBlock style={{ width: 96, height: 133, borderRadius: 12 }} />

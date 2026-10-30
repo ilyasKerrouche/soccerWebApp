@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { signInAction } from './actions'
 
 const inputClass = 'w-full rounded-xl px-4 py-3 text-white text-sm outline-none focus:ring-1 focus:ring-brand/50 transition-all'
-const inputStyle: React.CSSProperties = { background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)' }
+const inputStyle: React.CSSProperties = { background: '#1a2536', border: '1px solid rgba(255,255,255,0.08)' }
 const labelClass = 'text-[11px] uppercase tracking-wider text-white/40 block mb-2'
 
 function Submit() {
@@ -13,8 +13,8 @@ function Submit() {
     <button
       type="submit"
       disabled={pending}
-      className="w-full font-black py-3 rounded-xl text-sm disabled:opacity-50 transition-opacity"
-      style={{ background: 'linear-gradient(135deg,#7c3aed,#6366f1)', color: 'white' }}
+      className="w-full font-semibold py-3 rounded-xl text-sm disabled:opacity-50 transition-opacity"
+      style={{ background: '#5b9cff', color: 'white' }}
     >
       {pending ? 'Accedo…' : 'Accedi'}
     </button>

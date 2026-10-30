@@ -17,9 +17,9 @@ export default function BarChart({ data }: { data: MatchGoalPoint[] }) {
                 height: `${(d.total_goals / max) * 100}%`,
                 minHeight: 4,
                 background: d.total_goals === max
-                  ? 'rgba(167,139,250,0.7)'
-                  : 'rgba(167,139,250,0.25)',
-                boxShadow: d.total_goals === max ? '0 0 10px rgba(167,139,250,0.4)' : 'none',
+                  ? 'rgba(91,156,255,0.7)'
+                  : 'rgba(91,156,255,0.25)',
+                boxShadow: d.total_goals === max ? '0 0 10px rgba(91,156,255,0.4)' : 'none',
               }}
             />
             <span className="text-[8px] text-white/20 whitespace-nowrap">

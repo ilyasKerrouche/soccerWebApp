@@ -3,7 +3,7 @@ import { SkeletonBlock, SkeletonList } from '@/components/Skeleton'
 export default function MatchesLoading() {
   return (
     <main className="pb-4">
-      <div className="px-4 pt-10 pb-6" style={{ background: 'linear-gradient(135deg,#1e1b4b,#2d1b69)' }}>
+      <div className="px-4 pt-10 pb-6">
         <SkeletonBlock className="h-7 w-32 mb-2" />
         <SkeletonBlock className="h-3 w-24" />
       </div>

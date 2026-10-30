@@ -17,11 +17,25 @@ export type VoteCta = 'accedi' | 'vota' | 'cambia' | 'vedi'
 const SEP = '  ·  '
 const up = (s: string) => s.toLocaleUpperCase('it-IT')
 
+/** Ordine unico dei marcatori (LED e liste): piu' gol prima, a parita' in ordine alfabetico. */
+export function sortScorers<T>(items: T[], pick: (x: T) => { name: string; goals: number }): T[] {
+  return [...items].sort((a, b) => {
+    const pa = pick(a)
+    const pb = pick(b)
+    return pb.goals - pa.goals || pa.name.localeCompare(pb.name, 'it')
+  })
+}
+
+/** Top n marcatori della stagione: chi non ha segnato non compare. */
+export function topScorers<T extends { name: string; total_goals: number }>(players: T[], n: number): T[] {
+  return sortScorers(players.filter((p) => p.total_goals > 0), (p) => ({ name: p.name, goals: p.total_goals })).slice(0, n)
+}
+
 export function buildLedText(i: LedInput): string {
   const parts = [`${up(i.teamA)} ${i.scoreA} – ${i.scoreB} ${up(i.teamB)}`]
   if (i.motmNames.length > 0) parts.push(`★ MOTM ${i.motmNames.map(up).join(' & ')}`)
   if (i.scorers.length > 0) {
-    const sorted = [...i.scorers].sort((a, b) => b.goals - a.goals || a.name.localeCompare(b.name, 'it'))
+    const sorted = sortScorers(i.scorers, (s) => s)
     parts.push(sorted.map((s) => (s.goals > 1 ? `${up(s.name)} ×${s.goals}` : up(s.name))).join('  '))
   }
   if (i.next) {

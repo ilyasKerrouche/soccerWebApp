@@ -5,6 +5,7 @@ import { comparePlayers } from '@/lib/ranking'
 import { getMotmCounts } from '@/lib/queries/motm'
 import StatsRankings from '@/components/StatsRankings'
 import PageHeader from '@/components/PageHeader'
+import { StatTile } from '@/components/ui'
 
 export const revalidate = 60
 
@@ -28,25 +29,20 @@ export default async function StatsPage() {
   const season = [
     { val: globalStats.total_matches, lbl: 'partite' },
     { val: globalStats.total_goals, lbl: 'gol' },
-    { val: globalStats.avg_goals_per_match, lbl: 'a partita' },
+    { val: String(globalStats.avg_goals_per_match).replace('.', ','), lbl: 'a partita' },
   ]
 
   return (
     <main className="pb-6 px-4">
-      <PageHeader eyebrow="Stagione 2025/26" title="Statistiche" />
+      <PageHeader title="Statistiche" eyebrow="Stagione 2025/26" />
 
       {top3.length > 0 && <PodiumView players={top3} />}
 
-      {/* I numeri di stagione fanno da contesto, non competono col podio. */}
-      <div className="flex rule pt-3 pb-4">
-        {season.map(({ val, lbl }) => (
-          <div key={lbl} className="flex-1 text-center">
-            <div className="text-xl font-semibold text-white/85 leading-none tracking-[-0.02em]">{val}</div>
-            <div className="text-[10px] text-white/30 mt-1">{lbl}</div>
-          </div>
-        ))}
+      <div className="grid grid-cols-3 gap-2 mt-4">
+        {season.map(({ val, lbl }) => <StatTile key={lbl} value={val} label={lbl} />)}
       </div>
 
+      <div className="mt-6" />
       <StatsRankings players={players} goalkeepers={goalkeepers} motmCounts={motmCounts} />
     </main>
   )

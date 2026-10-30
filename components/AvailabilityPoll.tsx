@@ -101,10 +101,10 @@ export default function AvailabilityPoll({ matchId, played_at, initialVotes }: P
           const barColor = isTop
             ? 'rgba(74,222,128,0.55)'
             : voted
-            ? 'rgba(167,139,250,0.5)'
+            ? 'rgba(91,156,255,0.5)'
             : 'rgba(255,255,255,0.15)'
 
-          const countColor = isTop ? '#4ade80' : voted ? '#a78bfa' : count > 0 ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.15)'
+          const countColor = isTop ? '#4ade80' : voted ? '#5b9cff' : count > 0 ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.15)'
 
           const displayNames = voters.slice(0, 3)
           const extra = voters.length - displayNames.length
@@ -149,8 +149,8 @@ export default function AvailabilityPoll({ matchId, played_at, initialVotes }: P
                       fontSize: '8px',
                       padding: '1px 5px',
                       borderRadius: '999px',
-                      background: v === name ? 'rgba(167,139,250,0.18)' : 'rgba(255,255,255,0.06)',
-                      color: v === name ? '#a78bfa' : 'rgba(255,255,255,0.35)',
+                      background: v === name ? 'rgba(91,156,255,0.18)' : 'rgba(255,255,255,0.06)',
+                      color: v === name ? '#5b9cff' : 'rgba(255,255,255,0.35)',
                       maxWidth: '32px',
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
@@ -183,7 +183,7 @@ export default function AvailabilityPoll({ matchId, played_at, initialVotes }: P
           <button
             onClick={saveName}
             className="px-4 py-2 rounded-xl text-xs font-bold transition-opacity hover:opacity-80"
-            style={{ background: 'rgba(167,139,250,0.2)', border: '1px solid rgba(167,139,250,0.3)', color: '#a78bfa' }}
+            style={{ background: 'rgba(91,156,255,0.2)', border: '1px solid rgba(91,156,255,0.3)', color: '#5b9cff' }}
           >
             Ok
           </button>

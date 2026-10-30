@@ -7,7 +7,7 @@ import { signUpAction } from './actions'
 type Option = { id: string; name: string }
 
 const inputClass = 'w-full rounded-xl px-4 py-3 text-white text-sm outline-none focus:ring-1 focus:ring-brand/50 transition-all'
-const inputStyle: React.CSSProperties = { background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)' }
+const inputStyle: React.CSSProperties = { background: '#1a2536', border: '1px solid rgba(255,255,255,0.08)' }
 const labelClass = 'text-[11px] uppercase tracking-wider text-white/40 block mb-2'
 
 function Submit() {
@@ -16,8 +16,8 @@ function Submit() {
     <button
       type="submit"
       disabled={pending}
-      className="w-full font-black py-3 rounded-xl text-sm disabled:opacity-50 transition-opacity"
-      style={{ background: 'linear-gradient(135deg,#7c3aed,#6366f1)', color: 'white' }}
+      className="w-full font-semibold py-3 rounded-xl text-sm disabled:opacity-50 transition-opacity"
+      style={{ background: '#5b9cff', color: 'white' }}
     >
       {pending ? 'Registro…' : 'Registrati'}
     </button>
@@ -50,7 +50,7 @@ export default function SignUpForm({ players }: { players: Option[] }) {
             type="button"
             onClick={() => setMode(value)}
             className={`py-2.5 rounded-xl text-xs font-bold border transition-colors ${mode === value ? 'text-white border-brand/60' : 'text-white/40 border-white/10'}`}
-            style={mode === value ? { background: 'rgba(167,139,250,0.15)' } : undefined}
+            style={mode === value ? { background: 'rgba(91,156,255,0.15)' } : undefined}
           >
             {label}
           </button>
@@ -63,7 +63,7 @@ export default function SignUpForm({ players }: { players: Option[] }) {
           <select name="player_id" required defaultValue="" className={inputClass} style={inputStyle}>
             <option value="" disabled>Scegli dall&apos;elenco</option>
             {players.map(p => (
-              <option key={p.id} value={p.id} className="bg-[#0d0d1f]">{p.name}</option>
+              <option key={p.id} value={p.id} className="bg-[#1a2536]">{p.name}</option>
             ))}
           </select>
         </div>

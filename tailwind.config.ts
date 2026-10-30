@@ -5,16 +5,19 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        brand: '#a78bfa',       // violet - main accent
-        'brand-dim': 'rgba(167,139,250,0.15)',
+        brand: '#5b9cff',       // blu - unico accento (palette della home)
+        'brand-dim': 'rgba(91,156,255,0.15)',
         win: '#4ade80',         // green - scores/wins only
         'win-dim': 'rgba(74,222,128,0.15)',
-        accent: '#6366f1',      // indigo - secondary
-        surface: 'rgba(255,255,255,0.05)',
-        'surface-hi': 'rgba(255,255,255,0.08)',
+        accent: '#5b9cff',
+        gold: '#f5c451',        // solo MOTM
+        muted: '#8a96a8',
+        loss: '#f87171',
+        surface: '#141d2b',
+        'surface-hi': '#1a2536',
         border: 'rgba(255,255,255,0.08)',
-        bg: '#06060f',
-        'bg-card': '#0d0d1f',
+        bg: '#0d1420',
+        'bg-card': '#141d2b',
       },
     },
   },

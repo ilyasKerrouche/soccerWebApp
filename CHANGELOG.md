@@ -3,9 +3,19 @@
 Le versioni seguono [Semantic Versioning](https://semver.org/lang/it/):
 il primo numero cambia con un restyling o un cambiamento grosso, il secondo con nuove funzioni, il terzo con correzioni.
 
-## [Unreleased] — 2.0.0
+## [2.0.0] — 2026-10-30
 
-Restyling completo dell'app (in corso).
+Restyling completo: tutta l'app nello stile della nuova home.
+
+### Nuovo aspetto
+- Partite: prossima partita con conto alla rovescia, risultati raggruppati per mese con MOTM in oro, formazioni e marcatori al tocco
+- Statistiche: podio con le card, numeri della stagione nei riquadri, classifiche con selettore a pillola
+- Profilo giocatore: card grande, numeri nei riquadri, grafico dei gol e storico con vittorie/pareggi/sconfitte
+- Barra in alto, dettaglio partita, accesso, area personale e admin con i colori della home (blu notte, accento blu, oro per il MOTM)
+
+### Correzioni
+- In home la classifica marcatori non mostra più chi non ha segnato
+- Marcatori a pari gol nello stesso ordine nel cartellone LED e nella lista
 
 ## [1.1.3] — 2026-10-30
 

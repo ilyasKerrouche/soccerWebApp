@@ -2,8 +2,8 @@ import { loginAction } from './actions'
 
 export default function LoginPage({ searchParams }: { searchParams: { error?: string } }) {
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden" style={{ background: 'linear-gradient(135deg,#06060f 0%,#0d0d1f 100%)' }}>
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle,rgba(167,139,250,.15) 0%,transparent 70%)' }} />
+    <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden" style={{ background: '#0d1420' }}>
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle,rgba(91,156,255,0.07) 0%,transparent 70%)' }} />
 
       <div className="relative w-full max-w-sm">
         <div className="text-center mb-8">
@@ -22,7 +22,7 @@ export default function LoginPage({ searchParams }: { searchParams: { error?: st
                 placeholder="••••••••"
                 required
                 className="w-full rounded-xl px-4 py-3 text-white text-sm outline-none focus:ring-1 focus:ring-brand/50 transition-all"
-                style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)' }}
+                style={{ background: '#1a2536', border: '1px solid rgba(255,255,255,0.08)' }}
               />
             </div>
             {searchParams.error && (
@@ -32,8 +32,8 @@ export default function LoginPage({ searchParams }: { searchParams: { error?: st
             )}
             <button
               type="submit"
-              className="w-full font-black py-3 rounded-xl transition-colors text-sm"
-              style={{ background: 'linear-gradient(135deg,#7c3aed,#6366f1)', color: 'white' }}
+              className="w-full font-semibold py-3 rounded-xl transition-colors text-sm"
+              style={{ background: '#5b9cff', color: 'white' }}
             >
               Accedi
             </button>

@@ -89,8 +89,8 @@ export default function AdminPlayerRow({ player }: { player: Player }) {
         title={isGK ? 'Rimuovi portiere' : 'Imposta come portiere'}
         className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-all text-base"
         style={{
-          background: isGK ? 'rgba(167,139,250,0.15)' : 'rgba(255,255,255,0.04)',
-          border: `1px solid ${isGK ? 'rgba(167,139,250,0.3)' : 'rgba(255,255,255,0.08)'}`,
+          background: isGK ? 'rgba(91,156,255,0.15)' : 'rgba(255,255,255,0.04)',
+          border: `1px solid ${isGK ? 'rgba(91,156,255,0.3)' : 'rgba(255,255,255,0.08)'}`,
           opacity: gkPending ? 0.5 : 1,
         }}
       >

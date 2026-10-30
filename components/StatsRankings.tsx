@@ -3,6 +3,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import FormDots from './FormDots'
 import type { PlayerWithStats, PlayerWithGoalkeeperStats } from '@/lib/types'
+import { C, Card } from './ui'
 
 type Props = {
   players: PlayerWithStats[]
@@ -22,11 +23,10 @@ type TabKey = typeof TABS[number]['key']
 
 const pct = (n: number) => `${Math.round(n * 100)}%`
 
-/**
- * Riga unica per tutte le classifiche: niente card, solo un filetto di
- * separazione. Cosi' l'unico oggetto in rilievo della schermata resta la card
- * del giocatore sul podio.
- */
+const initials = (name: string) =>
+  name.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]?.toUpperCase()).join('')
+
+/** Riga unica per tutte le classifiche, dentro il riquadro della classifica. */
 function Row({
   href,
   rank,
@@ -35,6 +35,7 @@ function Row({
   value,
   note,
   leader,
+  first,
 }: {
   href: string
   rank: number
@@ -43,22 +44,27 @@ function Row({
   value: React.ReactNode
   note?: string
   leader: boolean
+  first: boolean
 }) {
   return (
     <Link
       href={href}
-      className="flex items-center gap-2.5 py-2.5 px-1 rule transition-colors hover:bg-white/[0.025]"
+      className="flex items-center gap-2.5 py-2.5 px-3.5 transition-colors hover:bg-white/[0.03]"
+      style={first ? undefined : { borderTop: `1px solid ${C.line}` }}
     >
-      <span className={`numeric text-xs w-4 text-right ${leader ? 'text-brand' : 'text-white/25'}`}>{rank}</span>
-      <span className={`flex-1 min-w-0 text-[13px] truncate ${leader ? 'font-semibold text-white' : 'font-medium text-white/80'}`}>
+      <span className={`numeric text-xs w-4 text-right ${leader ? 'text-brand font-bold' : 'text-muted'}`}>{rank}</span>
+      <span className="w-[26px] h-[26px] rounded-full flex items-center justify-center text-[10.5px] flex-shrink-0" style={{ background: C.surf2, color: C.muted }}>
+        {initials(name)}
+      </span>
+      <span className={`flex-1 min-w-0 text-[13.5px] truncate ${leader ? 'font-semibold text-white' : 'font-medium text-white/85'}`}>
         {name}
       </span>
       <span className="flex-shrink-0">{form}</span>
       <span className="text-right flex-shrink-0" style={{ width: 62 }}>
-        <span className={`numeric text-[17px] font-semibold leading-none block ${leader ? 'text-brand' : 'text-white/70'}`}>
+        <span className="numeric text-[16px] font-semibold leading-none block text-white/90">
           {value}
         </span>
-        {note && <span className="numeric text-[9px] text-white/25 block mt-0.5">{note}</span>}
+        {note && <span className="numeric text-[10px] text-muted block mt-0.5">{note}</span>}
       </span>
     </Link>
   )
@@ -90,23 +96,20 @@ export default function StatsRankings({ players, goalkeepers, motmCounts }: Prop
 
   return (
     <div>
-      {/* Controllo segmentato: un filetto continuo, l'attivo si accende sotto. */}
-      <div className="flex rule mb-1">
+      {/* Selettore a pillola come in home; scorre in orizzontale se le schede non ci stanno. */}
+      <div className="flex rounded-xl p-[3px] overflow-x-auto [scrollbar-width:none]" style={{ background: C.surf, border: `1px solid ${C.line}` }}>
         {tabs.map(({ key, label }) => (
           <button
             key={key}
             onClick={() => setActive(key)}
-            className={`flex-1 min-w-0 pb-2 pt-3 text-[11.5px] whitespace-nowrap transition-colors relative ${
-              active === key ? 'text-white font-semibold' : 'text-white/35 font-medium hover:text-white/60'
-            }`}
+            className="flex-1 py-[7px] px-2.5 rounded-[9px] text-[12px] whitespace-nowrap transition-colors"
+            style={active === key ? { background: C.surf2, color: '#fff', fontWeight: 600 } : { color: C.muted }}
           >
             {label}
-            {active === key && (
-              <span className="absolute left-0 right-0 bottom-0 h-[2px] rounded-full" style={{ background: '#a78bfa' }} />
-            )}
           </button>
         ))}
       </div>
+      <Card className="mt-2.5 overflow-hidden">
 
       {active === 'marcatori' && (
         <div className="animate-section">
@@ -115,6 +118,7 @@ export default function StatsRankings({ players, goalkeepers, motmCounts }: Prop
               key={p.id}
               href={`/players/${p.id}`}
               rank={i + 1}
+              first={i === 0}
               name={p.name}
               leader={i === 0 && p.total_goals > 0}
               form={<FormDots form={p.record?.form} size={5} />}
@@ -136,6 +140,7 @@ export default function StatsRankings({ players, goalkeepers, motmCounts }: Prop
               key={p.id}
               href={`/players/${p.id}`}
               rank={i + 1}
+              first={i === 0}
               name={p.name}
               leader={i === 0 && p.total_appearances > 0}
               form={<FormDots form={p.record?.form} size={5} />}
@@ -156,10 +161,11 @@ export default function StatsRankings({ players, goalkeepers, motmCounts }: Prop
                 key={p.id}
                 href={`/players/${p.id}`}
                 rank={i + 1}
+                first={i === 0}
                 name={p.name}
                 leader={i === 0 && played}
                 form={<FormDots form={rec?.form} size={5} />}
-                value={played && rec ? pct(rec.win_rate) : <span className="text-white/15">—</span>}
+                value={played && rec ? pct(rec.win_rate) : <span className="text-muted">—</span>}
                 note={played && rec ? `${rec.wins}V ${rec.draws}N ${rec.losses}P` : 'mai giocato'}
               />
             )
@@ -174,9 +180,10 @@ export default function StatsRankings({ players, goalkeepers, motmCounts }: Prop
               key={p.id}
               href={`/players/${p.id}`}
               rank={i + 1}
+              first={i === 0}
               name={p.name}
               leader={i === 0 && p.appearances > 0}
-              value={p.appearances > 0 ? p.avg_conceded : <span className="text-white/15">—</span>}
+              value={p.appearances > 0 ? p.avg_conceded : <span className="text-muted">—</span>}
               note={p.appearances > 0 ? `${p.clean_sheets} inviolate` : 'mai giocato'}
             />
           ))}
@@ -190,14 +197,16 @@ export default function StatsRankings({ players, goalkeepers, motmCounts }: Prop
               key={p.id}
               href={`/players/${p.id}`}
               rank={i + 1}
+              first={i === 0}
               name={p.name}
               leader={i === 0}
-              value={motmCounts[p.id]}
+              value={<span style={{ color: C.gold }}>★ {motmCounts[p.id]}</span>}
               note="MOTM"
             />
           ))}
         </div>
       )}
+      </Card>
     </div>
   )
 }

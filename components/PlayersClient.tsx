@@ -43,7 +43,7 @@ export default function PlayersClient({ initialPlayers }: { initialPlayers: Play
           >
             {label}
             {sort === key && (
-              <span className="absolute left-0 right-0 bottom-0 h-[2px] rounded-full" style={{ background: '#a78bfa' }} />
+              <span className="absolute left-0 right-0 bottom-0 h-[2px] rounded-full" style={{ background: '#5b9cff' }} />
             )}
           </button>
         ))}
