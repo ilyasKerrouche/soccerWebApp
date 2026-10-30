@@ -2,6 +2,7 @@ import { getPlayersWithStats, getGoalkeeperRanking } from '@/lib/queries/players
 import { getGlobalStats } from '@/lib/queries/stats'
 import PodiumView from '@/components/PodiumView'
 import { comparePlayers } from '@/lib/ranking'
+import { getMotmCounts } from '@/lib/queries/motm'
 import StatsRankings from '@/components/StatsRankings'
 import PageHeader from '@/components/PageHeader'
 
@@ -13,6 +14,13 @@ export default async function StatsPage() {
     getPlayersWithStats(),
     getGoalkeeperRanking(),
   ])
+
+  let motmCounts: Record<string, number> = {}
+  try {
+    motmCounts = await getMotmCounts()
+  } catch (e) {
+    console.error('MOTM counts failed', e)
+  }
 
   const byGoals = [...players].sort(comparePlayers('goals'))
   const top3 = byGoals.slice(0, 3)
@@ -39,7 +47,7 @@ export default async function StatsPage() {
         ))}
       </div>
 
-      <StatsRankings players={players} goalkeepers={goalkeepers} />
+      <StatsRankings players={players} goalkeepers={goalkeepers} motmCounts={motmCounts} />
     </main>
   )
 }

@@ -62,7 +62,7 @@ export default function FieldView({ match }: { match: MatchWithPlayers }) {
                     key={mp.player_id}
                     player={mp.player}
                     width={58}
-                    className="shadow-lg hover:-translate-y-1 transition-transform cursor-pointer"
+                    className="drop-shadow-lg hover:-translate-y-1 transition-transform cursor-pointer"
                   />
                 ))}
               </div>

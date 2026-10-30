@@ -1,5 +1,6 @@
 import { getAllMatchesWithPlayers } from '@/lib/queries/matches'
 import MatchCard from '@/components/MatchCard'
+import { getAllMotmWinners } from '@/lib/queries/motm'
 import PageHeader from '@/components/PageHeader'
 
 export const revalidate = 60
@@ -8,6 +9,16 @@ export default async function MatchesPage() {
   const matches = await getAllMatchesWithPlayers()
   const upcoming = matches.filter((m) => m.is_upcoming)
   const played = matches.filter((m) => !m.is_upcoming)
+
+  // Un errore nei dati MOTM non deve far cadere la lista: niente badge.
+  let winners: Record<string, string[]> = {}
+  try {
+    winners = await getAllMotmWinners()
+  } catch (e) {
+    console.error('MOTM winners failed', e)
+  }
+  const motmNames = (m: (typeof played)[number]) =>
+    m.match_players.filter((mp) => (winners[m.id] ?? []).includes(mp.player.id)).map((mp) => mp.player.name)
 
   return (
     <main className="pb-6 px-4">
@@ -35,7 +46,7 @@ export default async function MatchesPage() {
             </p>
           ) : (
             <div className="flex flex-col gap-2">
-              {played.map((m) => <MatchCard key={m.id} match={m} />)}
+              {played.map((m) => <MatchCard key={m.id} match={m} motmNames={motmNames(m)} />)}
             </div>
           )}
         </section>

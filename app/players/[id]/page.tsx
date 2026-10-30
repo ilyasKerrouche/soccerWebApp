@@ -3,6 +3,8 @@ import Link from 'next/link'
 import { getPlayerProfile } from '@/lib/queries/players'
 import PlayerCard from '@/components/PlayerCard'
 import FormDots from '@/components/FormDots'
+import { getMotmCounts } from '@/lib/queries/motm'
+import MotmCounter from '@/components/motm/MotmCounter'
 import SwipeBack from '@/components/SwipeBack'
 
 export const revalidate = 60
@@ -12,6 +14,12 @@ export default async function PlayerProfilePage({ params }: { params: { id: stri
   if (!data) notFound()
 
   const { player, matches, goalkeeper_stats } = data
+  let motmCount = 0
+  try {
+    motmCount = (await getMotmCounts())[player.id] ?? 0
+  } catch (e) {
+    console.error('MOTM counts failed', e)
+  }
   const maxGoals = Math.max(...matches.map(m => m.goals), 1)
 
   return (
@@ -29,6 +37,7 @@ export default async function PlayerProfilePage({ params }: { params: { id: stri
           <div className="min-w-0 pb-0.5">
             <h1 className="text-[26px] font-bold tracking-[-0.02em] leading-tight truncate">{player.name}</h1>
             {player.position && <div className="text-[13px] text-white/35 mt-0.5">{player.position}</div>}
+            {motmCount >= 1 && <div className="mt-1.5"><MotmCounter count={motmCount} /></div>}
             {player.record && player.record.form.length > 0 && (
               <div className="mt-2"><FormDots form={player.record.form} size={7} /></div>
             )}

@@ -7,6 +7,7 @@ import type { PlayerWithStats, PlayerWithGoalkeeperStats } from '@/lib/types'
 type Props = {
   players: PlayerWithStats[]
   goalkeepers: PlayerWithGoalkeeperStats[]
+  motmCounts: Record<string, number>
 }
 
 const TABS = [
@@ -14,6 +15,7 @@ const TABS = [
   { key: 'presenze', label: 'Presenze' },
   { key: 'rendimento', label: 'Rendimento' },
   { key: 'portieri', label: 'Portieri' },
+  { key: 'motm', label: 'MOTM' },
 ] as const
 
 type TabKey = typeof TABS[number]['key']
@@ -62,10 +64,16 @@ function Row({
   )
 }
 
-export default function StatsRankings({ players, goalkeepers }: Props) {
+export default function StatsRankings({ players, goalkeepers, motmCounts }: Props) {
   const [active, setActive] = useState<TabKey>('marcatori')
   const hasPortieri = goalkeepers.some((g) => g.appearances > 0)
-  const tabs = TABS.filter((t) => t.key !== 'portieri' || hasPortieri)
+  // Solo chi ha almeno un MOTM; la sezione sparisce se ancora nessuno ne ha.
+  const byMotm = players
+    .filter((p) => (motmCounts[p.id] ?? 0) >= 1)
+    .sort((a, b) => motmCounts[b.id] - motmCounts[a.id] || a.name.localeCompare(b.name))
+  const tabs = TABS.filter(
+    (t) => (t.key !== 'portieri' || hasPortieri) && (t.key !== 'motm' || byMotm.length > 0),
+  )
 
   const byGoals = [...players].sort((a, b) => b.total_goals - a.total_goals)
   const byAppearances = [...players].sort((a, b) => b.total_appearances - a.total_appearances)
@@ -170,6 +178,22 @@ export default function StatsRankings({ players, goalkeepers }: Props) {
               leader={i === 0 && p.appearances > 0}
               value={p.appearances > 0 ? p.avg_conceded : <span className="text-white/15">—</span>}
               note={p.appearances > 0 ? `${p.clean_sheets} inviolate` : 'mai giocato'}
+            />
+          ))}
+        </div>
+      )}
+
+      {active === 'motm' && byMotm.length > 0 && (
+        <div className="animate-section">
+          {byMotm.map((p, i) => (
+            <Row
+              key={p.id}
+              href={`/players/${p.id}`}
+              rank={i + 1}
+              name={p.name}
+              leader={i === 0}
+              value={motmCounts[p.id]}
+              note="MOTM"
             />
           ))}
         </div>

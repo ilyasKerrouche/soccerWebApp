@@ -1,5 +1,6 @@
 import Image from 'next/image'
 import type { Player } from '@/lib/types'
+import PlaceholderCard from './PlaceholderCard'
 
 type Props = {
   player: Player
@@ -9,14 +10,7 @@ type Props = {
 
 export default function PlayerCard({ player, width = 80, className = '' }: Props) {
   if (!player.card_url) {
-    return (
-      <div
-        className={`rounded-lg bg-white/10 flex items-center justify-center text-white/30 text-xs ${className}`}
-        style={{ width, aspectRatio: '0.72' }}
-      >
-        {player.name[0]}
-      </div>
-    )
+    return <PlaceholderCard player={player} width={width} className={className} />
   }
   return (
     <div className={`rounded-lg overflow-hidden flex-shrink-0 ${className}`} style={{ width }}>

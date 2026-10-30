@@ -1,6 +1,8 @@
 'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { getHeaderCard, type HeaderCard } from '@/app/profilo/actions'
 
 const tabs = [
   { href: '/', label: 'Home' },
@@ -8,8 +10,33 @@ const tabs = [
   { href: '/stats', label: 'Statistiche' },
 ]
 
+// Pagine dove lo stato di login cambia: entrando o uscendo da una di queste si rilegge la card
+const AUTH_PATHS = ['/accedi', '/registrati', '/profilo', '/reimposta-password', '/password-dimenticata']
+
 export default function BottomTabBar() {
   const pathname = usePathname()
+  // undefined = in caricamento: si riserva lo spazio per non far saltare l'header.
+  const [headerCard, setHeaderCard] = useState<HeaderCard | null | undefined>(undefined)
+  // Cambia solo passando da/verso una pagina di AUTH_PATHS, non a ogni navigazione.
+  // Nell'admin conta la pagina esatta: login e logout passano da /admin a /admin/login e viceversa.
+  const authKey = pathname.startsWith('/admin')
+    ? pathname
+    : AUTH_PATHS.find((p) => pathname === p || pathname.startsWith(p + '/')) ?? 'other'
+
+  useEffect(() => {
+    let cancelled = false
+    const load = () =>
+      getHeaderCard()
+        .then((c) => { if (!cancelled) setHeaderCard(c) })
+        .catch(() => { if (!cancelled) setHeaderCard(null) })
+    load()
+    // Dopo un nuovo caricamento la miniatura va riletta.
+    window.addEventListener('calcetto:card-updated', load)
+    return () => {
+      cancelled = true
+      window.removeEventListener('calcetto:card-updated', load)
+    }
+  }, [authKey])
   const isAdmin = pathname.startsWith('/admin')
 
   const active = (href: string) =>
@@ -48,15 +75,30 @@ export default function BottomTabBar() {
           )
         })}
 
-        <Link
-          href="/admin"
-          aria-label="Admin"
-          className={`flex items-center justify-center pl-3 pr-1 text-[12px] flex-shrink-0 transition-colors ${
-            isAdmin ? 'text-brand font-semibold' : 'text-white/20 hover:text-white/40'
-          }`}
-        >
-          Admin
-        </Link>
+        <div className="flex items-center justify-end flex-shrink-0 pl-2 pr-1 min-w-[56px] max-w-[96px]">
+          {headerCard === undefined ? null : headerCard === null ? (
+            <Link href="/accedi" className="text-[12px] font-medium text-white/60 hover:text-white transition-colors">
+              Accedi
+            </Link>
+          ) : headerCard.status === 'admin' ? (
+            <Link
+              href="/admin"
+              className={`text-[12px] transition-colors ${isAdmin ? 'text-brand font-semibold' : 'text-white/60 font-medium hover:text-white'}`}
+            >
+              Admin
+            </Link>
+          ) : (
+            <Link
+              href="/profilo"
+              aria-label="Il tuo profilo"
+              className={`text-[12px] truncate transition-colors ${
+                pathname === '/profilo' ? 'text-white font-semibold' : 'text-white/60 font-medium hover:text-white'
+              }`}
+            >
+              {headerCard.status === 'approved' ? headerCard.name : 'Profilo'}
+            </Link>
+          )}
+        </div>
       </div>
     </nav>
   )

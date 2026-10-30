@@ -7,6 +7,7 @@ export type Player = {
   position: string | null
   ovr: number | null
   card_url: string | null
+  is_active: boolean
   created_at: string
 }
 
@@ -19,7 +20,26 @@ export type Match = {
   score_a: number | null
   score_b: number | null
   is_upcoming: boolean
+  motm_eligible: boolean
+  motm_closes_at: string | null
   created_at: string
+}
+
+export type PlayerAccount = {
+  user_id: string
+  player_id: string
+  status: 'pending' | 'approved' | 'rejected'
+  is_new_player: boolean
+  created_at: string
+}
+
+export type MotmVote = {
+  id: string
+  match_id: string
+  voter_player_id: string
+  voted_player_id: string
+  created_at: string
+  updated_at: string
 }
 
 export type MatchPlayer = {

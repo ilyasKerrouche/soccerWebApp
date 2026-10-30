@@ -2,6 +2,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { computeRecord } from '@/lib/rating'
+import { cardExtension, sniffImageType, UNSUPPORTED_FORMAT } from '@/lib/cardFile'
 import type { Player, PlayerWithStats, MatchWithPlayers, GoalkeeperStats, PlayerWithGoalkeeperStats } from '@/lib/types'
 
 export async function getAllPlayers(): Promise<Player[]> {
@@ -9,6 +10,7 @@ export async function getAllPlayers(): Promise<Player[]> {
   const { data, error } = await supabase
     .from('players')
     .select('*')
+    .eq('is_active', true)
     .order('name')
   if (error) throw new Error(error.message)
   return data
@@ -20,6 +22,7 @@ export async function getPlayersWithStats(): Promise<PlayerWithStats[]> {
   const { data: players, error: pErr } = await supabase
     .from('players')
     .select('*')
+    .eq('is_active', true)
     .order('name')
   if (pErr) throw new Error(pErr.message)
 
@@ -75,6 +78,32 @@ export async function updatePlayerCardUrl(id: string, card_url: string): Promise
   if (error) throw new Error(error.message)
 }
 
+// Carica la card nello storage e aggiorna players.card_url. Il file va gia' validato
+// con cardFileError. Il ?v= evita che CDN/browser servano la card precedente.
+export async function storePlayerCard(playerId: string, file: File): Promise<string> {
+  const ext = cardExtension(file.type)
+  if (!ext) throw new Error(UNSUPPORTED_FORMAT)
+  const head = new Uint8Array(await file.slice(0, 12).arrayBuffer())
+  if (sniffImageType(head) !== file.type) throw new Error(UNSUPPORTED_FORMAT)
+  const supabase = createAdminClient()
+  const path = `${playerId}.${ext}`
+
+  const { error: uploadError } = await supabase.storage
+    .from('player-cards')
+    .upload(path, file, { upsert: true, contentType: file.type })
+  if (uploadError) throw new Error(uploadError.message)
+
+  const { data } = supabase.storage.from('player-cards').getPublicUrl(path)
+  const url = `${data.publicUrl}?v=${Date.now()}`
+  await updatePlayerCardUrl(playerId, url)
+
+  // Toglie le card con altra estensione, altrimenti restano orfane nel bucket.
+  const stale = ['png', 'jpg', 'webp'].filter((e) => e !== ext).map((e) => `${playerId}.${e}`)
+  const { error: rmError } = await supabase.storage.from('player-cards').remove(stale)
+  if (rmError) console.error('storePlayerCard: pulizia vecchie card fallita', rmError.message)
+  return url
+}
+
 export async function getPlayerProfile(id: string): Promise<{
   player: PlayerWithStats
   matches: (MatchWithPlayers & { goals: number; own_goals: number })[]
@@ -86,6 +115,7 @@ export async function getPlayerProfile(id: string): Promise<{
     .from('players')
     .select('*')
     .eq('id', id)
+    .eq('is_active', true)
     .single()
   if (error || !player) return null
 
@@ -169,6 +199,7 @@ export async function getGoalkeeperRanking(): Promise<PlayerWithGoalkeeperStats[
     .from('players')
     .select('*')
     .eq('position', 'GK')
+    .eq('is_active', true)
   if (pErr) throw new Error(pErr.message)
   if (!gkPlayers || gkPlayers.length === 0) return []
 
@@ -219,4 +250,25 @@ export async function getGoalkeeperRanking(): Promise<PlayerWithGoalkeeperStats[
     if (b.appearances === 0) return -1
     return a.avg_conceded - b.avg_conceded
   })
+}
+
+// Giocatori attivi che nessuno ha ancora reclamato (nessun account approvato o in attesa).
+// player_accounts ha RLS senza policy: la lettura passa dal service role.
+export async function getClaimablePlayers(): Promise<Player[]> {
+  const admin = createAdminClient()
+  const { data: players, error } = await admin
+    .from('players')
+    .select('*')
+    .eq('is_active', true)
+    .order('name')
+  if (error) throw new Error(error.message)
+
+  const { data: taken, error: aErr } = await admin
+    .from('player_accounts')
+    .select('player_id')
+    .in('status', ['approved', 'pending'])
+  if (aErr) throw new Error(aErr.message)
+
+  const takenIds = new Set((taken ?? []).map(r => r.player_id as string))
+  return (players as Player[]).filter(p => !takenIds.has(p.id))
 }

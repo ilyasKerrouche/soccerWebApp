@@ -142,7 +142,7 @@ Riusa la logica di `uploadPlayerCard` (`app/admin/players/actions.ts`, bucket
 - legge l'utente dalla sessione Supabase;
 - verifica che abbia un account `approved` e ricava da lì il `player_id`, senza
   mai accettarlo dal client;
-- accetta solo immagini (png/jpeg/webp) fino a 5 MB;
+- accetta solo immagini (png/jpeg/webp) fino a 4 MB;
 - aggiorna `players.card_url`.
 
 ### Sessione

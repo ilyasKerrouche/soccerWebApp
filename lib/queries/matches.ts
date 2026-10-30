@@ -1,6 +1,7 @@
 // lib/queries/matches.ts
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { shouldOpenVote, closesAtFrom } from '@/lib/motm'
 import type { Match, MatchWithPlayers } from '@/lib/types'
 
 export async function getAllMatches(): Promise<Match[]> {
@@ -68,7 +69,6 @@ export async function createMatch(formData: {
   is_upcoming: boolean
   players: { player_id: string; team: 'a' | 'b'; goals: number; own_goals: number }[]
 }): Promise<string> {
-  'use server'
   const supabase = createAdminClient()
 
   const { data: match, error } = await supabase
@@ -81,6 +81,10 @@ export async function createMatch(formData: {
       score_a: formData.score_a,
       score_b: formData.score_b,
       is_upcoming: formData.is_upcoming,
+      // Voto MOTM: si apre solo se la partita nasce già con un risultato
+      ...(shouldOpenVote({ motm_eligible: true, motm_closes_at: null, is_upcoming: formData.is_upcoming, score_a: formData.score_a, score_b: formData.score_b })
+        ? { motm_closes_at: closesAtFrom(new Date()) }
+        : {}),
     })
     .select('id')
     .single()
@@ -109,8 +113,23 @@ export async function updateMatch(
     players: { player_id: string; team: 'a' | 'b'; goals: number; own_goals: number }[]
   }
 ): Promise<void> {
-  'use server'
   const supabase = createAdminClient()
+
+  const { data: current, error: curErr } = await supabase
+    .from('matches')
+    .select('motm_eligible, motm_closes_at')
+    .eq('id', id)
+    .single()
+  if (curErr) throw new Error(curErr.message)
+
+  // Apre il voto MOTM al primo salvataggio del risultato; risalvare non lo sposta
+  const openVote = shouldOpenVote({
+    motm_eligible: current.motm_eligible,
+    motm_closes_at: current.motm_closes_at,
+    is_upcoming: formData.is_upcoming,
+    score_a: formData.score_a,
+    score_b: formData.score_b,
+  })
 
   const { error } = await supabase.from('matches').update({
     played_at: formData.played_at,
@@ -120,6 +139,7 @@ export async function updateMatch(
     score_a: formData.score_a,
     score_b: formData.score_b,
     is_upcoming: formData.is_upcoming,
+    ...(openVote ? { motm_closes_at: closesAtFrom(new Date()) } : {}),
   }).eq('id', id)
   if (error) throw new Error(error.message)
 
@@ -134,7 +154,6 @@ export async function updateMatch(
 }
 
 export async function deleteMatch(id: string): Promise<void> {
-  'use server'
   const supabase = createAdminClient()
   const { error } = await supabase.from('matches').delete().eq('id', id)
   if (error) throw new Error(error.message)

@@ -1,20 +1,24 @@
 'use server'
 import { updateMatch, deleteMatch, createMatch, getMatchById } from '@/lib/queries/matches'
 import { redirect } from 'next/navigation'
+import { requireAdmin } from '@/lib/auth'
 
 export async function saveEditMatch(
   id: string,
   data: Parameters<typeof updateMatch>[1]
 ): Promise<void> {
+  await requireAdmin()
   await updateMatch(id, data)
 }
 
 export async function deleteMatchAction(id: string): Promise<void> {
+  await requireAdmin()
   await deleteMatch(id)
   redirect('/admin')
 }
 
 export async function duplicateMatchAction(id: string): Promise<void> {
+  await requireAdmin()
   const match = await getMatchById(id)
   const newId = await createMatch({
     played_at: new Date().toISOString().split('T')[0],

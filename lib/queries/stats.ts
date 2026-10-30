@@ -26,6 +26,7 @@ export async function getGlobalStats(): Promise<GlobalStats> {
   const { count: total_players } = await supabase
     .from('players')
     .select('*', { count: 'exact', head: true })
+    .eq('is_active', true)
 
   const played = matches ?? []
   const total_matches = played.length
