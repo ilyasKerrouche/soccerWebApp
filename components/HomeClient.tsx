@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import type { MatchWithPlayers, Player, PlayerHomeStats, PlayerWithStats } from '@/lib/types'
 import type { GlobalStats } from '@/lib/queries/stats'
-import type { HomeViewer } from '@/lib/homeText'
+import { sortScorers, type HomeViewer } from '@/lib/homeText'
 import { getHomeViewer } from '@/app/homeActions'
 import NextMatchCard from './NextMatchCard'
 import { C, Card, Section } from './ui'
@@ -41,7 +41,7 @@ export default function HomeClient({ lastMatch, nextMatch, recentMatches, stats,
 
   const me = viewer?.kind === 'player' && viewer.playerId ? players.find((p) => p.id === viewer.playerId) : undefined
   const myStats = me ? playerStats[me.id] : undefined
-  const scorers = lastMatch?.match_players.filter((mp) => mp.goals > 0).sort((a, b) => b.goals - a.goals) ?? []
+  const scorers = sortScorers(lastMatch?.match_players.filter((mp) => mp.goals > 0) ?? [], (mp) => ({ name: mp.player.name, goals: mp.goals }))
 
   return (
     <>
@@ -143,6 +143,9 @@ export default function HomeClient({ lastMatch, nextMatch, recentMatches, stats,
             </Section>
 
             <Section title="Top marcatori" link={{ href: '/stats', label: 'Classifiche' }}>
+              {topScorers.length === 0 ? (
+                <p className="text-[13px] text-center py-6" style={{ color: C.muted }}>Ancora nessun gol.</p>
+              ) : (
               <Card>
                 {topScorers.map((p, i) => (
                   <Link key={p.id} href={`/players/${p.id}`} className="flex items-center gap-3 px-3.5 py-3 text-[14px]"
@@ -153,6 +156,7 @@ export default function HomeClient({ lastMatch, nextMatch, recentMatches, stats,
                   </Link>
                 ))}
               </Card>
+              )}
             </Section>
           </>
         )}

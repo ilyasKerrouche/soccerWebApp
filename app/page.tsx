@@ -4,7 +4,7 @@ import { getLastMatch, getNextMatch, getAllMatchesWithPlayers } from '@/lib/quer
 import { getGlobalStats } from '@/lib/queries/stats'
 import { getMotmWinnersByMatch, getMotmCounts } from '@/lib/queries/motm'
 import { motmStatus } from '@/lib/motm'
-import { buildLedText, formatRomeDay } from '@/lib/homeText'
+import { buildLedText, formatRomeDay, topScorers as topScorersOf } from '@/lib/homeText'
 import type { PlayerHomeStats } from '@/lib/types'
 import HomeClient from '@/components/HomeClient'
 import StadiumPitch from '@/components/home/StadiumPitch'
@@ -45,7 +45,7 @@ export default async function HomePage() {
   }
 
   const recentMatches = allMatches.filter((m) => !m.is_upcoming).slice(0, 3)
-  const topScorers = [...players].sort((a, b) => b.total_goals - a.total_goals).slice(0, 5)
+  const topScorers = topScorersOf(players, 5)
 
   const voteOpen = lastMatch?.motm_closes_at && motmStatus(lastMatch.motm_closes_at, new Date()) === 'open'
     ? { matchId: lastMatch.id, closesAt: lastMatch.motm_closes_at }
