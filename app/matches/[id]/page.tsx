@@ -4,6 +4,8 @@ import MotmSection from '@/components/motm/MotmSection'
 import { notFound } from 'next/navigation'
 
 export const dynamic = 'force-dynamic'
+// Formazioni e risultato cambiano dall'admin: nessuna lettura in cache (vedi app/admin/layout.tsx)
+export const fetchCache = 'force-no-store'
 
 export default async function MatchDetailPage({ params }: { params: { id: string } }) {
   let match
