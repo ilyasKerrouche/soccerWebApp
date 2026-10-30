@@ -109,7 +109,8 @@ select option {
   background: radial-gradient(rgba(0,0,0,.55), transparent 70%); transform: rotateX(75deg);
 }
 .stadium-plate {
-  position: absolute; left: 50%; bottom: -26px; transform: translateX(-50%); white-space: nowrap;
+  /* Sopra la parte bassa della card: sotto il bordo inferiore finirebbe dentro il prato */
+  position: absolute; left: 50%; bottom: 4px; transform: translateX(-50%); white-space: nowrap; z-index: 1;
   font-size: 13px; font-weight: 600; padding: 2px 8px; border-radius: 6px; color: #e8ecf2; background: rgba(8,12,18,.8);
 }
 .stadium-card-motm .stadium-plate { background: #f5c451; color: #2b1f05; }

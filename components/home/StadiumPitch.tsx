@@ -20,7 +20,7 @@ const PW = 440
 const PH = 580
 const GAP = 40
 const BOARD_H = 46
-const CARD_W = 72
+const CARD_W = 86
 const SPONSOR_MS = 3500
 // Durata dell'entrata (ritardi + animazione): dopo, il campo si segna come gia' visto
 const ENTRY_MS = 2200
@@ -74,7 +74,12 @@ export default function StadiumPitch({ match, motmIds, stats, ledText }: Props) 
   const placed = (['a', 'b'] as const).flatMap((side) => {
     const mps = match.match_players.filter((mp) => mp.team === side)
     const slots = holoSlots(mps.map((mp) => mp.player.position), side)
-    return mps.map((mp, i) => ({ mp, slot: slots[i] }))
+    // La prospettiva ingrandisce la meta' vicina e rimpicciolisce quella lontana: le file vicine si distanziano,
+    // quelle lontane si stringono (cosi' il portiere in fondo non copre il tabellone).
+    // Colonne sfalsate: le file vicine al centrocampo piu' strette, le altre piu' larghe, per non coprire le targhette.
+    const y = (v: number) => (v < 50 ? 50 - (50 - v) * 0.8 : Math.min(93, 50 + (v - 50) * 1.15))
+    const x = (v: number, row: number) => 50 + (v - 50) * (Math.abs(row - 50) < 15 ? 0.95 : 1.45)
+    return mps.map((mp, i) => ({ mp, slot: { x: x(slots[i].x, slots[i].y), y: y(slots[i].y) } }))
   })
   // Prima i giocatori lontani: cosi' quelli vicini restano sopra
   placed.sort((x, y) => x.slot.y - y.slot.y)
