@@ -98,9 +98,7 @@ select option {
 .stadium-ad small { font-size: 12px; font-weight: 700; opacity: .85; letter-spacing: 2px; }
 
 /* Card in piedi: compensano l'inclinazione del campo */
-/* translateZ(2px): la card si stacca appena dal prato. Safari non gestisce bene i piani 3D che si toccano
-   e disegnava il prato sopra le card, nascondendole. */
-.stadium-card { position: absolute; padding: 0; border: 0; background: none; cursor: pointer; transform-origin: 50% 100%; transform: translateZ(2px) rotateX(-58deg); }
+.stadium-card { position: absolute; padding: 0; border: 0; background: none; cursor: pointer; transform-origin: 50% 100%; transform: rotateX(-58deg); }
 .stadium-card-rise { position: relative; display: block; }
 .stadium-card-img { position: relative; filter: drop-shadow(0 8px 10px rgba(0,0,0,.45)); }
 .stadium-card-motm .stadium-card-img { filter: drop-shadow(0 0 12px rgba(245,196,81,.9)) drop-shadow(0 8px 10px rgba(0,0,0,.45)); }
