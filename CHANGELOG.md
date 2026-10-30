@@ -7,6 +7,11 @@ il primo numero cambia con un restyling o un cambiamento grosso, il secondo con 
 
 Restyling completo dell'app (in corso).
 
+## [1.1.3] — 2026-10-30
+
+### Correzioni
+- Il dettaglio partita e le pagine admin mostrano sempre i dati aggiornati (prima potevano restare fermi a una versione vecchia)
+
 ## [1.1.2] — 2026-10-30
 
 ### Correzioni
