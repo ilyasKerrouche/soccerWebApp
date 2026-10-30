@@ -7,6 +7,12 @@ il primo numero cambia con un restyling o un cambiamento grosso, il secondo con 
 
 Restyling completo dell'app (in corso).
 
+## [1.1.2] — 2026-10-30
+
+### Correzioni
+- Le richieste di account in attesa ora compaiono sempre nel pannello admin (prima la lista poteva restare ferma a una versione vecchia)
+- Voti e Man of the Match letti sempre aggiornati dal database
+
 ## [1.1.1] — 2026-10-30
 
 ### Correzioni
