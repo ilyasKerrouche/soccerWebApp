@@ -17,7 +17,7 @@ export default async function MotmSection({ match }: { match: MatchWithPlayers }
   } catch (e) {
     console.error('MotmSection failed', e)
     return (
-      <section className="glass rounded-2xl p-4 mt-4">
+      <section className="glass rounded-2xl p-4 mb-4">
         <p className="text-xs text-white/40">Man of the Match non disponibile al momento</p>
       </section>
     )
@@ -36,7 +36,7 @@ async function renderMotm(match: MatchWithPlayers) {
   const tally = tallyMotm(votes, lineupIds)
 
   const shell = (children: React.ReactNode, header?: React.ReactNode) => (
-    <section className="glass rounded-2xl p-4 mt-4">
+    <section className="glass rounded-2xl p-4 mb-4">
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-sm font-black">⭐ Man of the Match</h2>
         {header}
@@ -105,7 +105,7 @@ async function renderMotm(match: MatchWithPlayers) {
   }
 
   const reason = !session ? (
-    <Link href="/accedi" className="text-brand font-bold underline">Accedi per votare</Link>
+    <Link href={`/accedi?next=/matches/${match.id}`} className="text-brand font-bold underline">Accedi per votare</Link>
   ) : account?.status !== 'approved' ? (
     'Il tuo account deve essere approvato per votare'
   ) : (

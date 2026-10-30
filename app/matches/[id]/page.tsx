@@ -80,7 +80,7 @@ export default async function MatchDetailPage({ params }: { params: { id: string
         {/* Field */}
         <div className="mb-4"><FieldView match={match} /></div>
 
-        <div className="mb-4"><MotmSection match={match} /></div>
+        <MotmSection match={match} />
 
         {/* Scorers */}
         <div className="flex gap-2.5">
