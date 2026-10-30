@@ -7,6 +7,11 @@ il primo numero cambia con un restyling o un cambiamento grosso, il secondo con 
 
 Restyling completo dell'app (in corso).
 
+## [1.1.1] — 2026-10-30
+
+### Correzioni
+- Le card dei giocatori sul campo della home ora si vedono anche su Safari (iPhone e Mac)
+
 ## [1.1.0] — 2026-10-30
 
 Prima parte del restyling: la nuova homepage.
