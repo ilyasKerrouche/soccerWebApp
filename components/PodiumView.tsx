@@ -30,7 +30,7 @@ function PodiumSlot({ player, rank }: PodiumSlotProps) {
           width: cfg.cardWidth,
           borderRadius: 10,
           boxShadow: first
-            ? '0 0 0 1px rgba(167,139,250,0.45), 0 12px 36px -8px rgba(167,139,250,0.45)'
+            ? '0 16px 40px -10px rgba(0,0,0,0.75)'
             : '0 8px 20px -10px rgba(0,0,0,0.9)',
           opacity: player ? 1 : 0.35,
         }}
@@ -44,7 +44,7 @@ function PodiumSlot({ player, rank }: PodiumSlotProps) {
         {player?.name ?? '—'}
       </div>
 
-      <div className={`${cfg.goalSize} font-bold leading-none mt-1 tracking-[-0.02em] ${first ? 'text-brand' : 'text-white/60'}`}>
+      <div className={`${cfg.goalSize} font-bold leading-none mt-1 tracking-[-0.02em] ${first ? 'text-brand' : 'text-white/80'}`}>
         {player?.total_goals ?? 0}
       </div>
 
@@ -67,7 +67,7 @@ export default function PodiumView({ players }: { players: PlayerWithStats[] }) 
           bottom: 8,
           width: 260,
           height: 130,
-          background: 'radial-gradient(ellipse at center, rgba(167,139,250,0.16) 0%, transparent 70%)',
+          background: 'radial-gradient(ellipse at center, rgba(91,156,255,0.14) 0%, transparent 70%)',
         }}
       />
       <div className="relative flex items-end justify-center gap-3" style={{ minHeight: 250 }}>
