@@ -1,12 +1,17 @@
 import Link from 'next/link'
 import { getAllMatches } from '@/lib/queries/matches'
-import { listPendingAccounts } from '@/lib/queries/accounts'
+import { countPendingAccounts } from '@/lib/queries/accounts'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 
 export default async function AdminPage() {
   const matches = await getAllMatches()
-  const pendingCount = (await listPendingAccounts()).length
+  let pendingCount = 0
+  try {
+    pendingCount = await countPendingAccounts()
+  } catch (e) {
+    console.error('countPendingAccounts failed', e)
+  }
   const played = matches.filter((m) => !m.is_upcoming)
   const upcoming = matches.filter((m) => m.is_upcoming)
 

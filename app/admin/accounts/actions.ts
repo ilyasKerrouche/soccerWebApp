@@ -35,6 +35,15 @@ async function getAccount(userId: string) {
   return data as { player_id: string; is_new_player: boolean } | null
 }
 
+// Elimina anche l'utente auth, cosi' la persona puo' registrarsi di nuovo con la stessa email
+async function deleteAuthUser(userId: string) {
+  const { error } = await createAdminClient().auth.admin.deleteUser(userId)
+  if (error) {
+    console.error('deleteUser failed', error)
+    throw new Error(error.message)
+  }
+}
+
 export async function approveAccount(userId: string): Promise<{ error?: string }> {
   await requireAdmin()
   const supabase = createAdminClient()
@@ -56,7 +65,15 @@ export async function approveAccount(userId: string): Promise<{ error?: string }
         .from('players')
         .update({ is_active: true })
         .eq('id', account.player_id)
-      if (pErr) throw new Error(pErr.message)
+      if (pErr) {
+        // Non lasciare l'account approvato con il giocatore ancora nascosto: la richiesta torna in lista
+        const { error: rErr } = await supabase
+          .from('player_accounts')
+          .update({ status: 'pending' })
+          .eq('user_id', userId)
+        if (rErr) console.error('approveAccount revert failed', rErr)
+        throw new Error(pErr.message)
+      }
     }
   } catch (e) {
     console.error('approveAccount failed', e)
@@ -84,6 +101,7 @@ export async function rejectAccount(userId: string): Promise<void> {
       .eq('is_active', false)
     if (pErr) throw new Error(pErr.message)
   }
+  await deleteAuthUser(userId)
   revalidateAccounts(account.is_new_player)
 }
 
@@ -92,6 +110,7 @@ export async function unlinkAccount(userId: string): Promise<void> {
   const supabase = createAdminClient()
   const { error } = await supabase.from('player_accounts').delete().eq('user_id', userId)
   if (error) throw new Error(error.message)
+  await deleteAuthUser(userId)
   revalidateAccounts(false)
 }
 

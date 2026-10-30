@@ -35,6 +35,16 @@ async function listAccountsByStatus(status: PlayerAccount['status']): Promise<Ac
   )
 }
 
+export async function countPendingAccounts(): Promise<number> {
+  const supabase = createAdminClient()
+  const { count, error } = await supabase
+    .from('player_accounts')
+    .select('*', { count: 'exact', head: true })
+    .eq('status', 'pending')
+  if (error) throw new Error(error.message)
+  return count ?? 0
+}
+
 export function listPendingAccounts() {
   return listAccountsByStatus('pending')
 }

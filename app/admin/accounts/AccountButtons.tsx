@@ -52,9 +52,12 @@ export function LinkedButtons({ userId }: { userId: string }) {
         <button
           disabled={pending}
           className={`${btn} border-red-500/25 text-red-400 hover:bg-red-500/10`}
-          onClick={() => start(async () => { await unlinkAccount(userId) })}
+          onClick={() => {
+            if (!confirm("Scollegare ed eliminare l'account? La persona dovrà registrarsi di nuovo.")) return
+            start(async () => { await unlinkAccount(userId) })
+          }}
         >
-          Scollega
+          Scollega ed elimina
         </button>
       </div>
       {tempPassword && (
