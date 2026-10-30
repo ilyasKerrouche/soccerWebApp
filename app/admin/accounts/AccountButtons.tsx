@@ -23,7 +23,10 @@ export function PendingButtons({ userId }: { userId: string }) {
         <button
           disabled={pending}
           className={`${btn} border-red-500/25 text-red-400 hover:bg-red-500/10`}
-          onClick={() => start(async () => { setError(null); await rejectAccount(userId) })}
+          onClick={() => start(async () => {
+            const r = await rejectAccount(userId)
+            setError(r.error ?? null)
+          })}
         >
           Rifiuta
         </button>
@@ -35,6 +38,7 @@ export function PendingButtons({ userId }: { userId: string }) {
 
 export function LinkedButtons({ userId }: { userId: string }) {
   const [tempPassword, setTempPassword] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
   const [pending, start] = useTransition()
   return (
     <div className="flex flex-col items-end gap-1">
@@ -44,7 +48,8 @@ export function LinkedButtons({ userId }: { userId: string }) {
           className={`${btn} border-white/10 text-white/60 hover:text-white`}
           onClick={() => start(async () => {
             const r = await resetAccountPassword(userId)
-            setTempPassword(r.tempPassword)
+            setTempPassword(r.tempPassword ?? null)
+            setError(r.error ?? null)
           })}
         >
           Reimposta password
@@ -54,7 +59,10 @@ export function LinkedButtons({ userId }: { userId: string }) {
           className={`${btn} border-red-500/25 text-red-400 hover:bg-red-500/10`}
           onClick={() => {
             if (!confirm("Scollegare ed eliminare l'account? La persona dovrà registrarsi di nuovo.")) return
-            start(async () => { await unlinkAccount(userId) })
+            start(async () => {
+              const r = await unlinkAccount(userId)
+              setError(r.error ?? null)
+            })
           }}
         >
           Scollega ed elimina
@@ -66,6 +74,7 @@ export function LinkedButtons({ userId }: { userId: string }) {
           <span className="font-mono font-bold text-white select-all">{tempPassword}</span>
         </div>
       )}
+      {error && <div className="text-[11px] text-red-400">{error}</div>}
     </div>
   )
 }

@@ -69,7 +69,6 @@ export async function createMatch(formData: {
   is_upcoming: boolean
   players: { player_id: string; team: 'a' | 'b'; goals: number; own_goals: number }[]
 }): Promise<string> {
-  'use server'
   const supabase = createAdminClient()
 
   const { data: match, error } = await supabase
@@ -114,7 +113,6 @@ export async function updateMatch(
     players: { player_id: string; team: 'a' | 'b'; goals: number; own_goals: number }[]
   }
 ): Promise<void> {
-  'use server'
   const supabase = createAdminClient()
 
   const { data: current, error: curErr } = await supabase
@@ -156,7 +154,6 @@ export async function updateMatch(
 }
 
 export async function deleteMatch(id: string): Promise<void> {
-  'use server'
   const supabase = createAdminClient()
   const { error } = await supabase.from('matches').delete().eq('id', id)
   if (error) throw new Error(error.message)

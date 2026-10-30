@@ -1,18 +1,23 @@
 // app/admin/accounts/actions.ts
 'use server'
-import { cookies } from 'next/headers'
 import { randomInt } from 'crypto'
 import { revalidatePath } from 'next/cache'
-import { verifyAdminToken } from '@/lib/auth'
+import { requireAdmin } from '@/lib/auth'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 const GENERIC_ERROR = 'Operazione non riuscita'
+const SESSION_ERROR = 'Sessione admin scaduta, accedi di nuovo'
 // Alfabeto senza caratteri ambigui (0/O, 1/l/I)
 const PASSWORD_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789'
 
-async function requireAdmin() {
-  const token = cookies().get('calc_admin')?.value
-  if (!token || !(await verifyAdminToken(token))) throw new Error('Non autorizzato')
+// Le action rispondono sempre con un errore leggibile, mai con un'eccezione verso l'error boundary
+async function isAdmin(): Promise<boolean> {
+  try {
+    await requireAdmin()
+    return true
+  } catch {
+    return false
+  }
 }
 
 function revalidateAccounts(playerVisibilityChanged: boolean) {
@@ -45,7 +50,7 @@ async function deleteAuthUser(userId: string) {
 }
 
 export async function approveAccount(userId: string): Promise<{ error?: string }> {
-  await requireAdmin()
+  if (!(await isAdmin())) return { error: SESSION_ERROR }
   const supabase = createAdminClient()
   try {
     const account = await getAccount(userId)
@@ -83,40 +88,56 @@ export async function approveAccount(userId: string): Promise<{ error?: string }
   return {}
 }
 
-export async function rejectAccount(userId: string): Promise<void> {
-  await requireAdmin()
+export async function rejectAccount(userId: string): Promise<{ error?: string }> {
+  if (!(await isAdmin())) return { error: SESSION_ERROR }
   const supabase = createAdminClient()
-  const account = await getAccount(userId)
-  if (!account) return
+  let isNewPlayer: boolean
+  try {
+    const account = await getAccount(userId)
+    if (!account) return {}
+    isNewPlayer = account.is_new_player
 
-  // Prima l'utente auth: la cascata elimina la riga player_accounts. Se fallisce nulla e' cambiato e si puo' riprovare.
-  await deleteAuthUser(userId)
+    // Prima l'utente auth: la cascata elimina la riga player_accounts. Se fallisce nulla e' cambiato e si puo' riprovare.
+    await deleteAuthUser(userId)
 
-  if (account.is_new_player) {
-    // Solo se e' ancora inattivo: un giocatore gia' approvato non va toccato
-    const { error: pErr } = await supabase
-      .from('players')
-      .delete()
-      .eq('id', account.player_id)
-      .eq('is_active', false)
-    // Un giocatore inattivo orfano e' innocuo: non blocchiamo l'operazione
-    if (pErr) console.error('rejectAccount: player cleanup failed', pErr)
+    if (account.is_new_player) {
+      // Solo se e' ancora inattivo: un giocatore gia' approvato non va toccato
+      const { error: pErr } = await supabase
+        .from('players')
+        .delete()
+        .eq('id', account.player_id)
+        .eq('is_active', false)
+      // Un giocatore inattivo orfano e' innocuo: non blocchiamo l'operazione
+      if (pErr) console.error('rejectAccount: player cleanup failed', pErr)
+    }
+  } catch (e) {
+    console.error('rejectAccount failed', e)
+    return { error: GENERIC_ERROR }
   }
-  revalidateAccounts(account.is_new_player)
+  revalidateAccounts(isNewPlayer)
+  return {}
 }
 
-export async function unlinkAccount(userId: string): Promise<void> {
-  await requireAdmin()
-  // La cascata auth.users -> player_accounts elimina anche la riga
-  await deleteAuthUser(userId)
+export async function unlinkAccount(userId: string): Promise<{ error?: string }> {
+  if (!(await isAdmin())) return { error: SESSION_ERROR }
+  try {
+    // La cascata auth.users -> player_accounts elimina anche la riga
+    await deleteAuthUser(userId)
+  } catch (e) {
+    console.error('unlinkAccount failed', e)
+    return { error: GENERIC_ERROR }
+  }
   revalidateAccounts(false)
+  return {}
 }
 
-export async function resetAccountPassword(userId: string): Promise<{ tempPassword: string }> {
-  await requireAdmin()
-  const supabase = createAdminClient()
+export async function resetAccountPassword(userId: string): Promise<{ tempPassword?: string; error?: string }> {
+  if (!(await isAdmin())) return { error: SESSION_ERROR }
   const tempPassword = Array.from({ length: 12 }, () => PASSWORD_ALPHABET[randomInt(PASSWORD_ALPHABET.length)]).join('')
-  const { error } = await supabase.auth.admin.updateUserById(userId, { password: tempPassword })
-  if (error) throw new Error(error.message)
+  const { error } = await createAdminClient().auth.admin.updateUserById(userId, { password: tempPassword })
+  if (error) {
+    console.error('resetAccountPassword failed', error)
+    return { error: GENERIC_ERROR }
+  }
   return { tempPassword }
 }
