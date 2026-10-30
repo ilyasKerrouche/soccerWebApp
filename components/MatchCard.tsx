@@ -2,125 +2,78 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import type { MatchWithPlayers } from '@/lib/types'
-import MotmBadge from '@/components/motm/MotmBadge'
+import { dayParts } from '@/lib/monthGroups'
+import { C } from './ui'
 
-
+/** Riga di una partita giocata: data, squadre con i gol, MOTM. Il tocco apre formazioni e marcatori. */
 export default function MatchCard({ match, motmNames = [] }: { match: MatchWithPlayers; motmNames?: string[] }) {
   const [expanded, setExpanded] = useState(false)
-
-  const date = new Date(match.played_at).toLocaleDateString('it-IT', {
-    day: 'numeric', month: 'short', year: 'numeric',
-  })
-
-  if (match.is_upcoming) {
-    return (
-      <Link
-        href={`/matches/${match.id}`}
-        className="flex items-center justify-between rounded-xl px-3 py-3 transition-colors hover:bg-white/[0.03]"
-        style={{ border: '1px solid rgba(167,139,250,0.28)' }}
-      >
-        <span className="text-[13px] font-medium text-white/85">{date}</span>
-        <span className="text-[12px] text-brand">Da giocare</span>
-      </Link>
-    )
-  }
+  const { day, weekday } = dayParts(match.played_at)
 
   const sa = match.score_a ?? 0
   const sb = match.score_b ?? 0
-  const aWins = sa > sb
-  const bWins = sb > sa
   const isDraw = sa === sb
-  const teamAPlayers = match.match_players.filter((mp) => mp.team === 'a').map((mp) => mp.player.name)
-  const teamBPlayers = match.match_players.filter((mp) => mp.team === 'b').map((mp) => mp.player.name)
+  const teams = [
+    { key: 'a' as const, name: match.team_a_name, score: sa, wins: sa > sb },
+    { key: 'b' as const, name: match.team_b_name, score: sb, wins: sb > sa },
+  ]
+  const scorers = match.match_players.filter((mp) => mp.goals > 0 || mp.own_goals > 0)
 
   return (
-    <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.07)' }}>
-      {/* Compact row — sempre visibile */}
-      <button
-        className="w-full flex items-center gap-3 px-3 py-3 text-left"
-        onClick={() => setExpanded(e => !e)}
-      >
-        {/* Score */}
-        <div className="flex items-center gap-1.5 flex-shrink-0">
-          <span className={`text-xl font-semibold leading-none tracking-[-0.02em] ${aWins ? 'text-win' : isDraw ? 'text-white/70' : 'text-white/30'}`}>{match.score_a}</span>
-          <span className="text-white/15 text-sm">–</span>
-          <span className={`text-xl font-semibold leading-none tracking-[-0.02em] ${bWins ? 'text-win' : isDraw ? 'text-white/70' : 'text-white/30'}`}>{match.score_b}</span>
+    <div>
+      <button className="w-full flex items-center gap-2.5 px-3.5 py-3 text-left" onClick={() => setExpanded((e) => !e)} aria-expanded={expanded}>
+        <div className="w-[34px] text-center flex-shrink-0">
+          <div className="text-[16px] font-semibold leading-none tabular-nums">{day}</div>
+          <div className="text-[10px] mt-0.5" style={{ color: C.muted }}>{weekday}</div>
         </div>
-
-        {/* Info */}
-        <div className="flex-1 min-w-0">
-          <div className={`text-[12px] font-medium truncate ${isDraw ? 'text-white/60' : 'text-win'}`}>
-            {isDraw ? 'Pareggio' : `Vince ${aWins ? match.team_a_name : match.team_b_name}`}
-          </div>
-          <div className="text-[11px] text-white/30 mt-0.5">{date}</div>
-          {motmNames.length > 0 && <div className="mt-1"><MotmBadge names={motmNames} /></div>}
+        <div className="flex-1 min-w-0 text-[13.5px] leading-[1.5]">
+          {teams.map((t) => (
+            <div key={t.key} className="flex justify-between gap-2" style={t.wins ? { color: '#fff', fontWeight: 600 } : { color: C.muted }}>
+              <span className="truncate">{t.name}</span>
+              <span className="tabular-nums">{t.score}</span>
+            </div>
+          ))}
+          {motmNames.length > 0 && (
+            <div className="text-[11px] mt-0.5 truncate" style={{ color: C.gold }}>★ MOTM {motmNames.join(' & ')}</div>
+          )}
         </div>
-
-        {/* Expand arrow */}
-        <span className="text-white/20 text-sm transition-transform flex-shrink-0" style={{ transform: expanded ? 'rotate(180deg)' : 'none' }}>
-          ▾
-        </span>
+        <span className="text-[12px] flex-shrink-0 transition-transform" style={{ color: C.muted, transform: expanded ? 'rotate(180deg)' : 'none' }}>▾</span>
       </button>
 
-      {/* Expanded content */}
-      <div
-        className="overflow-hidden transition-all duration-300"
-        style={{ maxHeight: expanded ? 600 : 0, opacity: expanded ? 1 : 0 }}
-      >
-        <div className="border-t border-white/6 px-3 pb-3 pt-2.5 flex flex-col gap-2.5">
-          {/* Players */}
-          {(teamAPlayers.length > 0 || teamBPlayers.length > 0) && (
-            <div className="grid grid-cols-2 gap-2">
-              {[
-                { name: match.team_a_name, players: teamAPlayers, wins: aWins && !isDraw },
-                { name: match.team_b_name, players: teamBPlayers, wins: bWins && !isDraw },
-              ].map(({ name, players, wins }) => (
-                <div key={name} className="rounded-xl p-2" style={{
-                  background: wins ? 'rgba(74,222,128,0.06)' : 'rgba(255,255,255,0.03)',
-                  border: `1px solid ${wins ? 'rgba(74,222,128,0.15)' : 'rgba(255,255,255,0.06)'}`,
-                }}>
-                  <div className={`text-[9px] font-black uppercase tracking-wider mb-1.5 ${wins ? 'text-win/70' : 'text-white/30'}`}>
-                    {name}
-                  </div>
-                  {players.map(n => (
-                    <div key={n} className={`text-[10px] leading-relaxed truncate ${wins ? 'text-win/55' : 'text-white/40'}`}>{n}</div>
-                  ))}
+      {expanded && (
+        <div className="px-3.5 pb-3.5 animate-section">
+          <div className="grid grid-cols-2 gap-2">
+            {teams.map((t) => (
+              <div key={t.key} className="rounded-[10px] px-2.5 py-2 text-[12px] leading-[1.6] min-w-0" style={{ background: C.surf2, color: '#c9d1dd' }}>
+                <div className="text-[11px] font-semibold mb-0.5 truncate" style={{ color: t.wins && !isDraw ? '#fff' : C.muted }}>{t.name}</div>
+                {match.match_players.filter((mp) => mp.team === t.key).map((mp) => (
+                  <div key={mp.id} className="truncate">{mp.player.name}</div>
+                ))}
+              </div>
+            ))}
+          </div>
+
+          {scorers.length > 0 && (
+            <div className="mt-2.5 text-[12.5px]">
+              {scorers.map((mp, i) => (
+                <div key={mp.id} className="flex justify-between gap-2 px-0.5 py-1.5" style={i > 0 ? { borderTop: `1px solid ${C.line}` } : undefined}>
+                  <span className="truncate">
+                    {mp.player.name} <span style={{ color: C.muted }}>· {mp.team === 'a' ? match.team_a_name : match.team_b_name}</span>
+                  </span>
+                  <span className="flex gap-2 flex-shrink-0 font-semibold tabular-nums">
+                    {mp.goals > 0 && <span>{mp.goals}</span>}
+                    {mp.own_goals > 0 && <span style={{ color: C.loss }}>{mp.own_goals} autogol</span>}
+                  </span>
                 </div>
               ))}
             </div>
           )}
 
-          {/* Top scorers + OG */}
-          {(() => {
-            const scorers = match.match_players.filter((mp) => mp.goals > 0 || mp.own_goals > 0)
-            if (scorers.length === 0) return null
-            return (
-              <div className="flex flex-col gap-1">
-                <div className="text-[9px] uppercase tracking-wider text-white/20 font-bold mb-0.5">Marcatori</div>
-                {scorers.map((mp) => (
-                  <div key={mp.id} className="flex items-center gap-2 px-2 py-1.5 rounded-lg" style={{ background: 'rgba(167,139,250,0.07)', border: '1px solid rgba(167,139,250,0.12)' }}>
-                    <span className="text-[11px] font-bold flex-1">{mp.player.name}</span>
-                    <span className="text-[9px] text-white/30">{mp.team === 'a' ? match.team_a_name : match.team_b_name}</span>
-                    <div className="flex items-center gap-1">
-                      {mp.goals > 0 && <span className="text-[10px] font-black text-brand">{mp.goals} ⚽</span>}
-                      {mp.own_goals > 0 && <span className="text-[10px] font-black text-red-400">{mp.own_goals} OG</span>}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )
-          })()}
-
-          {/* Link dettaglio */}
-          <Link
-            href={`/matches/${match.id}`}
-            className="text-center text-[10px] text-brand/50 hover:text-brand transition-colors pt-0.5"
-            onClick={e => e.stopPropagation()}
-          >
+          <Link href={`/matches/${match.id}`} className="inline-block mt-2.5 text-[12px] font-semibold" style={{ color: C.acc }}>
             Vedi dettaglio →
           </Link>
         </div>
-      </div>
+      )}
     </div>
   )
 }
