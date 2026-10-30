@@ -1,9 +1,13 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import type { MatchWithPlayers, PlayerWithStats } from '@/lib/types'
+import type { MatchWithPlayers, Player, PlayerHomeStats, PlayerWithStats } from '@/lib/types'
 import type { GlobalStats } from '@/lib/queries/stats'
+import { countdownParts, formatRomeDay, formatRomeTime, romeInstant, type HomeViewer } from '@/lib/homeText'
+import { getHomeViewer } from '@/app/homeActions'
 import AddToCalendar from './AddToCalendar'
+import VoteBox from './home/VoteBox'
+import MySummary from './home/MySummary'
 
 type Props = {
   lastMatch: MatchWithPlayers | null
@@ -11,249 +15,191 @@ type Props = {
   recentMatches: MatchWithPlayers[]
   stats: GlobalStats
   topScorers: PlayerWithStats[]
+  players: Player[]
+  playerStats: Record<string, PlayerHomeStats>
+  voteOpen: { matchId: string; closesAt: string } | null
 }
 
-const TABS = ['Home', 'Partite', 'Stats'] as const
+const TABS = ['Riepilogo', 'Risultati', 'Classifica'] as const
 type Tab = typeof TABS[number]
 
-function Countdown({ date, time }: { date: string; time: string | null }) {
-  const [label, setLabel] = useState<string | null>(null)
+const C = { surf: '#141d2b', surf2: '#1a2536', line: 'rgba(255,255,255,.08)', muted: '#8a96a8', acc: '#5b9cff' }
 
-  useEffect(() => {
-    if (!time) return
-    const target = new Date(`${date}T${time}`)
-
-    const tick = () => {
-      const diff = target.getTime() - Date.now()
-      if (diff <= 0) {
-        setLabel('Adesso!')
-        return
-      }
-      const d = Math.floor(diff / 86400000)
-      const h = Math.floor((diff % 86400000) / 3600000)
-      const m = Math.floor((diff % 3600000) / 60000)
-      const s = Math.floor((diff % 60000) / 1000)
-      if (d > 0) setLabel(`${d}g ${h}h ${m}m`)
-      else if (h > 0) setLabel(`${h}h ${m}m ${s}s`)
-      else setLabel(`${m}m ${s}s`)
-    }
-
-    tick()
-    const id = setInterval(tick, 1000)
-    return () => clearInterval(id)
-  }, [date, time])
-
-  if (!time || !label) return null
-
+function Section({ title, link, children }: { title: string; link?: { href: string; label: string }; children: React.ReactNode }) {
   return (
-    <div className="mt-3 flex items-baseline gap-2">
-      <span className="text-[12px] text-white/35">Manca</span>
-      <span className="text-lg font-semibold text-brand leading-none tracking-[-0.02em]">{label}</span>
+    <section>
+      <div className="flex items-baseline justify-between mb-2.5">
+        <h3 className="text-[15px] font-semibold">{title}</h3>
+        {link && <Link href={link.href} className="text-[12px]" style={{ color: C.acc }}>{link.label}</Link>}
+      </div>
+      {children}
+    </section>
+  )
+}
+
+function Card({ children, className = '' }: { children: React.ReactNode; className?: string }) {
+  return <div className={`rounded-2xl ${className}`} style={{ background: C.surf, border: `1px solid ${C.line}` }}>{children}</div>
+}
+
+/** Conto alla rovescia in giorni / ore / minuti verso la prossima partita (ora italiana). */
+function NextCountdown({ date, time }: { date: string; time: string }) {
+  const target = romeInstant(date, time).getTime()
+  const [parts, setParts] = useState(() => countdownParts(target - Date.now()))
+  useEffect(() => {
+    const id = setInterval(() => setParts(countdownParts(target - Date.now())), 30_000)
+    return () => clearInterval(id)
+  }, [target])
+  if (!parts) return null
+  return (
+    <div className="flex gap-2 mt-3">
+      {[{ v: parts.d, l: 'giorni' }, { v: parts.h, l: 'ore' }, { v: parts.m, l: 'min' }].map(({ v, l }) => (
+        <div key={l} className="flex-1 rounded-[10px] py-2 text-center" style={{ background: C.surf2 }}>
+          <div className="text-[18px] font-semibold leading-none tabular-nums">{l === 'giorni' ? v : String(v).padStart(2, '0')}</div>
+          <div className="text-[10px] mt-1" style={{ color: C.muted }}>{l}</div>
+        </div>
+      ))}
     </div>
   )
 }
 
-export default function HomeClient({ lastMatch, nextMatch, recentMatches, stats, topScorers }: Props) {
-  const [tab, setTab] = useState<Tab>('Home')
+export default function HomeClient({ lastMatch, nextMatch, recentMatches, stats, topScorers, players, playerStats, voteOpen }: Props) {
+  const [tab, setTab] = useState<Tab>('Riepilogo')
+  // undefined finche' non sappiamo chi guarda: la pagina e' in cache uguale per tutti
+  const [viewer, setViewer] = useState<HomeViewer | null | undefined>(undefined)
 
-  const nextTeamA = nextMatch?.match_players.filter(mp => mp.team === 'a').map(mp => mp.player.name) ?? []
-  const nextTeamB = nextMatch?.match_players.filter(mp => mp.team === 'b').map(mp => mp.player.name) ?? []
+  const viewerMatchId = voteOpen?.matchId ?? lastMatch?.id ?? null
+  useEffect(() => {
+    let cancelled = false
+    getHomeViewer(viewerMatchId)
+      .then((v) => { if (!cancelled) setViewer(v) })
+      .catch(() => { if (!cancelled) setViewer(null) })
+    return () => { cancelled = true }
+  }, [viewerMatchId])
+
+  const me = viewer?.kind === 'player' && viewer.playerId ? players.find((p) => p.id === viewer.playerId) : undefined
+  const myStats = me ? playerStats[me.id] : undefined
+  const scorers = lastMatch?.match_players.filter((mp) => mp.goals > 0).sort((a, b) => b.goals - a.goals) ?? []
+  const nextTime = nextMatch ? formatRomeTime(nextMatch.match_time) : null
 
   return (
     <>
-      {/* Tab row — bordo inferiore della hero */}
-      <div className="flex border-b" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
-        {TABS.map(t => (
+      {voteOpen && lastMatch && (
+        <VoteBox matchId={voteOpen.matchId} closesAt={voteOpen.closesAt} teamA={lastMatch.team_a_name} teamB={lastMatch.team_b_name} viewer={viewer} />
+      )}
+
+      {/* Selettore a pillola */}
+      <div className="flex mx-4 mt-4 rounded-xl p-[3px]" style={{ background: C.surf, border: `1px solid ${C.line}` }}>
+        {TABS.map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`flex-1 min-w-0 py-3 text-[11.5px] whitespace-nowrap transition-colors relative ${
-              tab === t ? 'text-white font-semibold' : 'text-white/35 font-medium hover:text-white/60'
-            }`}
+            className="flex-1 py-[7px] rounded-[9px] text-[13px] transition-colors"
+            style={tab === t ? { background: C.surf2, color: '#fff', fontWeight: 600 } : { color: C.muted }}
           >
             {t}
-            {tab === t && (
-              <div className="absolute bottom-0 left-0 right-0 h-[2px] rounded-full" style={{ background: '#a78bfa' }} />
-            )}
           </button>
         ))}
       </div>
 
-      {/* Contenuto tab */}
-      <div className="px-4 pt-4 pb-4 flex flex-col gap-5">
-
-        {/* ── HOME ── */}
-        {tab === 'Home' && (
+      <div key={tab} className="px-4 pt-5 pb-4 flex flex-col gap-6 animate-section">
+        {tab === 'Riepilogo' && (
           <>
-            {/* Prossima partita */}
+            {me && myStats && <MySummary player={me} stats={myStats} />}
+
             {nextMatch && (
-              <section>
-                <div className="text-[13px] font-semibold text-white/45 mb-2">Prossima partita</div>
-                <Link href={`/matches/${nextMatch.id}`}>
-                  <div className="rounded-xl p-4 transition-colors hover:bg-white/[0.02]" style={{ border: '1px solid rgba(167,139,250,0.28)' }}>
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="text-[12px] text-brand">Da giocare</span>
-                      <AddToCalendar date={nextMatch.played_at} title="Calcetto" />
-                    </div>
-                    <div className="text-base font-semibold capitalize mb-1">
-                      {new Date(nextMatch.played_at).toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })}
-                    </div>
-                    {nextMatch.match_time && (
-                      <div className="text-[13px] text-white/45">{nextMatch.match_time.slice(0, 5)}</div>
-                    )}
-                    <Countdown date={nextMatch.played_at} time={nextMatch.match_time} />
-                    {(nextTeamA.length > 0 || nextTeamB.length > 0) && (
-                      <div className="grid grid-cols-2 gap-2 mt-3">
-                        {[{ name: nextMatch.team_a_name, pl: nextTeamA }, { name: nextMatch.team_b_name, pl: nextTeamB }].map(({ name, pl }) =>
-                          pl.length > 0 ? (
-                            <div key={name} className="rounded-lg p-2.5" style={{ border: '1px solid rgba(255,255,255,0.07)' }}>
-                              <div className="text-[11px] font-medium text-white/45 mb-1.5">{name}</div>
-                              {pl.map(n => <div key={n} className="text-[11px] text-white/60 truncate">{n}</div>)}
-                            </div>
-                          ) : null
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </Link>
-              </section>
+              <Section title="Prossima partita">
+                <Card className="p-3.5">
+                  <div className="text-[11px] font-semibold" style={{ color: C.acc }}>Da giocare</div>
+                  <div className="text-[17px] font-semibold capitalize mt-0.5">{formatRomeDay(nextMatch.played_at)}</div>
+                  {nextTime && <div className="text-[13px]" style={{ color: C.muted }}>{nextTime}</div>}
+                  {nextMatch.match_time && <NextCountdown date={nextMatch.played_at} time={nextMatch.match_time} />}
+                  <div className="mt-3"><AddToCalendar date={nextMatch.played_at} title="Calcetto" /></div>
+                </Card>
+              </Section>
             )}
 
-            {/* Classifica marcatori ultima partita */}
-            {lastMatch && (() => {
-              const scorers = lastMatch.match_players
-                .filter(mp => mp.goals > 0)
-                .sort((a, b) => b.goals - a.goals)
-              if (scorers.length === 0) return null
-              return (
-                <section>
-                  <div className="text-[13px] font-semibold text-white/45 mb-2">Marcatori ultima partita</div>
-                  <div className="flex flex-col gap-1.5">
-                    {scorers.map((mp, i) => (
-                      <Link key={mp.id} href={`/players/${mp.player_id}`} className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:border-brand/25" style={{
-                        background: i === 0 ? 'rgba(167,139,250,0.08)' : 'rgba(255,255,255,0.03)',
-                        border: `1px solid ${i === 0 ? 'rgba(167,139,250,0.15)' : 'rgba(255,255,255,0.06)'}`,
-                      }}>
-                        <span className="text-sm font-black w-5 text-center" style={{ color: i === 0 ? '#facc15' : 'rgba(255,255,255,0.2)' }}>
-                          {i === 0 ? '🥇' : i + 1}
-                        </span>
-                        <span className="flex-1 text-sm font-bold">{mp.player.name}</span>
-                        <span className="text-[9px] text-white/30">{mp.team === 'a' ? lastMatch.team_a_name : lastMatch.team_b_name}</span>
-                        <div className="flex items-center gap-0.5 ml-1">
-                          {Array.from({ length: mp.goals }).map((_, g) => (
-                            <span key={g} className="text-[11px]">⚽</span>
-                          ))}
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                </section>
-              )
-            })()}
+            {scorers.length > 0 && lastMatch && (
+              <Section title="Marcatori ultima partita">
+                <Card>
+                  {scorers.map((mp, i) => (
+                    <Link key={mp.id} href={`/players/${mp.player_id}`} className="flex items-center gap-3 px-3.5 py-3 text-[14px]"
+                      style={i > 0 ? { borderTop: `1px solid ${C.line}` } : undefined}>
+                      <span className="flex-1 truncate">{mp.player.name}</span>
+                      <span className="text-[11px]" style={{ color: C.muted }}>{mp.team === 'a' ? lastMatch.team_a_name : lastMatch.team_b_name}</span>
+                      <span className="font-semibold tabular-nums w-5 text-right">{mp.goals}</span>
+                    </Link>
+                  ))}
+                </Card>
+              </Section>
+            )}
+
+            {!me && !nextMatch && scorers.length === 0 && (
+              <p className="text-[13px] text-center py-6" style={{ color: C.muted }}>Niente da mostrare per ora.</p>
+            )}
           </>
         )}
 
-        {/* ── PARTITE ── */}
-        {tab === 'Partite' && (
-          <section>
-            <div className="flex items-center justify-between mb-3">
-              <div className="text-[13px] font-semibold text-white/45">Ultime partite</div>
-              <Link href="/matches" className="text-[10px] text-brand/60 hover:text-brand transition-colors">Tutte →</Link>
-            </div>
-            <div className="flex flex-col gap-2">
-              {recentMatches.length === 0 && (
-                <p className="text-white/25 text-sm text-center py-6">Nessuna partita ancora.</p>
-              )}
-              {recentMatches.map(m => {
-                const mSA = m.score_a ?? 0
-                const mSB = m.score_b ?? 0
-                const aWins = mSA > mSB
-                const bWins = mSB > mSA
-                const isDraw = mSA === mSB
-                const date = new Date(m.played_at).toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' })
-                const teamA = m.match_players.filter(mp => mp.team === 'a').map(mp => mp.player.name)
-                const teamB = m.match_players.filter(mp => mp.team === 'b').map(mp => mp.player.name)
-                return (
-                  <Link key={m.id} href={`/matches/${m.id}`}>
-                    <div className="rounded-2xl overflow-hidden border border-white/8 hover:border-brand/25 transition-all" style={{ background: 'rgba(255,255,255,0.03)' }}>
-                      <div className="px-3 pt-2.5 pb-1 flex items-center justify-between">
-                        <span className="text-[9px] text-white/25">{date}</span>
-                        <span className={`text-[9px] font-bold ${isDraw ? 'text-brand' : 'text-win'}`}>
-                          {isDraw ? 'Pareggio' : `Vince ${aWins ? m.team_a_name : m.team_b_name}`}
-                        </span>
-                      </div>
-                      <div className="flex">
-                        {[
-                          { name: m.team_a_name, score: m.score_a, players: teamA, wins: aWins && !isDraw },
-                          { name: m.team_b_name, score: m.score_b, players: teamB, wins: bWins && !isDraw },
-                        ].map(({ name, score, players, wins }, idx) => (
-                          <div key={idx} className="flex-1 p-2.5" style={{
-                            background: wins ? 'rgba(74,222,128,0.05)' : 'transparent',
-                            borderLeft: idx === 1 ? '1px solid rgba(255,255,255,0.06)' : 'none',
-                          }}>
-                            <div className={`text-[9px] font-bold mb-1 truncate ${wins ? 'text-win/60' : 'text-white/25'}`}>{name}</div>
-                            <div className={`text-2xl font-black leading-none mb-1.5 ${wins ? 'text-win' : 'text-white/20'}`}>{score}</div>
-                            {players.map(n => <div key={n} className={`text-[9px] truncate ${wins ? 'text-win/50' : 'text-white/35'}`}>{n}</div>)}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </Link>
-                )
-              })}
-            </div>
-          </section>
+        {tab === 'Risultati' && (
+          <Section title="Ultime partite" link={{ href: '/matches', label: 'Tutte' }}>
+            {recentMatches.length === 0 ? (
+              <p className="text-[13px] text-center py-6" style={{ color: C.muted }}>Nessuna partita ancora.</p>
+            ) : (
+              <Card>
+                {recentMatches.map((m, i) => {
+                  const a = m.score_a ?? 0
+                  const b = m.score_b ?? 0
+                  return (
+                    <Link key={m.id} href={`/matches/${m.id}`} className="flex items-center px-3.5 py-3 text-[14px]"
+                      style={i > 0 ? { borderTop: `1px solid ${C.line}` } : undefined}>
+                      <span className="w-14 text-[11px]" style={{ color: C.muted }}>
+                        {new Date(`${m.played_at}T12:00:00Z`).toLocaleDateString('it-IT', { day: 'numeric', month: 'short', timeZone: 'Europe/Rome' })}
+                      </span>
+                      <span className="flex-1 truncate">
+                        <span style={{ color: a >= b ? '#fff' : C.muted }}>{m.team_a_name}</span>
+                        <span style={{ color: C.muted }}> · </span>
+                        <span style={{ color: b >= a ? '#fff' : C.muted }}>{m.team_b_name}</span>
+                      </span>
+                      <span className="font-semibold tabular-nums">{a} – {b}</span>
+                    </Link>
+                  )
+                })}
+              </Card>
+            )}
+          </Section>
         )}
 
-        {/* ── STATS ── */}
-        {tab === 'Stats' && (
+        {tab === 'Classifica' && (
           <>
-            <section>
-              <div className="text-[13px] font-semibold text-white/45 mb-2">Stagione</div>
+            <Section title="Stagione">
               <div className="grid grid-cols-2 gap-2">
                 {[
-                  { val: stats.total_matches, lbl: 'Partite giocate' },
-                  { val: stats.total_goals, lbl: 'Goal totali' },
-                  { val: stats.wins_a, lbl: 'Vittorie Team A' },
-                  { val: stats.wins_b, lbl: 'Vittorie Team B' },
-                ].map(({ val, lbl }) => (
-                  <div key={lbl} className="rounded-2xl p-3 text-center" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
-                    <div className="text-3xl font-black text-brand leading-none">{val}</div>
-                    <div className="text-[9px] text-white/35 mt-1">{lbl}</div>
-                  </div>
+                  { v: stats.total_matches, l: 'Partite' },
+                  { v: stats.total_goals, l: 'Gol' },
+                  { v: stats.wins_a, l: `Vittorie ${lastMatch?.team_a_name ?? 'squadra A'}` },
+                  { v: stats.wins_b, l: `Vittorie ${lastMatch?.team_b_name ?? 'squadra B'}` },
+                ].map(({ v, l }) => (
+                  <Card key={l} className="p-3">
+                    <div className="text-[22px] font-bold tabular-nums leading-none">{v}</div>
+                    <div className="text-[11px] mt-1.5 truncate" style={{ color: C.muted }}>{l}</div>
+                  </Card>
                 ))}
               </div>
-            </section>
+            </Section>
 
-            <section>
-              <div className="flex items-center justify-between mb-3">
-                <div className="text-[13px] font-semibold text-white/45">Top marcatori</div>
-                <Link href="/stats" className="text-[10px] text-brand/60 hover:text-brand transition-colors">Tutte →</Link>
-              </div>
-              <div className="flex flex-col gap-1.5">
+            <Section title="Top marcatori" link={{ href: '/stats', label: 'Classifiche' }}>
+              <Card>
                 {topScorers.map((p, i) => (
-                  <Link key={p.id} href={`/players/${p.id}`} className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:border-brand/25" style={{
-                    background: i === 0 ? 'rgba(167,139,250,0.08)' : 'rgba(255,255,255,0.03)',
-                    border: `1px solid ${i === 0 ? 'rgba(167,139,250,0.2)' : 'rgba(255,255,255,0.06)'}`,
-                  }}>
-                    <span className="text-sm font-black w-5 text-center" style={{ color: i === 0 ? '#facc15' : 'rgba(255,255,255,0.2)' }}>
-                      {i === 0 ? '🥇' : i + 1}
-                    </span>
-                    <span className="flex-1 text-sm font-bold">{p.name}</span>
-                    {p.scoring_streak >= 3 && <span className="text-sm">🔥</span>}
-                    <div className="text-right">
-                      <div className={`text-lg font-black leading-none ${i === 0 ? 'text-brand' : 'text-white/50'}`}>{p.total_goals}</div>
-                      <div className="text-[9px] text-white/25">
-                        {p.total_appearances > 0 ? `${(p.total_goals / p.total_appearances).toFixed(1)} media` : 'goal'}
-                      </div>
-                    </div>
+                  <Link key={p.id} href={`/players/${p.id}`} className="flex items-center gap-3 px-3.5 py-3 text-[14px]"
+                    style={i > 0 ? { borderTop: `1px solid ${C.line}` } : undefined}>
+                    <span className="w-4 text-[12px] tabular-nums" style={{ color: C.muted }}>{i + 1}</span>
+                    <span className="flex-1 truncate">{p.name}</span>
+                    <span className="font-semibold tabular-nums">{p.total_goals}</span>
                   </Link>
                 ))}
-              </div>
-            </section>
+              </Card>
+            </Section>
           </>
         )}
-
       </div>
     </>
   )

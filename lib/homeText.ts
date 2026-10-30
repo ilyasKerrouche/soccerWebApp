@@ -52,6 +52,18 @@ export function formatRomeDay(isoOrDate: string): string {
   return new Intl.DateTimeFormat('it-IT', { timeZone: 'Europe/Rome', weekday: 'long', day: 'numeric', month: 'long' }).format(toDate(isoOrDate))
 }
 
+/** Giorno "YYYY-MM-DD" + ora "HH:MM[:SS]" in ora italiana → istante assoluto (gestisce ora legale e solare). */
+export function romeInstant(date: string, time: string): Date {
+  const asUtc = new Date(`${date}T${time.slice(0, 5)}:00Z`)
+  // Che ora segna Roma in quell'istante UTC? La differenza e' lo scarto del fuso.
+  const parts = Object.fromEntries(
+    new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Rome', hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
+      .formatToParts(asUtc).map((p) => [p.type, p.value]),
+  )
+  const romeAsUtc = Date.UTC(+parts.year, +parts.month - 1, +parts.day, +parts.hour, +parts.minute)
+  return new Date(asUtc.getTime() - (romeAsUtc - asUtc.getTime()))
+}
+
 export function formatRomeTime(time: string | null): string | null {
   return time ? time.slice(0, 5) : null
 }

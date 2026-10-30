@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { buildLedText, voteCta, countdownParts, formatRomeDay, formatRomeTime, type LedInput, type HomeViewer } from './homeText.ts'
+import { buildLedText, voteCta, countdownParts, formatRomeDay, formatRomeTime, romeInstant, type LedInput, type HomeViewer } from './homeText.ts'
 
 const base: LedInput = { teamA: 'Viola', teamB: 'Azzurri', scoreA: 5, scoreB: 3, motmNames: [], scorers: [], next: null }
 
@@ -48,4 +48,9 @@ test('orari in Europe/Rome', () => {
   assert.equal(formatRomeDay('2026-10-29'), 'giovedì 29 ottobre')
   assert.equal(formatRomeTime('21:00:00'), '21:00')
   assert.equal(formatRomeTime(null), null)
+})
+
+test('romeInstant converte giorno e ora italiani in un istante', () => {
+  assert.equal(romeInstant('2026-11-05', '21:00:00').toISOString(), '2026-11-05T20:00:00.000Z') // ora solare
+  assert.equal(romeInstant('2026-07-10', '21:00').toISOString(), '2026-07-10T19:00:00.000Z') // ora legale
 })

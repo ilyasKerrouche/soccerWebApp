@@ -3,11 +3,12 @@ import { getPlayersWithStats } from '@/lib/queries/players'
 import { getLastMatch, getNextMatch, getAllMatchesWithPlayers } from '@/lib/queries/matches'
 import { getGlobalStats } from '@/lib/queries/stats'
 import { getMotmWinnersByMatch, getMotmCounts } from '@/lib/queries/motm'
+import { motmStatus } from '@/lib/motm'
+import { buildLedText, formatRomeDay } from '@/lib/homeText'
+import type { PlayerHomeStats } from '@/lib/types'
 import HomeClient from '@/components/HomeClient'
-import HoloPitch, { type HoloStats } from '@/components/HoloPitch'
+import StadiumPitch from '@/components/home/StadiumPitch'
 import PullToRefresh from '@/components/PullToRefresh'
-import ScoreCount from '@/components/ScoreCount'
-import PageHeader from '@/components/PageHeader'
 
 export const revalidate = 60
 
@@ -20,7 +21,7 @@ export default async function HomePage() {
     getPlayersWithStats(),
   ])
 
-  // MOTM dell'ultima partita e conteggi per le statistiche delle card: se falliscono, il campo resta senza
+  // MOTM (solo a voto chiuso) e conteggi per le card: se falliscono, il campo resta senza
   let motmIds: string[] = []
   let motmCounts: Record<string, number> = {}
   if (lastMatch) {
@@ -32,9 +33,9 @@ export default async function HomePage() {
       console.error('MOTM home failed', e)
     }
   }
-  const holoStats: Record<string, HoloStats> = {}
+  const playerStats: Record<string, PlayerHomeStats> = {}
   for (const p of players) {
-    holoStats[p.id] = {
+    playerStats[p.id] = {
       goals: p.total_goals,
       appearances: p.total_appearances,
       winRate: p.record && p.record.played > 0 ? p.record.win_rate : null,
@@ -42,77 +43,62 @@ export default async function HomePage() {
       form: p.record?.form ?? [],
     }
   }
-  const motmNames = lastMatch
-    ? lastMatch.match_players.filter((mp) => motmIds.includes(mp.player_id)).map((mp) => mp.player.name)
-    : []
 
-  const recentMatches = allMatches.filter(m => !m.is_upcoming).slice(0, 3)
+  const recentMatches = allMatches.filter((m) => !m.is_upcoming).slice(0, 3)
   const topScorers = [...players].sort((a, b) => b.total_goals - a.total_goals).slice(0, 5)
 
-  const lastSA = lastMatch?.score_a ?? 0
-  const lastSB = lastMatch?.score_b ?? 0
-  const lastAWins = lastSA > lastSB
-  const lastBWins = lastSB > lastSA
-  const lastIsDraw = lastMatch ? lastSA === lastSB : false
-  const lastMatchDate = lastMatch
-    ? new Date(lastMatch.played_at).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })
+  const voteOpen = lastMatch?.motm_closes_at && motmStatus(lastMatch.motm_closes_at, new Date()) === 'open'
+    ? { matchId: lastMatch.id, closesAt: lastMatch.motm_closes_at }
     : null
-  const lastMatchWinner = lastMatch
-    ? (lastIsDraw ? null : lastAWins ? lastMatch.team_a_name : lastMatch.team_b_name)
-    : null
+
+  const scoreA = lastMatch?.score_a ?? 0
+  const scoreB = lastMatch?.score_b ?? 0
+  const motmNames = lastMatch ? lastMatch.match_players.filter((mp) => motmIds.includes(mp.player_id)).map((mp) => mp.player.name) : []
+  const ledText = lastMatch
+    ? buildLedText({
+        teamA: lastMatch.team_a_name, teamB: lastMatch.team_b_name, scoreA, scoreB, motmNames,
+        scorers: lastMatch.match_players.filter((mp) => mp.goals > 0).map((mp) => ({ name: mp.player.name, goals: mp.goals })),
+        next: nextMatch ? { playedAt: nextMatch.played_at, time: nextMatch.match_time } : null,
+      })
+    : ''
 
   return (
-    <main className="pb-6">
+    <main className="pb-6" style={{ background: '#0d1420', color: '#e8ecf2' }}>
       <PullToRefresh />
 
-      <div className="px-4">
-        <PageHeader
-          eyebrow="Stagione 2025/26"
-          title="Calcetto"
-          aside={<span className="text-[13px] text-white/30">{stats.total_matches} partite</span>}
-        />
-      </div>
-
-      {/* Il risultato dell'ultima partita e' la cosa che si viene a vedere. */}
+      {/* L'ultima partita e' la cosa che si viene a vedere */}
       {lastMatch ? (
-        <section className="pt-5">
+        <section className="pt-4">
           <Link href={`/matches/${lastMatch.id}`} className="block px-4 text-center">
-            <div className="text-[10px] font-bold tracking-[3px] uppercase text-white/45">Ultima partita · {lastMatchDate}</div>
-            <div className="flex items-center justify-center gap-3 mt-1">
-              <span className="text-[13px] font-black italic uppercase tracking-wide" style={{ color: '#ff9be4' }}>{lastMatch.team_a_name}</span>
-              <ScoreCount
-                value={lastMatch.score_a ?? 0}
-                className={`text-[40px] font-black italic leading-none ${lastAWins || lastIsDraw ? 'text-white' : 'text-white/35'}`}
-              />
-              <span className="text-xl font-light" style={{ color: '#c6ff3a' }}>–</span>
-              <ScoreCount
-                value={lastMatch.score_b ?? 0}
-                className={`text-[40px] font-black italic leading-none ${lastBWins || lastIsDraw ? 'text-white' : 'text-white/35'}`}
-              />
-              <span className="text-[13px] font-black italic uppercase tracking-wide" style={{ color: '#fde047' }}>{lastMatch.team_b_name}</span>
+            <div className="text-[11px] capitalize" style={{ color: '#8a96a8' }}>Ultima partita · {formatRomeDay(lastMatch.played_at)}</div>
+            <div className="flex items-baseline justify-center gap-3.5 mt-1">
+              <span className="w-24 text-right text-[14px] font-semibold truncate" style={{ color: scoreA >= scoreB ? '#ffffff' : '#8a96a8' }}>{lastMatch.team_a_name}</span>
+              <span className="text-[36px] font-bold tabular-nums tracking-tight leading-none">{scoreA} – {scoreB}</span>
+              <span className="w-24 text-left text-[14px] font-semibold truncate" style={{ color: scoreB >= scoreA ? '#ffffff' : '#8a96a8' }}>{lastMatch.team_b_name}</span>
             </div>
-            <div className="text-[12px] text-white/50 mt-1">
-              {lastIsDraw ? 'Pareggio' : `Vince ${lastMatchWinner}`}
-              {motmNames.length > 0 && <span style={{ color: '#fbbf24' }}> · ⭐ MOTM {motmNames.join(' & ')}</span>}
+            <div className="text-[12px] mt-1" style={{ color: '#8a96a8' }}>
+              {scoreA === scoreB ? 'Pareggio' : `Vince ${scoreA > scoreB ? lastMatch.team_a_name : lastMatch.team_b_name}`}
+              {motmNames.length > 0 && <span style={{ color: '#f5c451' }}> · ★ MOTM {motmNames.join(' & ')}</span>}
             </div>
           </Link>
-          <HoloPitch match={lastMatch} motmIds={motmIds} stats={holoStats} />
+          <StadiumPitch match={lastMatch} motmIds={motmIds} stats={playerStats} ledText={ledText} />
         </section>
       ) : (
-        <div className="px-4 py-10 text-center text-white/30 text-[13px]">
+        <div className="px-4 py-10 text-center text-[13px]" style={{ color: '#8a96a8' }}>
           Nessuna partita registrata.
         </div>
       )}
 
-      {/* Tab + contenuto (client) */}
       <HomeClient
         lastMatch={lastMatch}
         nextMatch={nextMatch}
         recentMatches={recentMatches}
         stats={stats}
         topScorers={topScorers}
+        players={players}
+        playerStats={playerStats}
+        voteOpen={voteOpen}
       />
-
     </main>
   )
 }
