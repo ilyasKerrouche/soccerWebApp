@@ -2,9 +2,9 @@ import Link from 'next/link'
 import { getPlayersWithStats } from '@/lib/queries/players'
 import { getLastMatch, getNextMatch, getAllMatchesWithPlayers } from '@/lib/queries/matches'
 import { getGlobalStats } from '@/lib/queries/stats'
-import { getVotesForMatch } from '@/lib/queries/availability'
+import { getMotmWinnersByMatch, getMotmCounts } from '@/lib/queries/motm'
 import HomeClient from '@/components/HomeClient'
-import PlayerCard from '@/components/PlayerCard'
+import HoloPitch, { type HoloStats } from '@/components/HoloPitch'
 import PullToRefresh from '@/components/PullToRefresh'
 import ScoreCount from '@/components/ScoreCount'
 import PageHeader from '@/components/PageHeader'
@@ -20,7 +20,31 @@ export default async function HomePage() {
     getPlayersWithStats(),
   ])
 
-  const initialVotes = nextMatch ? await getVotesForMatch(nextMatch.id) : []
+  // MOTM dell'ultima partita e conteggi per le statistiche delle card: se falliscono, il campo resta senza
+  let motmIds: string[] = []
+  let motmCounts: Record<string, number> = {}
+  if (lastMatch) {
+    try {
+      const [winners, counts] = await Promise.all([getMotmWinnersByMatch([lastMatch.id]), getMotmCounts()])
+      motmIds = winners[lastMatch.id] ?? []
+      motmCounts = counts
+    } catch (e) {
+      console.error('MOTM home failed', e)
+    }
+  }
+  const holoStats: Record<string, HoloStats> = {}
+  for (const p of players) {
+    holoStats[p.id] = {
+      goals: p.total_goals,
+      appearances: p.total_appearances,
+      winRate: p.record && p.record.played > 0 ? p.record.win_rate : null,
+      motm: motmCounts[p.id] ?? 0,
+      form: p.record?.form ?? [],
+    }
+  }
+  const motmNames = lastMatch
+    ? lastMatch.match_players.filter((mp) => motmIds.includes(mp.player_id)).map((mp) => mp.player.name)
+    : []
 
   const recentMatches = allMatches.filter(m => !m.is_upcoming).slice(0, 3)
   const topScorers = [...players].sort((a, b) => b.total_goals - a.total_goals).slice(0, 5)
@@ -50,47 +74,31 @@ export default async function HomePage() {
       </div>
 
       {/* Il risultato dell'ultima partita e' la cosa che si viene a vedere. */}
-      {lastMatch ? (() => {
-        const playersA = lastMatch.match_players.filter(mp => mp.team === 'a').map(mp => mp.player)
-        const playersB = lastMatch.match_players.filter(mp => mp.team === 'b').map(mp => mp.player)
-
-        return (
-          <Link href={`/matches/${lastMatch.id}`} className="block px-4 pt-6 pb-5">
-            <div className="text-[13px] text-white/35 mb-3">Ultima partita · {lastMatchDate}</div>
-
-            <div className="flex items-center gap-4 mb-6">
+      {lastMatch ? (
+        <section className="pt-5">
+          <Link href={`/matches/${lastMatch.id}`} className="block px-4 text-center">
+            <div className="text-[10px] font-bold tracking-[3px] uppercase text-white/45">Ultima partita · {lastMatchDate}</div>
+            <div className="flex items-center justify-center gap-3 mt-1">
+              <span className="text-[13px] font-black italic uppercase tracking-wide" style={{ color: '#ff9be4' }}>{lastMatch.team_a_name}</span>
               <ScoreCount
                 value={lastMatch.score_a ?? 0}
-                className={`text-[56px] font-bold leading-none tracking-[-0.03em] ${lastAWins ? 'text-win' : lastIsDraw ? 'text-white/80' : 'text-white/25'}`}
+                className={`text-[40px] font-black italic leading-none ${lastAWins || lastIsDraw ? 'text-white' : 'text-white/35'}`}
               />
-              <span className="text-2xl text-white/12">–</span>
+              <span className="text-xl font-light" style={{ color: '#c6ff3a' }}>–</span>
               <ScoreCount
                 value={lastMatch.score_b ?? 0}
-                className={`text-[56px] font-bold leading-none tracking-[-0.03em] ${lastBWins ? 'text-win' : lastIsDraw ? 'text-white/80' : 'text-white/25'}`}
+                className={`text-[40px] font-black italic leading-none ${lastBWins || lastIsDraw ? 'text-white' : 'text-white/35'}`}
               />
-              <span className="flex-1 text-right text-[13px] font-medium text-white/45">
-                {lastIsDraw ? 'Pareggio' : `Vince ${lastMatchWinner}`}
-              </span>
+              <span className="text-[13px] font-black italic uppercase tracking-wide" style={{ color: '#fde047' }}>{lastMatch.team_b_name}</span>
             </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                { players: playersA, wins: lastAWins && !lastIsDraw, name: lastMatch.team_a_name },
-                { players: playersB, wins: lastBWins && !lastIsDraw, name: lastMatch.team_b_name },
-              ].map(({ players, wins, name }) => (
-                <div key={name}>
-                  <div className={`text-[11px] font-medium mb-2 ${wins ? 'text-win' : 'text-white/35'}`}>{name}</div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {players.map(p => (
-                      <PlayerCard key={p.id} player={p} width={54} />
-                    ))}
-                  </div>
-                </div>
-              ))}
+            <div className="text-[12px] text-white/50 mt-1">
+              {lastIsDraw ? 'Pareggio' : `Vince ${lastMatchWinner}`}
+              {motmNames.length > 0 && <span style={{ color: '#fbbf24' }}> · ⭐ MOTM {motmNames.join(' & ')}</span>}
             </div>
           </Link>
-        )
-      })() : (
+          <HoloPitch match={lastMatch} motmIds={motmIds} stats={holoStats} />
+        </section>
+      ) : (
         <div className="px-4 py-10 text-center text-white/30 text-[13px]">
           Nessuna partita registrata.
         </div>
@@ -103,7 +111,6 @@ export default async function HomePage() {
         recentMatches={recentMatches}
         stats={stats}
         topScorers={topScorers}
-        initialVotes={initialVotes}
       />
 
     </main>

@@ -1,10 +1,9 @@
 'use client'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import type { MatchWithPlayers, PlayerWithStats, AvailabilityVote } from '@/lib/types'
+import type { MatchWithPlayers, PlayerWithStats } from '@/lib/types'
 import type { GlobalStats } from '@/lib/queries/stats'
 import AddToCalendar from './AddToCalendar'
-import AvailabilityPoll from './AvailabilityPoll'
 
 type Props = {
   lastMatch: MatchWithPlayers | null
@@ -12,7 +11,6 @@ type Props = {
   recentMatches: MatchWithPlayers[]
   stats: GlobalStats
   topScorers: PlayerWithStats[]
-  initialVotes: AvailabilityVote[]
 }
 
 const TABS = ['Home', 'Partite', 'Stats'] as const
@@ -55,16 +53,9 @@ function Countdown({ date, time }: { date: string; time: string | null }) {
   )
 }
 
-export default function HomeClient({ lastMatch, nextMatch, recentMatches, stats, topScorers, initialVotes }: Props) {
+export default function HomeClient({ lastMatch, nextMatch, recentMatches, stats, topScorers }: Props) {
   const [tab, setTab] = useState<Tab>('Home')
 
-  const lastSA = lastMatch?.score_a ?? 0
-  const lastSB = lastMatch?.score_b ?? 0
-  const lastAWins = lastSA > lastSB
-  const lastBWins = lastSB > lastSA
-  const lastIsDraw = lastMatch ? lastSA === lastSB : false
-  const lastTeamA = lastMatch?.match_players.filter(mp => mp.team === 'a').map(mp => mp.player.name) ?? []
-  const lastTeamB = lastMatch?.match_players.filter(mp => mp.team === 'b').map(mp => mp.player.name) ?? []
   const nextTeamA = nextMatch?.match_players.filter(mp => mp.team === 'a').map(mp => mp.player.name) ?? []
   const nextTeamB = nextMatch?.match_players.filter(mp => mp.team === 'b').map(mp => mp.player.name) ?? []
 
@@ -125,34 +116,6 @@ export default function HomeClient({ lastMatch, nextMatch, recentMatches, stats,
                     )}
                   </div>
                 </Link>
-                <AvailabilityPoll
-                  matchId={nextMatch.id}
-                  played_at={nextMatch.played_at}
-                  initialVotes={initialVotes}
-                />
-              </section>
-            )}
-
-            {/* Team blocks ultima partita */}
-            {lastMatch && (lastTeamA.length > 0 || lastTeamB.length > 0) && (
-              <section>
-                <div className="text-[13px] font-semibold text-white/45 mb-2">Ultima partita — giocatori</div>
-                <div className="grid grid-cols-2 gap-2">
-                  {[
-                    { name: lastMatch.team_a_name, pl: lastTeamA, wins: lastAWins && !lastIsDraw },
-                    { name: lastMatch.team_b_name, pl: lastTeamB, wins: lastBWins && !lastIsDraw },
-                  ].map(({ name, pl, wins }) => (
-                    <div key={name} className="rounded-2xl p-3" style={{
-                      background: wins ? 'rgba(74,222,128,0.06)' : 'rgba(255,255,255,0.03)',
-                      border: `1px solid ${wins ? 'rgba(74,222,128,0.18)' : 'rgba(255,255,255,0.07)'}`,
-                    }}>
-                      <div className={`text-[9px] font-black uppercase tracking-wider mb-2 ${wins ? 'text-win/70' : 'text-white/30'}`}>
-                        {name}
-                      </div>
-                      {pl.map(n => <div key={n} className={`text-[11px] leading-relaxed truncate ${wins ? 'text-win/60' : 'text-white/40'}`}>{n}</div>)}
-                    </div>
-                  ))}
-                </div>
               </section>
             )}
 
