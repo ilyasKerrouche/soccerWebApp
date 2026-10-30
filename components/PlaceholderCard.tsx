@@ -34,8 +34,18 @@ const SILHOUETTE =
   'C246 246 284 266 296 300 L304 360 L56 360 L64 300 C76 266 114 246 162 240 ' +
   'L162 226 C144 218 130 196 130 168 C130 136 150 112 180 112 Z'
 
+// Array.from conta i caratteri senza spezzare emoji o lettere composte.
 function truncate(text: string, maxChars: number) {
-  return text.length > maxChars ? `${text.slice(0, maxChars - 1).trimEnd()}…` : text
+  const chars = Array.from(text)
+  return chars.length > maxChars ? `${chars.slice(0, maxChars - 1).join('').trimEnd()}…` : text
+}
+
+// Stima a occhio della larghezza del testo in grassetto. Se sfora lo spazio
+// dentro lo scudo, textLength lo comprime invece di farlo uscire sulla cornice.
+function fitProps(text: string, fontSize: number, maxWidth: number) {
+  return Array.from(text).length * fontSize * 0.6 > maxWidth
+    ? { textLength: maxWidth, lengthAdjust: 'spacingAndGlyphs' as const }
+    : {}
 }
 
 export default function PlaceholderCard({ player, width, className = '' }: Props) {
@@ -46,7 +56,9 @@ export default function PlaceholderCard({ player, width, className = '' }: Props
   const full = width >= 96
   const tiny = width < 40
   const position = player.position || '—'
-  const name = full ? truncate(player.name, 16) : truncate(player.name.split(' ')[0], 9)
+  const name = full
+    ? truncate(player.name.trim(), 16)
+    : truncate(player.name.trim().split(/\s+/)[0], 9)
 
   return (
     <div className={`flex-shrink-0 ${className}`} style={{ width, aspectRatio: '0.72' }}>
@@ -104,7 +116,9 @@ export default function PlaceholderCard({ player, width, className = '' }: Props
           <path
             d={SILHOUETTE}
             fill={`url(#${id('person')})`}
-            transform={full ? undefined : 'translate(40 30)'}
+            // Nelle card piccole la sagoma si stringe a destra per lasciare spazio al testo.
+            transform={full ? undefined : 'translate(250 118) scale(0.7) translate(-180 -112)'}
+            opacity={full ? 1 : 0.75}
           />
           <rect width={W} height={H} fill={`url(#${id('shade')})`} />
         </g>
@@ -115,7 +129,7 @@ export default function PlaceholderCard({ player, width, className = '' }: Props
             <>
               <text x="78" y="146" fontSize="50" letterSpacing="-1">??</text>
               <text x="78" y="178" fontSize="24">{position}</text>
-              <text x={CX} y="350" fontSize="28">{name}</text>
+              <text x={CX} y="350" fontSize="28" {...fitProps(name, 28, 250)}>{name}</text>
               {STATS.map((label, i) => (
                 <g key={label}>
                   <text x={STAT_X[i]} y="380" fontSize="15" fontWeight="700">{label}</text>
@@ -125,13 +139,14 @@ export default function PlaceholderCard({ player, width, className = '' }: Props
             </>
           ) : (
             <>
-              <text x={tiny ? CX : 92} y={tiny ? 400 : 168} fontSize={tiny ? 110 : 80} letterSpacing="-2">
+              {/* A width=56 servono ~6.4 unita' per pixel: 108 -> ~17px, 62 -> ~10px, 74 -> ~11.5px */}
+              <text x={tiny ? CX : 120} y={tiny ? 400 : 184} fontSize={tiny ? 110 : 108} letterSpacing="-3">
                 ??
               </text>
               {!tiny && (
                 <>
-                  <text x="92" y="212" fontSize="38">{position}</text>
-                  <text x={CX} y="400" fontSize="50">{name}</text>
+                  <text x="120" y="252" fontSize="62" {...fitProps(position, 62, 150)}>{position}</text>
+                  <text x={CX} y="398" fontSize="74" {...fitProps(name, 74, 244)}>{name}</text>
                 </>
               )}
             </>
