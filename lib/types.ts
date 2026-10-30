@@ -79,3 +79,13 @@ export type GoalkeeperStats = {
 }
 
 export type PlayerWithGoalkeeperStats = Player & GoalkeeperStats
+
+// Statistiche mostrate toccando una card sul campo della home e in "Il tuo riepilogo".
+export type PlayerHomeStats = {
+  goals: number
+  appearances: number
+  /** Da 0 a 1, null se non ha mai giocato. */
+  winRate: number | null
+  motm: number
+  form: PlayerRecord['form']
+}

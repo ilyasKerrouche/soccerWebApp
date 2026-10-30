@@ -1,0 +1,168 @@
+'use client'
+import { useEffect, useState } from 'react'
+import Link from 'next/link'
+import PlayerCard from '@/components/PlayerCard'
+import FormDots from '@/components/FormDots'
+import { holoSlots } from '@/lib/holoLayout'
+import { SPONSORS } from '@/lib/sponsors'
+import type { MatchWithPlayers, Player, PlayerHomeStats } from '@/lib/types'
+
+type Props = {
+  match: MatchWithPlayers
+  motmIds: string[]
+  stats: Record<string, PlayerHomeStats>
+  ledText: string
+}
+
+// Il campo e' disegnato a dimensione doppia e allontanato con translateZ: testo e linee restano nitidi.
+const PW = 440
+const PH = 580
+const GAP = 40
+const BOARD_H = 46
+const CARD_W = 72
+const SEEN_KEY = 'stadium-entry-seen'
+const SPONSOR_MS = 3500
+
+function useReducedMotion() {
+  const [reduced, setReduced] = useState(false)
+  useEffect(() => { setReduced(window.matchMedia('(prefers-reduced-motion: reduce)').matches) }, [])
+  return reduced
+}
+
+function SponsorBoard({ offset, reduced }: { offset: number; reduced: boolean }) {
+  // cur entra con la tendina sopra prev, che resta visibile sotto finche' non e' coperto
+  const [state, setState] = useState({ cur: offset % SPONSORS.length, prev: -1 })
+  useEffect(() => {
+    if (reduced) return
+    const id = setInterval(() => setState((s) => ({ prev: s.cur, cur: (s.cur + 1) % SPONSORS.length })), SPONSOR_MS + offset * 400)
+    return () => clearInterval(id)
+  }, [offset, reduced])
+  return (
+    <>
+      {SPONSORS.map((s, i) => (
+        <div
+          key={s.name}
+          className={`stadium-ad ${i === state.cur ? 'stadium-ad-on' : ''}`}
+          style={{ background: s.bg, color: s.fg, zIndex: i === state.cur ? 2 : i === state.prev ? 1 : 0, visibility: i === state.cur || i === state.prev ? 'visible' : 'hidden' }}
+        >
+          <span className="stadium-ad-emoji">{s.emoji}</span>
+          {s.name}
+          {s.tagline && <small>{s.tagline}</small>}
+        </div>
+      ))}
+    </>
+  )
+}
+
+export default function StadiumPitch({ match, motmIds, stats, ledText }: Props) {
+  const reduced = useReducedMotion()
+  const [entry, setEntry] = useState(false)
+  const [zoomed, setZoomed] = useState<Player | null>(null)
+
+  // Le card salgono dal prato una volta per sessione
+  useEffect(() => {
+    let seen = false
+    try { seen = sessionStorage.getItem(SEEN_KEY) === '1'; sessionStorage.setItem(SEEN_KEY, '1') } catch {}
+    setEntry(!seen && !window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+  }, [])
+
+  const placed = (['a', 'b'] as const).flatMap((side) => {
+    const mps = match.match_players.filter((mp) => mp.team === side)
+    const slots = holoSlots(mps.map((mp) => mp.player.position), side)
+    return mps.map((mp, i) => ({ mp, slot: slots[i] }))
+  })
+  // Prima i giocatori lontani: cosi' quelli vicini restano sopra
+  placed.sort((x, y) => x.slot.y - y.slot.y)
+
+  const zs = zoomed ? stats[zoomed.id] : undefined
+
+  return (
+    <>
+      <div className={`stadium-scene ${entry ? 'stadium-entry' : ''}`}>
+        <div className="stadium-pitch" style={{ width: PW, height: PH, marginLeft: -PW / 2 }}>
+          <div className="stadium-apron" />
+          <div className="stadium-grass" />
+          <div className="stadium-ln stadium-ln-out" />
+          <div className="stadium-ln stadium-ln-mid" />
+          <div className="stadium-ln stadium-ln-circ" />
+          <div className="stadium-ln stadium-ln-bt" />
+          <div className="stadium-ln stadium-ln-bb" />
+          <div className="stadium-ln stadium-ln-gt" />
+          <div className="stadium-ln stadium-ln-gb" />
+
+          {/* Cartelloni: in fondo il LED con i dati, ai lati gli sponsor. Il lato verso la camera non c'e'. */}
+          {([[0, PH / 2 + GAP, PW], [90, PW / 2 + GAP, PH], [270, PW / 2 + GAP, PH]] as const).map(([angle, dist, len], i) => (
+            <div key={angle} className="stadium-pivot" style={{ left: PW / 2, top: PH / 2, transform: `rotateZ(${angle}deg)` }}>
+              <div className={`stadium-board ${i === 0 ? 'stadium-board-led' : ''}`} style={{ width: len, left: -len / 2, top: -dist - BOARD_H, height: BOARD_H }}>
+                {i === 0 ? (
+                  <span className="stadium-led-text" style={{ animationDuration: `${Math.max(12, ledText.length * 0.18)}s` }}>
+                    {`${ledText}  ·  `.repeat(3)}
+                  </span>
+                ) : (
+                  <SponsorBoard offset={i === 1 ? 0 : 3} reduced={reduced} />
+                )}
+              </div>
+            </div>
+          ))}
+
+          {placed.map(({ mp, slot }, i) => {
+            const motm = motmIds.includes(mp.player_id)
+            return (
+              <button
+                key={mp.player_id}
+                type="button"
+                aria-label={`${mp.player.name}: apri le statistiche`}
+                onClick={() => setZoomed(mp.player)}
+                className={`stadium-card ${motm ? 'stadium-card-motm' : ''}`}
+                style={{ left: (slot.x / 100) * PW - CARD_W / 2, top: (slot.y / 100) * PH - CARD_W / 0.72 }}
+              >
+                <span className="stadium-card-rise" style={{ animationDelay: `${0.15 + i * 0.1}s` }}>
+                  <span className="stadium-card-shadow" />
+                  <PlayerCard player={mp.player} width={CARD_W} className="stadium-card-img" />
+                  <span className="stadium-plate">{motm ? '★ ' : ''}{mp.player.name}</span>
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {zoomed && (
+        <div className="stadium-zoom" onClick={() => setZoomed(null)} role="dialog" aria-label={zoomed.name}>
+          <div className="stadium-zoom-card">
+            <PlayerCard player={zoomed} width={180} className="stadium-card-img" />
+          </div>
+          <div className="text-lg font-semibold">{zoomed.name}</div>
+          {zs && (
+            <div className="grid grid-cols-3 gap-x-6 gap-y-3 text-center">
+              {[
+                { v: zs.goals, l: 'gol' },
+                { v: zs.appearances, l: 'presenze' },
+                { v: zs.winRate === null ? '—' : `${Math.round(zs.winRate * 100)}%`, l: 'vittorie' },
+                { v: zs.motm, l: 'MOTM' },
+              ].map(({ v, l }) => (
+                <div key={l}>
+                  <div className="text-xl font-semibold leading-none tabular-nums">{v}</div>
+                  <div className="text-[11px] mt-1" style={{ color: '#8a96a8' }}>{l}</div>
+                </div>
+              ))}
+              <div className="col-span-2 flex flex-col items-center justify-center">
+                <FormDots form={zs.form} size={8} />
+                <div className="text-[11px] mt-1.5" style={{ color: '#8a96a8' }}>forma</div>
+              </div>
+            </div>
+          )}
+          <Link
+            href={`/players/${zoomed.id}`}
+            onClick={(e) => e.stopPropagation()}
+            className="text-[13px] font-semibold px-4 py-2 rounded-full"
+            style={{ background: 'rgba(91,156,255,0.15)', color: '#5b9cff', border: '1px solid rgba(91,156,255,0.35)' }}
+          >
+            Vedi profilo
+          </Link>
+          <div className="text-[11px]" style={{ color: '#8a96a8' }}>tocca per chiudere</div>
+        </div>
+      )}
+    </>
+  )
+}
