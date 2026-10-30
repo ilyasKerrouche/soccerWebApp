@@ -44,9 +44,9 @@ export default function PullToRefresh() {
       <div
         className="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold transition-all"
         style={{
-          background: 'rgba(167,139,250,0.15)',
-          border: '1px solid rgba(167,139,250,0.3)',
-          color: '#a78bfa',
+          background: 'rgba(91,156,255,0.15)',
+          border: '1px solid rgba(91,156,255,0.3)',
+          color: '#5b9cff',
           opacity: progress,
           transform: `scale(${0.8 + progress * 0.2})`,
         }}

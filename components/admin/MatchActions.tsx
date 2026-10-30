@@ -25,7 +25,7 @@ export default function MatchActions({ onDelete, onDuplicate }: Props) {
         onClick={handleDuplicate}
         disabled={dupPending}
         className="text-xs font-bold px-3 py-2 rounded-xl border border-brand/25 text-brand hover:bg-brand/10 transition-colors disabled:opacity-50"
-        style={{ background: 'rgba(167,139,250,0.07)' }}
+        style={{ background: 'rgba(91,156,255,0.07)' }}
       >
         {dupPending ? '…' : '⧉ Duplica'}
       </button>

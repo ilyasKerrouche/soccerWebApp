@@ -238,7 +238,7 @@ export default function MatchForm({ players, existing, onSave }: Props) {
               type="button"
               onClick={shuffle}
               className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl transition-all hover:opacity-80"
-              style={{ background: 'linear-gradient(135deg,rgba(124,58,237,0.25),rgba(99,102,241,0.2))', border: '1px solid rgba(167,139,250,0.3)', color: '#a78bfa' }}
+              style={{ background: 'rgba(91,156,255,0.15)', border: '1px solid rgba(91,156,255,0.3)', color: '#5b9cff' }}
             >
               🔀 Shuffle team
             </button>
@@ -273,7 +273,7 @@ export default function MatchForm({ players, existing, onSave }: Props) {
         type="submit"
         disabled={loading}
         className="w-full font-black py-4 rounded-2xl text-sm transition-opacity hover:opacity-90 disabled:opacity-50"
-        style={{ background: 'linear-gradient(135deg,#7c3aed,#6366f1)', color: 'white' }}
+        style={{ background: '#5b9cff', color: 'white' }}
       >
         {loading ? 'Salvataggio…' : '💾 Salva partita'}
       </button>

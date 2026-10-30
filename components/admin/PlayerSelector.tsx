@@ -48,14 +48,14 @@ export default function PlayerSelector({ players, value, onChange }: Props) {
   }
 
   const chipStyle = (team: 'a' | 'b') => ({
-    background: team === 'a' ? 'rgba(167,139,250,0.12)' : 'rgba(99,102,241,0.12)',
-    border: `1px solid ${team === 'a' ? 'rgba(167,139,250,0.3)' : 'rgba(99,102,241,0.3)'}`,
+    background: team === 'a' ? 'rgba(91,156,255,0.12)' : 'rgba(138,150,168,0.12)',
+    border: `1px solid ${team === 'a' ? 'rgba(91,156,255,0.3)' : 'rgba(138,150,168,0.3)'}`,
   })
 
   const dropZoneStyle = (active: boolean) => ({
     minHeight: 90,
-    background: active ? 'rgba(167,139,250,0.06)' : 'rgba(255,255,255,0.02)',
-    border: `1px dashed ${active ? 'rgba(167,139,250,0.4)' : 'rgba(255,255,255,0.1)'}`,
+    background: active ? 'rgba(91,156,255,0.06)' : 'rgba(255,255,255,0.02)',
+    border: `1px dashed ${active ? 'rgba(91,156,255,0.4)' : 'rgba(255,255,255,0.1)'}`,
     borderRadius: 12,
     padding: 6,
     display: 'flex' as const,
@@ -72,10 +72,10 @@ export default function PlayerSelector({ players, value, onChange }: Props) {
         {(['a', 'b'] as const).map(team => (
           <div key={team}>
             <div className="flex items-center justify-between mb-1.5">
-              <span className="text-[9px] font-black uppercase tracking-wider" style={{ color: team === 'a' ? '#a78bfa' : '#818cf8' }}>
+              <span className="text-[9px] font-black uppercase tracking-wider" style={{ color: team === 'a' ? '#5b9cff' : '#8a96a8' }}>
                 Team {team.toUpperCase()}
               </span>
-              <span className="text-[9px]" style={{ color: team === 'a' ? 'rgba(167,139,250,0.5)' : 'rgba(99,102,241,0.5)' }}>
+              <span className="text-[9px]" style={{ color: team === 'a' ? 'rgba(91,156,255,0.5)' : 'rgba(138,150,168,0.5)' }}>
                 {(team === 'a' ? teamA : teamB).length} giocatori
               </span>
             </div>

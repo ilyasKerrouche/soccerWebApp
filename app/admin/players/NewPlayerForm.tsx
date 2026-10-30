@@ -33,7 +33,7 @@ export default function NewPlayerForm() {
       <button
         onClick={() => setOpen(true)}
         className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-black border border-dashed border-brand/30 text-brand/60 hover:border-brand/60 hover:text-brand transition-all"
-        style={{ background: 'rgba(167,139,250,0.05)' }}
+        style={{ background: 'rgba(91,156,255,0.05)' }}
       >
         ＋ Aggiungi giocatore
       </button>
@@ -41,7 +41,7 @@ export default function NewPlayerForm() {
   }
 
   return (
-    <form ref={formRef} onSubmit={handleSubmit} className="rounded-2xl p-4 flex flex-col gap-3" style={{ background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.2)' }}>
+    <form ref={formRef} onSubmit={handleSubmit} className="rounded-2xl p-4 flex flex-col gap-3" style={{ background: 'rgba(91,156,255,0.08)', border: '1px solid rgba(91,156,255,0.2)' }}>
       <div className="text-xs font-black text-brand mb-1">Nuovo giocatore</div>
 
       <input
@@ -83,7 +83,7 @@ export default function NewPlayerForm() {
           type="submit"
           disabled={pending}
           className="flex-1 py-2.5 rounded-xl text-sm font-black text-white disabled:opacity-50 transition-opacity"
-          style={{ background: 'linear-gradient(135deg,#7c3aed,#6366f1)' }}
+          style={{ background: '#5b9cff' }}
         >
           {pending ? 'Salvo…' : 'Aggiungi'}
         </button>

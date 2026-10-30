@@ -37,8 +37,8 @@ export default function CardUploadForm() {
         type="button"
         disabled={pending}
         onClick={() => ref.current?.click()}
-        className="w-full font-black py-3 rounded-xl text-sm disabled:opacity-50 transition-opacity"
-        style={{ background: 'linear-gradient(135deg,#7c3aed,#6366f1)', color: 'white' }}
+        className="w-full font-semibold py-3 rounded-xl text-sm disabled:opacity-50 transition-opacity"
+        style={{ background: '#5b9cff', color: 'white' }}
       >
         {pending ? 'Caricamento…' : 'Carica la tua card'}
       </button>

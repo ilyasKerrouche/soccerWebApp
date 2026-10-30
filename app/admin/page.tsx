@@ -24,8 +24,7 @@ export default async function AdminPage() {
   return (
     <main className="pb-8">
       {/* Header */}
-      <div className="relative overflow-hidden px-4 pt-10 pb-7" style={{ background: 'linear-gradient(135deg,#1e1b4b 0%,#312e81 50%,#4c1d95 100%)' }}>
-        <div className="absolute -top-10 -right-8 w-44 h-44 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle,rgba(167,139,250,.4) 0%,transparent 70%)' }} />
+      <div className="relative overflow-hidden px-4 pt-10 pb-7">
         <div className="relative z-10 flex items-center justify-between">
           <div>
             <div className="text-[10px] tracking-[3px] uppercase text-white/40 mb-1">Pannello</div>
@@ -45,7 +44,7 @@ export default async function AdminPage() {
           <Link
             href="/admin/matches/new"
             className="flex items-center justify-center gap-2 font-black py-4 rounded-2xl text-sm transition-opacity hover:opacity-90"
-            style={{ background: 'linear-gradient(135deg,#7c3aed,#6366f1)', color: 'white' }}
+            style={{ background: '#5b9cff', color: 'white' }}
           >
             ➕ Nuova partita
           </Link>
