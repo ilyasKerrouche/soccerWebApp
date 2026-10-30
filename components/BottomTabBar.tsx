@@ -46,9 +46,10 @@ export default function BottomTabBar() {
     <nav
       className="fixed top-0 left-0 right-0 md:left-auto md:right-auto md:max-w-md md:w-full z-50"
       style={{
-        background: 'rgba(6,6,15,0.9)',
+        background: 'rgba(13,20,32,0.88)',
         backdropFilter: 'blur(24px)',
-        borderBottom: '1px solid rgba(255,255,255,0.07)',
+        WebkitBackdropFilter: 'blur(24px)',
+        borderBottom: '1px solid rgba(255,255,255,0.08)',
         paddingTop: 'env(safe-area-inset-top)',
       }}
     >
@@ -61,14 +62,14 @@ export default function BottomTabBar() {
               key={tab.href}
               href={tab.href}
               className={`relative flex-1 min-w-0 flex items-center justify-center text-[12px] whitespace-nowrap transition-colors ${
-                isActive ? 'text-white font-semibold' : 'text-white/35 font-medium hover:text-white/60'
+                isActive ? 'text-white font-semibold' : 'text-muted font-medium hover:text-white'
               }`}
             >
               {tab.label}
               {isActive && (
                 <span
                   className="absolute left-2 right-2 bottom-0 h-[2px] rounded-full"
-                  style={{ background: '#a78bfa' }}
+                  style={{ background: '#5b9cff' }}
                 />
               )}
             </Link>
@@ -92,7 +93,7 @@ export default function BottomTabBar() {
               href="/profilo"
               aria-label="Il tuo profilo"
               className={`text-[12px] truncate transition-colors ${
-                pathname === '/profilo' ? 'text-white font-semibold' : 'text-white/60 font-medium hover:text-white'
+                pathname === '/profilo' ? 'text-white font-semibold' : 'text-brand font-medium hover:text-white'
               }`}
             >
               {headerCard.status === 'approved' ? headerCard.name : 'Profilo'}

@@ -35,8 +35,8 @@ export default function RootLayout({
         {/* Prima del primo disegno: decide se le card del campo in home fanno l'entrata */}
         <script dangerouslySetInnerHTML={{ __html: STADIUM_SEEN_SCRIPT }} />
         {/* Desktop: centrato con sfondo scuro ai lati */}
-        <div className="min-h-screen md:flex md:items-start md:justify-center" style={{ background: '#03030a' }}>
-          <div className="w-full md:max-w-md md:min-h-screen relative" style={{ background: '#06060f' }}>
+        <div className="min-h-screen md:flex md:items-start md:justify-center" style={{ background: '#080d16' }}>
+          <div className="w-full md:max-w-md md:min-h-screen relative" style={{ background: '#0d1420' }}>
             {/* Top nav su desktop */}
             <BottomTabBar />
             <div className="pt-14">

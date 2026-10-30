@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 body {
-  background-color: #06060f;
-  color: white;
+  background-color: #0d1420;
+  color: #e8ecf2;
   font-family: var(--font-geist), system-ui, sans-serif;
   color-scheme: dark;
 }
@@ -14,8 +14,8 @@ input, select, textarea {
 }
 
 select option {
-  background: #0d0d1f;
-  color: white;
+  background: #1a2536;
+  color: #e8ecf2;
 }
 
 /* Cifre incolonnate: nelle classifiche le colonne numeriche devono allinearsi. */
@@ -27,24 +27,13 @@ select option {
 
 /* Filetto di separazione: sostituisce le scatole dove serve solo dividere. */
 .rule {
-  border-top: 1px solid rgba(255,255,255,0.07);
+  border-top: 1px solid rgba(255,255,255,0.08);
 }
 
-/* Glass card utility */
+/* Riquadro della v2 (come i Card della home): superficie piena e bordo sottile */
 .glass {
-  background: rgba(255,255,255,0.05);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: #141d2b;
   border: 1px solid rgba(255,255,255,0.08);
-}
-
-/* Hero gradient orb */
-.hero-gradient {
-  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4c1d95 100%);
-}
-
-.glow-violet {
-  text-shadow: 0 0 24px rgba(167,139,250,0.5);
 }
 
 @keyframes fadeInUp {
