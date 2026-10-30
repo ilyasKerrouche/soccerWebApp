@@ -5,7 +5,11 @@ il primo numero cambia con un restyling o un cambiamento grosso, il secondo con 
 
 ## [Unreleased] — 2.0.0
 
-Restyling completo dell'app.
+Restyling completo dell'app (in corso).
+
+## [1.1.0] — 2026-10-30
+
+Prima parte del restyling: la nuova homepage.
 
 ### Nuova homepage
 - Ultima partita su un campo 3D realistico con le card vere dei giocatori e targhette con i nomi (dorata per il MOTM)
