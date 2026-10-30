@@ -89,8 +89,8 @@ export async function rejectAccount(userId: string): Promise<void> {
   const account = await getAccount(userId)
   if (!account) return
 
-  const { error } = await supabase.from('player_accounts').delete().eq('user_id', userId)
-  if (error) throw new Error(error.message)
+  // Prima l'utente auth: la cascata elimina la riga player_accounts. Se fallisce nulla e' cambiato e si puo' riprovare.
+  await deleteAuthUser(userId)
 
   if (account.is_new_player) {
     // Solo se e' ancora inattivo: un giocatore gia' approvato non va toccato
@@ -99,17 +99,15 @@ export async function rejectAccount(userId: string): Promise<void> {
       .delete()
       .eq('id', account.player_id)
       .eq('is_active', false)
-    if (pErr) throw new Error(pErr.message)
+    // Un giocatore inattivo orfano e' innocuo: non blocchiamo l'operazione
+    if (pErr) console.error('rejectAccount: player cleanup failed', pErr)
   }
-  await deleteAuthUser(userId)
   revalidateAccounts(account.is_new_player)
 }
 
 export async function unlinkAccount(userId: string): Promise<void> {
   await requireAdmin()
-  const supabase = createAdminClient()
-  const { error } = await supabase.from('player_accounts').delete().eq('user_id', userId)
-  if (error) throw new Error(error.message)
+  // La cascata auth.users -> player_accounts elimina anche la riga
   await deleteAuthUser(userId)
   revalidateAccounts(false)
 }
