@@ -27,8 +27,10 @@ export async function castVote(matchId: string, votedPlayerId: string): Promise<
       now: new Date(),
     })
     if (error) return { error }
+    // voteError garantisce l'account, ma lo restringiamo esplicitamente
+    if (!session?.account) return { error: 'Accedi con un account approvato per votare' }
 
-    await upsertVote(matchId, session!.account!.player_id, votedPlayerId)
+    await upsertVote(matchId, session.account.player_id, votedPlayerId)
     revalidatePath('/matches/' + matchId)
     return {}
   } catch (e) {

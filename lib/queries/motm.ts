@@ -4,13 +4,31 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { tallyMotm, type VoteRow } from '@/lib/motm'
 
+const PAGE = 1000
+
+// PostgREST taglia le risposte a 1000 righe: si legge a pagine finche' una e' corta.
+async function fetchAll<T>(
+  page: (from: number, to: number) => PromiseLike<{ data: T[] | null; error: { message: string } | null }>,
+): Promise<T[]> {
+  const rows: T[] = []
+  for (let from = 0; ; from += PAGE) {
+    const { data, error } = await page(from, from + PAGE - 1)
+    if (error) throw new Error(error.message)
+    rows.push(...(data ?? []))
+    if (!data || data.length < PAGE) return rows
+  }
+}
+
 export async function getVotesForMatch(matchId: string): Promise<VoteRow[]> {
-  const { data, error } = await createAdminClient()
-    .from('motm_votes')
-    .select('voter_player_id, voted_player_id')
-    .eq('match_id', matchId)
-  if (error) throw new Error(error.message)
-  return (data ?? []) as VoteRow[]
+  const supabase = createAdminClient()
+  return fetchAll<VoteRow>((from, to) =>
+    supabase
+      .from('motm_votes')
+      .select('voter_player_id, voted_player_id')
+      .eq('match_id', matchId)
+      .order('id')
+      .range(from, to),
+  )
 }
 
 export async function getMyVote(matchId: string, voterPlayerId: string): Promise<string | null> {
@@ -58,17 +76,29 @@ export async function getMotmWinnersByMatch(matchIds: string[]): Promise<Record<
   const closedIds = (closed ?? []).map(m => m.id as string)
   if (closedIds.length === 0) return {}
 
-  const [votesRes, lineupRes] = await Promise.all([
-    supabase.from('motm_votes').select('match_id, voter_player_id, voted_player_id').in('match_id', closedIds),
-    supabase.from('match_players').select('match_id, player_id').in('match_id', closedIds),
+  const [votes, lineup] = await Promise.all([
+    fetchAll<VoteRow & { match_id: string }>((from, to) =>
+      supabase
+        .from('motm_votes')
+        .select('match_id, voter_player_id, voted_player_id')
+        .in('match_id', closedIds)
+        .order('id')
+        .range(from, to),
+    ),
+    fetchAll<{ match_id: string; player_id: string }>((from, to) =>
+      supabase
+        .from('match_players')
+        .select('match_id, player_id')
+        .in('match_id', closedIds)
+        .order('id')
+        .range(from, to),
+    ),
   ])
-  if (votesRes.error) throw new Error(votesRes.error.message)
-  if (lineupRes.error) throw new Error(lineupRes.error.message)
 
   const votesBy: Record<string, VoteRow[]> = {}
-  for (const v of votesRes.data ?? []) (votesBy[v.match_id] ??= []).push(v as VoteRow)
+  for (const v of votes) (votesBy[v.match_id] ??= []).push(v)
   const lineupBy: Record<string, string[]> = {}
-  for (const l of lineupRes.data ?? []) (lineupBy[l.match_id] ??= []).push(l.player_id as string)
+  for (const l of lineup) (lineupBy[l.match_id] ??= []).push(l.player_id)
 
   const result: Record<string, string[]> = {}
   for (const id of closedIds) {

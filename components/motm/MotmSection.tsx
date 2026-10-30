@@ -9,7 +9,21 @@ import { motmStatus, tallyMotm } from '@/lib/motm'
 import type { MatchWithPlayers } from '@/lib/types'
 
 // Server component: ai client arrivano solo aggregati e il voto dell'utente stesso.
+// Un errore nel caricamento non deve mai far cadere la pagina partita.
 export default async function MotmSection({ match }: { match: MatchWithPlayers }) {
+  try {
+    return await renderMotm(match)
+  } catch (e) {
+    console.error('MotmSection failed', e)
+    return (
+      <section className="glass rounded-2xl p-4 mt-4">
+        <p className="text-xs text-white/40">Man of the Match non disponibile al momento</p>
+      </section>
+    )
+  }
+}
+
+async function renderMotm(match: MatchWithPlayers) {
   const closesAt = match.motm_closes_at
   const status = motmStatus(closesAt, new Date())
   if (closesAt === null || status === 'none') return null
@@ -54,9 +68,15 @@ export default async function MotmSection({ match }: { match: MatchWithPlayers }
 
   // Voto aperto
   const approved = await getApprovedPlayerIds(lineupIds)
+  // N sulla stessa popolazione di M: solo votanti con account approvato
+  const approvedSet = new Set(approved)
+  const votersCount = tallyMotm(
+    votes.filter(v => approvedSet.has(v.voter_player_id)),
+    lineupIds,
+  ).votersCount
   const progress = (
     <p className="text-xs text-white/40 mt-3">
-      {tally.votersCount} su {approved.length} hanno votato
+      {votersCount} su {approved.length} hanno votato
     </p>
   )
   const header = <MotmCountdown closesAt={closesAt} />

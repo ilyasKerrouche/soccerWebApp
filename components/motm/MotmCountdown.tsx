@@ -8,7 +8,7 @@ export default function MotmCountdown({ closesAt }: { closesAt: string }) {
   const router = useRouter()
   const refreshed = useRef(false)
   const end = new Date(closesAt).getTime()
-  const [msLeft, setMsLeft] = useState(() => end - Date.now())
+  const [msLeft, setMsLeft] = useState<number | null>(null)
 
   useEffect(() => {
     const tick = () => setMsLeft(end - Date.now())
@@ -18,12 +18,15 @@ export default function MotmCountdown({ closesAt }: { closesAt: string }) {
   }, [end])
 
   useEffect(() => {
-    if (msLeft <= 0 && !refreshed.current) {
+    if (msLeft !== null && msLeft <= 0 && !refreshed.current) {
       refreshed.current = true
       router.refresh()
     }
   }, [msLeft, router])
 
+  if (msLeft === null) {
+    return <span className="inline-block w-20 h-6 rounded-full bg-white/5" aria-hidden />
+  }
   if (msLeft <= 0) {
     return <span className="text-xs font-bold text-white/50">Votazione chiusa</span>
   }
