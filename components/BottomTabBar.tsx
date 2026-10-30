@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import PlayerCard from '@/components/PlayerCard'
-import { getHeaderCard } from '@/app/profilo/actions'
+import { getHeaderCard, type HeaderCard } from '@/app/profilo/actions'
 
 const tabs = [
   { href: '/', label: 'Home' },
@@ -11,12 +11,15 @@ const tabs = [
   { href: '/stats', label: 'Statistiche' },
 ]
 
-type HeaderCard = Awaited<ReturnType<typeof getHeaderCard>>
+// Pagine dove lo stato di login cambia: entrando o uscendo da una di queste si rilegge la card
+const AUTH_PATHS = ['/accedi', '/registrati', '/profilo', '/reimposta-password', '/password-dimenticata']
 
 export default function BottomTabBar() {
   const pathname = usePathname()
   // undefined = in caricamento: si riserva lo spazio per non far saltare l'header.
-  const [headerCard, setHeaderCard] = useState<HeaderCard | undefined>(undefined)
+  const [headerCard, setHeaderCard] = useState<HeaderCard | null | undefined>(undefined)
+  // Cambia solo passando da/verso una pagina di AUTH_PATHS, non a ogni navigazione
+  const authKey = AUTH_PATHS.find((p) => pathname === p || pathname.startsWith(p + '/')) ?? 'other'
 
   useEffect(() => {
     let cancelled = false
@@ -31,7 +34,7 @@ export default function BottomTabBar() {
       cancelled = true
       window.removeEventListener('calcetto:card-updated', load)
     }
-  }, [pathname])
+  }, [authKey])
   const isAdmin = pathname.startsWith('/admin')
 
   const active = (href: string) =>
@@ -75,10 +78,26 @@ export default function BottomTabBar() {
             <Link href="/accedi" className="text-[12px] font-medium text-white/60 hover:text-white transition-colors">
               Accedi
             </Link>
+          ) : headerCard.status === 'pending' ? (
+            <Link
+              href="/profilo"
+              aria-label="Il tuo profilo"
+              className="flex items-center justify-center w-7 h-7 rounded-full glass text-[14px]"
+            >
+              👤
+            </Link>
           ) : (
             <Link href="/profilo" aria-label="Il tuo profilo">
               <PlayerCard
-                player={{ id: '', ovr: null, is_active: true, created_at: '', ...headerCard }}
+                player={{
+                  id: '',
+                  ovr: null,
+                  is_active: true,
+                  created_at: '',
+                  name: headerCard.name,
+                  card_url: headerCard.card_url,
+                  position: headerCard.position,
+                }}
                 width={22}
               />
             </Link>
