@@ -13,11 +13,15 @@ test('cardFileError rejects unsupported types', () => {
   )
 })
 
-test('cardFileError rejects files over 5 MB', () => {
+test('cardFileError rejects files over 4 MB', () => {
   assert.equal(
-    cardFileError({ type: 'image/jpeg', size: 5 * 1024 * 1024 + 1 }),
-    'File troppo grande (max 5 MB)'
+    cardFileError({ type: 'image/jpeg', size: 4 * 1024 * 1024 + 1 }),
+    'File troppo grande (max 4 MB)'
   )
+})
+
+test('cardFileError accepts a file of exactly 4 MB', () => {
+  assert.equal(cardFileError({ type: 'image/webp', size: 4 * 1024 * 1024 }), null)
 })
 
 test('cardFileError rejects empty files', () => {

@@ -2,7 +2,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { computeRecord } from '@/lib/rating'
-import { cardExtension, sniffImageType } from '@/lib/cardFile'
+import { cardExtension, sniffImageType, UNSUPPORTED_FORMAT } from '@/lib/cardFile'
 import type { Player, PlayerWithStats, MatchWithPlayers, GoalkeeperStats, PlayerWithGoalkeeperStats } from '@/lib/types'
 
 export async function getAllPlayers(): Promise<Player[]> {
@@ -82,9 +82,9 @@ export async function updatePlayerCardUrl(id: string, card_url: string): Promise
 // con cardFileError. Il ?v= evita che CDN/browser servano la card precedente.
 export async function storePlayerCard(playerId: string, file: File): Promise<string> {
   const ext = cardExtension(file.type)
-  if (!ext) throw new Error('Formato non supportato (usa PNG, JPG o WEBP)')
+  if (!ext) throw new Error(UNSUPPORTED_FORMAT)
   const head = new Uint8Array(await file.slice(0, 12).arrayBuffer())
-  if (sniffImageType(head) !== file.type) throw new Error('Formato non supportato (usa PNG, JPG o WEBP)')
+  if (sniffImageType(head) !== file.type) throw new Error(UNSUPPORTED_FORMAT)
   const supabase = createAdminClient()
   const path = `${playerId}.${ext}`
 

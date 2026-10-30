@@ -1,5 +1,6 @@
 // lib/cardFile.ts
-const MAX_BYTES = 5 * 1024 * 1024
+const MAX_BYTES = 4 * 1024 * 1024
+export const UNSUPPORTED_FORMAT = 'Formato non supportato (usa PNG, JPG o WEBP)'
 const EXT_BY_TYPE: Record<string, string> = {
   'image/png': 'png',
   'image/jpeg': 'jpg',
@@ -13,8 +14,8 @@ export function cardExtension(type: string): string | null {
 
 export function cardFileError(f: { type: string; size: number }): string | null {
   if (f.size === 0) return 'Nessun file selezionato'
-  if (!cardExtension(f.type)) return 'Formato non supportato (usa PNG, JPG o WEBP)'
-  if (f.size > MAX_BYTES) return 'File troppo grande (max 5 MB)'
+  if (!cardExtension(f.type)) return UNSUPPORTED_FORMAT
+  if (f.size > MAX_BYTES) return 'File troppo grande (max 4 MB)'
   return null
 }
 
