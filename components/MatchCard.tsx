@@ -2,9 +2,10 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import type { MatchWithPlayers } from '@/lib/types'
+import MotmBadge from '@/components/motm/MotmBadge'
 
 
-export default function MatchCard({ match }: { match: MatchWithPlayers }) {
+export default function MatchCard({ match, motmNames = [] }: { match: MatchWithPlayers; motmNames?: string[] }) {
   const [expanded, setExpanded] = useState(false)
 
   const date = new Date(match.played_at).toLocaleDateString('it-IT', {
@@ -52,6 +53,7 @@ export default function MatchCard({ match }: { match: MatchWithPlayers }) {
             {isDraw ? 'Pareggio' : `Vince ${aWins ? match.team_a_name : match.team_b_name}`}
           </div>
           <div className="text-[11px] text-white/30 mt-0.5">{date}</div>
+          {motmNames.length > 0 && <div className="mt-1"><MotmBadge names={motmNames} /></div>}
         </div>
 
         {/* Expand arrow */}

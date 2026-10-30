@@ -2,6 +2,7 @@ import Link from 'next/link'
 import PlayerCard from '@/components/PlayerCard'
 import MotmCountdown from './MotmCountdown'
 import MotmVoteGrid from './MotmVoteGrid'
+import MotmBadge from './MotmBadge'
 import { getSessionAccount } from '@/lib/session'
 import { getApprovedPlayerIds } from '@/lib/queries/accounts'
 import { getMyVote, getVotesForMatch } from '@/lib/queries/motm'
@@ -50,6 +51,8 @@ async function renderMotm(match: MatchWithPlayers) {
       return shell(<p className="text-xs text-white/40">Nessun MOTM per questa partita</p>)
     }
     return shell(
+      <>
+      <div className="flex justify-center mb-3"><MotmBadge names={winners.map(p => p.name)} /></div>
       <div className="flex flex-wrap justify-center gap-4">
         {winners.map(p => (
           <div key={p.id} className="flex flex-col items-center gap-1.5">
@@ -62,7 +65,8 @@ async function renderMotm(match: MatchWithPlayers) {
             </span>
           </div>
         ))}
-      </div>,
+      </div>
+      </>,
     )
   }
 

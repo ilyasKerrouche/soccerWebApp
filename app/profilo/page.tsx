@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import PlayerCard from '@/components/PlayerCard'
+import MotmCounter from '@/components/motm/MotmCounter'
+import { getMotmCounts } from '@/lib/queries/motm'
 import { getSessionAccount } from '@/lib/session'
 import { signOutAction } from '@/app/accedi/actions'
 import CardUploadForm from './CardUploadForm'
@@ -35,12 +37,19 @@ export default async function ProfiloPage() {
   }
 
   const approved = account.status === 'approved'
+  let motmCount = 0
+  try {
+    motmCount = (await getMotmCounts())[player.id] ?? 0
+  } catch (e) {
+    console.error('MOTM counts failed', e)
+  }
 
   return (
     <div className="max-w-sm mx-auto px-4 pt-20 pb-10">
       <div className="flex flex-col items-center gap-4">
         <PlayerCard player={player} width={200} />
         <h1 className="text-xl font-black">{player.name}</h1>
+        {motmCount >= 1 && <MotmCounter count={motmCount} />}
       </div>
 
       <div className="mt-6 space-y-3">
