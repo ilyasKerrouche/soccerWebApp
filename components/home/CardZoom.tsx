@@ -56,7 +56,7 @@ export default function CardZoom({ player, stats, origin, reduced, onClosed }: P
     <div ref={backdrop} className="stadium-zoom" onClick={close} role="dialog" aria-label={player.name}>
       {/* Senza filter: un drop-shadow ricalcolato a ogni fotogramma mentre la card cambia scala rende l'animazione a scatti */}
       <div ref={card} className="stadium-zoom-card">
-        <PlayerCard player={player} width={180} className="stadium-zoom-img" />
+        <PlayerCard player={player} width={180} className="stadium-zoom-img" eager />
       </div>
       <div ref={details} className="flex flex-col items-center gap-4">
         {stats && (
