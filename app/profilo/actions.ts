@@ -1,6 +1,8 @@
 // app/profilo/actions.ts
 'use server'
 import { revalidatePath } from 'next/cache'
+import { cookies } from 'next/headers'
+import { verifyAdminToken } from '@/lib/auth'
 import { getSessionAccount } from '@/lib/session'
 import { storePlayerCard } from '@/lib/queries/players'
 import { cardFileError, UNSUPPORTED_FORMAT } from '@/lib/cardFile'
@@ -34,15 +36,18 @@ export async function uploadMyCard(formData: FormData): Promise<{ error?: string
 }
 
 export type HeaderCard =
-  | { status: 'approved'; name: string; card_url: string | null; position: string | null }
+  | { status: 'admin' }
+  | { status: 'approved'; name: string }
   | { status: 'pending' }
 
-// Dati minimi per l'ingresso nell'header (BottomTabBar). Null se non loggato o senza account.
-// Finche' l'admin non approva, la card del giocatore richiesto non viene mostrata come propria.
+// Chi c'e' nell'header (BottomTabBar). Null se non loggato o senza account.
+// L'admin ha la precedenza. Finche' l'admin non approva, il nome del giocatore richiesto non viene mostrato come proprio.
 export async function getHeaderCard(): Promise<HeaderCard | null> {
+  const adminToken = cookies().get('calc_admin')?.value
+  if (adminToken && (await verifyAdminToken(adminToken))) return { status: 'admin' }
+
   const session = await getSessionAccount()
   if (!session?.account || !session.player) return null
   if (session.account.status !== 'approved') return { status: 'pending' }
-  const { name, card_url, position } = session.player
-  return { status: 'approved', name, card_url, position }
+  return { status: 'approved', name: session.player.name.trim().split(/\s+/)[0] }
 }

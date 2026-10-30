@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import SignInForm from './SignInForm'
 
 export default function AccediPage({ searchParams }: { searchParams: { next?: string; errore?: string } }) {
@@ -17,6 +18,11 @@ export default function AccediPage({ searchParams }: { searchParams: { next?: st
         )}
         <div className="glass rounded-2xl p-6">
           <SignInForm next={searchParams.next ?? ''} />
+        </div>
+        <div className="text-center mt-6">
+          <Link href="/admin/login" className="text-xs text-white/25 hover:text-white/50 transition-colors">
+            Accesso admin
+          </Link>
         </div>
       </div>
     </div>

@@ -2,7 +2,6 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import PlayerCard from '@/components/PlayerCard'
 import { getHeaderCard, type HeaderCard } from '@/app/profilo/actions'
 
 const tabs = [
@@ -18,8 +17,11 @@ export default function BottomTabBar() {
   const pathname = usePathname()
   // undefined = in caricamento: si riserva lo spazio per non far saltare l'header.
   const [headerCard, setHeaderCard] = useState<HeaderCard | null | undefined>(undefined)
-  // Cambia solo passando da/verso una pagina di AUTH_PATHS, non a ogni navigazione
-  const authKey = AUTH_PATHS.find((p) => pathname === p || pathname.startsWith(p + '/')) ?? 'other'
+  // Cambia solo passando da/verso una pagina di AUTH_PATHS, non a ogni navigazione.
+  // Nell'admin conta la pagina esatta: login e logout passano da /admin a /admin/login e viceversa.
+  const authKey = pathname.startsWith('/admin')
+    ? pathname
+    : AUTH_PATHS.find((p) => pathname === p || pathname.startsWith(p + '/')) ?? 'other'
 
   useEffect(() => {
     let cancelled = false
@@ -73,46 +75,30 @@ export default function BottomTabBar() {
           )
         })}
 
-        <div className="flex items-center justify-center flex-shrink-0 pl-2" style={{ width: 44 }}>
+        <div className="flex items-center justify-end flex-shrink-0 pl-2 pr-1 min-w-[56px] max-w-[96px]">
           {headerCard === undefined ? null : headerCard === null ? (
             <Link href="/accedi" className="text-[12px] font-medium text-white/60 hover:text-white transition-colors">
               Accedi
             </Link>
-          ) : headerCard.status === 'pending' ? (
+          ) : headerCard.status === 'admin' ? (
+            <Link
+              href="/admin"
+              className={`text-[12px] transition-colors ${isAdmin ? 'text-brand font-semibold' : 'text-white/60 font-medium hover:text-white'}`}
+            >
+              Admin
+            </Link>
+          ) : (
             <Link
               href="/profilo"
               aria-label="Il tuo profilo"
-              className="flex items-center justify-center w-7 h-7 rounded-full glass text-[14px]"
+              className={`text-[12px] truncate transition-colors ${
+                pathname === '/profilo' ? 'text-white font-semibold' : 'text-white/60 font-medium hover:text-white'
+              }`}
             >
-              👤
-            </Link>
-          ) : (
-            <Link href="/profilo" aria-label="Il tuo profilo">
-              <PlayerCard
-                player={{
-                  id: '',
-                  ovr: null,
-                  is_active: true,
-                  created_at: '',
-                  name: headerCard.name,
-                  card_url: headerCard.card_url,
-                  position: headerCard.position,
-                }}
-                width={22}
-              />
+              {headerCard.status === 'approved' ? headerCard.name : 'Profilo'}
             </Link>
           )}
         </div>
-
-        <Link
-          href="/admin"
-          aria-label="Admin"
-          className={`flex items-center justify-center pl-3 pr-1 text-[12px] flex-shrink-0 transition-colors ${
-            isAdmin ? 'text-brand font-semibold' : 'text-white/20 hover:text-white/40'
-          }`}
-        >
-          Admin
-        </Link>
       </div>
     </nav>
   )
