@@ -1,8 +1,8 @@
 // lib/motm.ts
 // Modulo puro: nessun import da Supabase o React, cosi' e' testabile in isolamento.
 
-/** Durata della finestra di voto: 3 giorni. */
-export const MOTM_DURATION_MS = 3 * 24 * 60 * 60 * 1000
+/** Durata della finestra di voto: 2 ore dal momento in cui si inserisce il risultato. */
+export const MOTM_DURATION_MS = 2 * 60 * 60 * 1000
 
 export type MotmStatus = 'none' | 'open' | 'closed'
 
