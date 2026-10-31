@@ -3,6 +3,12 @@
 Le versioni seguono [Semantic Versioning](https://semver.org/lang/it/):
 il primo numero cambia con un restyling o un cambiamento grosso, il secondo con nuove funzioni, il terzo con correzioni.
 
+## [2.0.1] — 2026-10-31
+
+### Modifiche
+- Il voto del Man of the Match dura 2 ore dall'inserimento del risultato (prima 3 giorni)
+- Quando voti si vede chiaramente: riquadro "Hai votato …" e card scelta in oro con la spunta; mentre il voto viene inviato la card mostra "Invio…"
+
 ## [2.0.0] — 2026-10-30
 
 Restyling completo: tutta l'app nello stile della nuova home.

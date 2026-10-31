@@ -38,7 +38,7 @@ async function renderMotm(match: MatchWithPlayers) {
   const shell = (children: React.ReactNode, header?: React.ReactNode) => (
     <section className="glass rounded-2xl p-4 mb-4">
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-sm font-black">⭐ Man of the Match</h2>
+        <h2 className="text-[15px] font-semibold"><span className="text-gold">★</span> Man of the Match</h2>
         {header}
       </div>
       {children}
@@ -56,11 +56,11 @@ async function renderMotm(match: MatchWithPlayers) {
       <div className="flex flex-wrap justify-center gap-4">
         {winners.map(p => (
           <div key={p.id} className="flex flex-col items-center gap-1.5">
-            <div className="rounded-xl p-1 ring-2 ring-yellow-400/70 shadow-[0_0_24px_rgba(250,204,21,.25)]">
+            <div className="rounded-xl p-1 ring-2 ring-gold/70 shadow-[0_0_24px_rgba(245,196,81,.25)]">
               <PlayerCard player={p} width={110} />
             </div>
             <div className="text-sm font-bold">{p.name}</div>
-            <span className="bg-yellow-400/15 text-yellow-300 text-[11px] font-bold px-2 py-0.5 rounded-full">
+            <span className="bg-gold/15 text-gold text-[11px] font-bold px-2 py-0.5 rounded-full">
               {tally.topVotes} {tally.topVotes === 1 ? 'voto' : 'voti'}
             </span>
           </div>
@@ -92,7 +92,6 @@ async function renderMotm(match: MatchWithPlayers) {
     const myVote = await getMyVote(match.id, account.player_id)
     return shell(
       <>
-        <p className="text-xs text-white/50 mb-3">Vota il migliore in campo</p>
         <MotmVoteGrid
           matchId={match.id}
           candidates={lineup.filter(p => p.id !== account.player_id)}

@@ -27,8 +27,8 @@ test('shouldOpenVote', () => {
   assert.equal(shouldOpenVote({ ...base, score_a: 0, score_b: 0 }), true)
 })
 
-test('closesAtFrom adds 3 days', () => {
-  assert.equal(closesAtFrom(now), '2026-11-01T20:00:00.000Z')
+test('closesAtFrom adds 2 hours', () => {
+  assert.equal(closesAtFrom(now), '2026-10-29T22:00:00.000Z')
 })
 
 test('tallyMotm', () => {
