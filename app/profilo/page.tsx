@@ -106,6 +106,7 @@ export default async function ProfiloPage() {
             Statistiche complete e storico partite →
           </Link>
           <SignOutButton />
+          <p className="text-center text-[10.5px] mt-2" style={{ color: C.muted }}>Musica: Infraction</p>
         </div>
       </div>
     </main>

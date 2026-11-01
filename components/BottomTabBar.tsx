@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { getHeaderCard, type HeaderCard } from '@/app/profilo/actions'
+import MusicButton from './MusicButton'
 
 const tabs = [
   { href: '/', label: 'Home' },
@@ -76,6 +77,9 @@ export default function BottomTabBar() {
           )
         })}
 
+        <div className="flex items-center flex-shrink-0 pl-1">
+          <MusicButton />
+        </div>
         <div className="flex items-center justify-end flex-shrink-0 pl-2 pr-1 min-w-[56px] max-w-[96px]">
           {headerCard === undefined ? null : headerCard === null ? (
             <Link href="/accedi" className="text-[12px] font-medium text-white/60 hover:text-white transition-colors">
