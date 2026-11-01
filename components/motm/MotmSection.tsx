@@ -17,7 +17,7 @@ export default async function MotmSection({ match }: { match: MatchWithPlayers }
   } catch (e) {
     console.error('MotmSection failed', e)
     return (
-      <section className="glass rounded-2xl p-4 mb-4">
+      <section className="glass rounded-2xl p-4">
         <p className="text-xs text-white/40">Man of the Match non disponibile al momento</p>
       </section>
     )
@@ -36,7 +36,7 @@ async function renderMotm(match: MatchWithPlayers) {
   const tally = tallyMotm(votes, lineupIds)
 
   const shell = (children: React.ReactNode, header?: React.ReactNode) => (
-    <section className="glass rounded-2xl p-4 mb-4">
+    <section className="glass rounded-2xl p-4">
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-[15px] font-semibold"><span className="text-gold">★</span> Man of the Match</h2>
         {header}

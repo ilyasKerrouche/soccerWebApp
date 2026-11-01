@@ -4,10 +4,10 @@ import { getLastMatch, getNextMatch, getAllMatchesWithPlayers } from '@/lib/quer
 import { getGlobalStats } from '@/lib/queries/stats'
 import { getMotmWinnersByMatch, getMotmCounts } from '@/lib/queries/motm'
 import { motmStatus } from '@/lib/motm'
-import { buildLedText, formatRomeDay, topScorers as topScorersOf } from '@/lib/homeText'
-import type { PlayerHomeStats } from '@/lib/types'
+import { buildLedText, formatRomeDay, toPlayerHomeStats, topScorers as topScorersOf } from '@/lib/homeText'
 import HomeClient from '@/components/HomeClient'
 import StadiumPitch from '@/components/home/StadiumPitch'
+import MotmCelebration from '@/components/home/MotmCelebration'
 import PullToRefresh from '@/components/PullToRefresh'
 
 export const revalidate = 60
@@ -33,16 +33,7 @@ export default async function HomePage() {
       console.error('MOTM home failed', e)
     }
   }
-  const playerStats: Record<string, PlayerHomeStats> = {}
-  for (const p of players) {
-    playerStats[p.id] = {
-      goals: p.total_goals,
-      appearances: p.total_appearances,
-      winRate: p.record && p.record.played > 0 ? p.record.win_rate : null,
-      motm: motmCounts[p.id] ?? 0,
-      form: p.record?.form ?? [],
-    }
-  }
+  const playerStats = toPlayerHomeStats(players, motmCounts)
 
   const recentMatches = allMatches.filter((m) => !m.is_upcoming).slice(0, 3)
   const topScorers = topScorersOf(players, 5)
@@ -82,6 +73,14 @@ export default async function HomePage() {
             </div>
           </Link>
           <StadiumPitch match={lastMatch} motmIds={motmIds} stats={playerStats} ledText={ledText} />
+          {motmIds.length > 0 && (
+            <MotmCelebration
+              matchId={lastMatch.id}
+              closesAt={lastMatch.motm_closes_at}
+              winners={lastMatch.match_players.filter((mp) => motmIds.includes(mp.player_id)).map((mp) => mp.player)}
+              matchLabel={`${lastMatch.team_a_name} ${scoreA} – ${scoreB} ${lastMatch.team_b_name} · ${formatRomeDay(lastMatch.played_at)}`}
+            />
+          )}
         </section>
       ) : (
         <div className="px-4 py-10 text-center text-[13px]" style={{ color: '#8a96a8' }}>
