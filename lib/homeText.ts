@@ -1,6 +1,9 @@
 // lib/homeText.ts
 // Modulo puro: testi e stati della home (LED, riquadro voto, conti alla rovescia, orari italiani).
 
+import type { PlayerHomeStats } from './types'
+import type { PlayerRecord } from './rating'
+
 export type LedInput = {
   teamA: string
   teamB: string
@@ -43,6 +46,42 @@ export function buildLedText(i: LedInput): string {
     parts.push(['PROSSIMA PARTITA', up(formatRomeDay(i.next.playedAt)), time ? `ORE ${time}` : null].filter(Boolean).join(' · '))
   }
   return parts.join(SEP)
+}
+
+/** LED di una partita ancora da giocare (dettaglio partita con le formazioni gia' inserite). */
+export function buildUpcomingLedText(i: { teamA: string; teamB: string; playedAt: string; time: string | null }): string {
+  const time = formatRomeTime(i.time)
+  const when = [up(formatRomeDay(i.playedAt)), time ? `ORE ${time}` : null].filter(Boolean).join(' · ')
+  return ['PROSSIMA PARTITA', when, `${up(i.teamA)} – ${up(i.teamB)}`].join(SEP)
+}
+
+/** Id dei migliori marcatori di ciascuna squadra (pari merito compresi); chi non ha segnato non conta. */
+export function teamTopScorers(mps: { player_id: string; team: 'a' | 'b' | null; goals: number }[]): Set<string> {
+  const top = new Set<string>()
+  for (const side of ['a', 'b'] as const) {
+    const team = mps.filter((mp) => mp.team === side)
+    const max = Math.max(0, ...team.map((mp) => mp.goals))
+    if (max > 0) team.filter((mp) => mp.goals === max).forEach((mp) => top.add(mp.player_id))
+  }
+  return top
+}
+
+/** Statistiche mostrate toccando una card sul campo (home e dettaglio partita). */
+export function toPlayerHomeStats(
+  players: { id: string; total_goals: number; total_appearances: number; record?: { played: number; win_rate: number; form: PlayerRecord['form'] } }[],
+  motmCounts: Record<string, number>,
+): Record<string, PlayerHomeStats> {
+  const out: Record<string, PlayerHomeStats> = {}
+  for (const p of players) {
+    out[p.id] = {
+      goals: p.total_goals,
+      appearances: p.total_appearances,
+      winRate: p.record && p.record.played > 0 ? p.record.win_rate : null,
+      motm: motmCounts[p.id] ?? 0,
+      form: p.record?.form ?? [],
+    }
+  }
+  return out
 }
 
 export function voteCta(v: HomeViewer | null): VoteCta {

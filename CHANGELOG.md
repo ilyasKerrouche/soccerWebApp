@@ -3,6 +3,13 @@
 Le versioni seguono [Semantic Versioning](https://semver.org/lang/it/):
 il primo numero cambia con un restyling o un cambiamento grosso, il secondo con nuove funzioni, il terzo con correzioni.
 
+## [2.2.0] — 2026-11-01
+
+### Novità
+- Dettaglio partita con il campo 3D della home: card dei giocatori, MOTM in oro, cartellone LED con risultato e marcatori, tocco su una card per le statistiche
+- Marcatori della partita in un unico elenco, con i migliori di ogni squadra evidenziati
+- Momento MOTM: a voto chiuso, la prima volta che si apre la home la card del vincitore entra girandosi e si illumina d'oro
+
 ## [2.1.0] — 2026-11-01
 
 ### Novità

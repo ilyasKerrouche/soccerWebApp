@@ -6,6 +6,12 @@ In ordine di priorità.
   - Ognuno sceglie i propri valori (valutazione e statistiche), come su fifarosters.com
   - Grafiche nostre, non quelle EA; si parte dalla card provvisoria
   - Nodo aperto: oggi i selfie vengono trasformati in "calciatore" a mano con strumenti di GenAI. Da decidere se farlo fare all'app (costo per foto, selfie inviati a un servizio esterno) o tenerlo manuale
+- [x] Bellezza: dettaglio partita con il campo 3D della home e le card di quella partita
+- [x] Bellezza: momento MOTM alla chiusura del voto (la card del vincitore si gira e si illumina d'oro, una volta sola)
+- [ ] Bellezza: transizioni tra pagine e micro-animazioni (pillola che scorre, numeri che salgono, podio che arriva)
+- [ ] Bellezza: schermate di caricamento con la forma delle pagine nuove
+- [ ] Bellezza: icona dell'app e piccolo logo del gruppo
+- [ ] Bellezza: font più sportivo (condensato, sobrio) per punteggi e statistiche
 - [ ] Squadre bilanciate automatiche per la prossima partita (in base a gol, vittorie e forma)
 - [ ] Testa a testa tra due giocatori (gol, vittorie, MOTM, insieme e contro)
 - [ ] Stagioni: archivio della stagione chiusa e ripartenza da zero ("2025/26" oggi è scritto nel codice)
