@@ -3,6 +3,14 @@
 Le versioni seguono [Semantic Versioning](https://semver.org/lang/it/):
 il primo numero cambia con un restyling o un cambiamento grosso, il secondo con nuove funzioni, il terzo con correzioni.
 
+## [2.3.0] — 2026-11-01
+
+### Novità
+- Cambio pagina con una breve dissolvenza
+- Nelle schede di home e Statistiche l'evidenziatore scivola sulla scheda scelta
+- I numeri nei riquadri e i gol del podio salgono da zero quando si apre la pagina
+- Le card del podio arrivano una dopo l'altra
+
 ## [2.2.0] — 2026-11-01
 
 ### Novità
