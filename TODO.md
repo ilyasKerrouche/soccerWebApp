@@ -7,7 +7,6 @@ In ordine di priorità.
   - Grafiche nostre, non quelle EA; si parte dalla card provvisoria
   - Nodo aperto: oggi i selfie vengono trasformati in "calciatore" a mano con strumenti di GenAI. Da decidere se farlo fare all'app (costo per foto, selfie inviati a un servizio esterno) o tenerlo manuale
 - [ ] Bellezza: dettaglio partita con il campo 3D della home e le card di quella partita
-- [ ] Bellezza: anteprima dei link su WhatsApp (immagine con risultato, squadre e MOTM)
 - [ ] Bellezza: momento MOTM alla chiusura del voto (la card del vincitore si gira e si illumina d'oro, una volta sola)
 - [ ] Bellezza: transizioni tra pagine e micro-animazioni (pillola che scorre, numeri che salgono, podio che arriva)
 - [ ] Bellezza: schermate di caricamento con la forma delle pagine nuove
