@@ -6,6 +6,7 @@ import type { GlobalStats } from '@/lib/queries/stats'
 import { sortScorers, type HomeViewer } from '@/lib/homeText'
 import { getHomeViewer } from '@/app/homeActions'
 import NextMatchCard from './NextMatchCard'
+import PillTabs from './PillTabs'
 import { C, Card, Section } from './ui'
 import VoteBox from './home/VoteBox'
 import MySummary from './home/MySummary'
@@ -50,18 +51,7 @@ export default function HomeClient({ lastMatch, nextMatch, recentMatches, stats,
       )}
 
       {/* Selettore a pillola */}
-      <div className="flex mx-4 mt-4 rounded-xl p-[3px]" style={{ background: C.surf, border: `1px solid ${C.line}` }}>
-        {TABS.map((t) => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            className="flex-1 py-[7px] rounded-[9px] text-[13px] transition-colors"
-            style={tab === t ? { background: C.surf2, color: '#fff', fontWeight: 600 } : { color: C.muted }}
-          >
-            {t}
-          </button>
-        ))}
-      </div>
+      <PillTabs className="mx-4 mt-4" tabs={TABS.map((t) => ({ key: t, label: t }))} active={tab} onChange={setTab} />
 
       <div key={tab} className="px-4 pt-5 pb-4 flex flex-col gap-6 animate-section">
         {tab === 'Riepilogo' && (

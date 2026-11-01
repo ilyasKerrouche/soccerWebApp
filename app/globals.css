@@ -171,3 +171,19 @@ html:not([data-stadium-seen]) .stadium-card-shadow { animation: stadium-shadow .
 @media (prefers-reduced-motion: reduce) {
   .motm-cel, .motm-cel-glow, .motm-cel-title, .motm-cel-flip, .motm-cel-text { animation: none !important; }
 }
+
+/* ── Micro-animazioni ── */
+/* Cambio pagina: solo opacita' e un leggero spostamento, niente che rallenti la lettura */
+/* backwards, non both: a fine animazione non deve restare un contesto di impilamento (coprirebbe gli overlay fissi) */
+.page-enter { animation: page-enter .22s ease-out backwards; }
+@keyframes page-enter { from { opacity: 0; transform: translateY(6px); } }
+/* L'evidenziatore del selettore a pillola scorre tra le schede */
+.pill-slider { transition: transform .28s cubic-bezier(.3,.8,.3,1), width .28s cubic-bezier(.3,.8,.3,1); }
+/* Podio delle Statistiche: le card arrivano dal basso, prima il secondo, poi il primo, poi il terzo */
+.podium-rise { animation: podium-rise .6s cubic-bezier(.2,.8,.3,1) backwards; }
+@keyframes podium-rise { from { opacity: 0; transform: translateY(36px) scale(.94); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .page-enter, .podium-rise { animation: none !important; }
+  .pill-slider { transition: none; }
+}
