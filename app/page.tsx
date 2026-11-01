@@ -7,6 +7,7 @@ import { motmStatus } from '@/lib/motm'
 import { buildLedText, formatRomeDay, toPlayerHomeStats, topScorers as topScorersOf } from '@/lib/homeText'
 import HomeClient from '@/components/HomeClient'
 import StadiumPitch from '@/components/home/StadiumPitch'
+import MotmCelebration from '@/components/home/MotmCelebration'
 import PullToRefresh from '@/components/PullToRefresh'
 
 export const revalidate = 60
@@ -72,6 +73,14 @@ export default async function HomePage() {
             </div>
           </Link>
           <StadiumPitch match={lastMatch} motmIds={motmIds} stats={playerStats} ledText={ledText} />
+          {motmIds.length > 0 && (
+            <MotmCelebration
+              matchId={lastMatch.id}
+              closesAt={lastMatch.motm_closes_at}
+              winners={lastMatch.match_players.filter((mp) => motmIds.includes(mp.player_id)).map((mp) => mp.player)}
+              matchLabel={`${lastMatch.team_a_name} ${scoreA} – ${scoreB} ${lastMatch.team_b_name} · ${formatRomeDay(lastMatch.played_at)}`}
+            />
+          )}
         </section>
       ) : (
         <div className="px-4 py-10 text-center text-[13px]" style={{ color: '#8a96a8' }}>
