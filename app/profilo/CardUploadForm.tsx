@@ -3,7 +3,7 @@ import { useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { uploadMyCard } from './actions'
 
-export default function CardUploadForm() {
+export default function CardUploadForm({ hasCard }: { hasCard: boolean }) {
   const router = useRouter()
   const ref = useRef<HTMLInputElement>(null)
   const [error, setError] = useState<string | null>(null)
@@ -40,7 +40,7 @@ export default function CardUploadForm() {
         className="w-full font-semibold py-3 rounded-xl text-sm disabled:opacity-50 transition-opacity"
         style={{ background: '#5b9cff', color: 'white' }}
       >
-        {pending ? 'Caricamento…' : 'Carica la tua card'}
+        {pending ? 'Caricamento…' : hasCard ? 'Cambia card' : 'Carica la tua card'}
       </button>
       {error && (
         <div className="mt-3 bg-red-500/10 border border-red-500/20 text-red-400 text-sm text-center py-2 rounded-xl">

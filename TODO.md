@@ -2,7 +2,10 @@
 
 In ordine di priorità.
 
-- [ ] Creatore di card FUT direttamente dall'app
+- [ ] Creatore di card FUT direttamente dall'app (in pausa, da ripensare)
+  - Ognuno sceglie i propri valori (valutazione e statistiche), come su fifarosters.com
+  - Grafiche nostre, non quelle EA; si parte dalla card provvisoria
+  - Nodo aperto: oggi i selfie vengono trasformati in "calciatore" a mano con strumenti di GenAI. Da decidere se farlo fare all'app (costo per foto, selfie inviati a un servizio esterno) o tenerlo manuale
 - [ ] Squadre bilanciate automatiche per la prossima partita (in base a gol, vittorie e forma)
 - [ ] Testa a testa tra due giocatori (gol, vittorie, MOTM, insieme e contro)
 - [ ] Stagioni: archivio della stagione chiusa e ripartenza da zero ("2025/26" oggi è scritto nel codice)

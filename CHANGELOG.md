@@ -3,6 +3,12 @@
 Le versioni seguono [Semantic Versioning](https://semver.org/lang/it/):
 il primo numero cambia con un restyling o un cambiamento grosso, il secondo con nuove funzioni, il terzo con correzioni.
 
+## [2.1.0] — 2026-11-01
+
+### Novità
+- Musica di sottofondo: parte al primo tocco, continua tra le pagine, pulsante 🔊/🔇 nella barra in alto (la pausa viene ricordata)
+- Nuovo profilo personale: card grande, gol, presenze, vittorie e MOTM, caricamento della card e link alle statistiche complete
+
 ## [2.0.1] — 2026-10-31
 
 ### Modifiche
