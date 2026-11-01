@@ -4,6 +4,7 @@ import Link from 'next/link'
 import FormDots from './FormDots'
 import type { PlayerWithStats, PlayerWithGoalkeeperStats } from '@/lib/types'
 import { C, Card } from './ui'
+import PillTabs from './PillTabs'
 
 type Props = {
   players: PlayerWithStats[]
@@ -96,19 +97,7 @@ export default function StatsRankings({ players, goalkeepers, motmCounts }: Prop
 
   return (
     <div>
-      {/* Selettore a pillola come in home; scorre in orizzontale se le schede non ci stanno. */}
-      <div className="flex rounded-xl p-[3px] overflow-x-auto [scrollbar-width:none]" style={{ background: C.surf, border: `1px solid ${C.line}` }}>
-        {tabs.map(({ key, label }) => (
-          <button
-            key={key}
-            onClick={() => setActive(key)}
-            className="flex-1 py-[7px] px-2.5 rounded-[9px] text-[12px] whitespace-nowrap transition-colors"
-            style={active === key ? { background: C.surf2, color: '#fff', fontWeight: 600 } : { color: C.muted }}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+      <PillTabs tabs={tabs} active={active} onChange={setActive} />
       <Card className="mt-2.5 overflow-hidden">
 
       {active === 'marcatori' && (

@@ -1,6 +1,7 @@
 'use client'
 import PlayerCard from './PlayerCard'
 import FormDots from './FormDots'
+import CountUp from './CountUp'
 import type { PlayerWithStats } from '@/lib/types'
 
 type PodiumSlotProps = {
@@ -21,7 +22,7 @@ function PodiumSlot({ player, rank }: PodiumSlotProps) {
   const first = rank === 1
 
   return (
-    <div className="flex flex-col items-center" style={{ flex: first ? '0 0 118px' : '0 0 92px' }}>
+    <div className="flex flex-col items-center podium-rise" style={{ flex: first ? '0 0 118px' : '0 0 92px', animationDelay: `${{ 2: 0.05, 1: 0.2, 3: 0.35 }[rank]}s` }}>
       <div className="flex-1" />
 
       <div
@@ -43,7 +44,7 @@ function PodiumSlot({ player, rank }: PodiumSlotProps) {
       </div>
 
       <div className={`${cfg.goalSize} font-bold leading-none mt-1 tracking-[-0.02em] ${first ? 'text-brand' : 'text-white/80'}`}>
-        {player?.total_goals ?? 0}
+        <CountUp value={player?.total_goals ?? 0} />
       </div>
 
       <div className="h-4 flex items-center justify-center mt-1.5">
