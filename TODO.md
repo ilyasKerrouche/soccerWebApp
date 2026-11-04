@@ -18,7 +18,7 @@ In ordine di priorità.
 - [ ] Lista partite: scroll invece di una lista infinita
 - [ ] Correzioni minori: la card ingrandita in home si chiude con Esc; l'animazione del campo segue il cambio di "riduci movimento" anche ad app aperta
 - [ ] Highlights dai video GoPro
-- [ ] Musica di sottofondo stile menu FC (royalty-free, parte con un tocco)
+- [x] Musica di sottofondo stile menu FC (royalty-free, parte con un tocco)
 - [ ] Palette "verde campo" da valutare
 - [ ] Stile del campo 3D personalizzabile
 - [ ] Promemoria per il voto MOTM e il giorno della partita (sull'iPhone le notifiche richiedono l'app installata)
