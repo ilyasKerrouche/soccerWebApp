@@ -5,6 +5,7 @@ import PodiumView from './PodiumView'
 import PlayerCard from './PlayerCard'
 import PageHeader from './PageHeader'
 import FormDots from './FormDots'
+import StreakFlame from './StreakFlame'
 import { comparePlayers, type SortKey } from '@/lib/ranking'
 import type { PlayerWithStats } from '@/lib/types'
 
@@ -58,22 +59,25 @@ export default function PlayersClient({ initialPlayers }: { initialPlayers: Play
             href={`/players/${p.id}`}
             className="flex items-center gap-2.5 py-2 px-1 rule transition-colors hover:bg-white/[0.025]"
           >
-            <span className="numeric text-xs w-5 text-right text-white/25">{isRanking ? i + 4 : i + 1}</span>
+            <span className="numeric text-[13px] w-5 text-right text-white/25">{isRanking ? i + 4 : i + 1}</span>
             <span className="w-8 flex-shrink-0">
               <PlayerCard player={p} width={32} />
             </span>
             <span className="flex-1 min-w-0">
-              <span className="block text-[13px] font-medium text-white/85 truncate">{p.name}</span>
+              <span className="flex items-center gap-1.5 text-[13px] font-medium text-white/85">
+                <span className="truncate">{p.name}</span>
+                {sort === 'goals' && <StreakFlame streak={p.scoring_streak} withCount />}
+              </span>
               {p.position && <span className="block text-[10px] text-white/30">{p.position}</span>}
             </span>
             <span className="flex-shrink-0">
               <FormDots form={p.record?.form} size={5} />
             </span>
             <span className="text-right flex-shrink-0" style={{ width: 54 }}>
-              <span className="numeric text-[17px] font-semibold text-white/70 leading-none block">
+              <span className="numeric text-[20px] font-semibold text-white/70 leading-none block">
                 {sort === 'appearances' ? p.total_appearances : p.total_goals}
               </span>
-              <span className="numeric text-[9px] text-white/25 block mt-0.5">
+              <span className="text-[9px] text-white/25 block mt-0.5">
                 {sort === 'appearances' ? 'presenze' : 'gol'}
               </span>
             </span>

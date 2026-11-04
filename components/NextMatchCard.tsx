@@ -21,7 +21,7 @@ function Countdown({ date, time }: { date: string; time: string }) {
     <div className="flex gap-2 mt-3">
       {[{ v: parts.d, l: 'giorni' }, { v: parts.h, l: 'ore' }, { v: parts.m, l: 'min' }].map(({ v, l }) => (
         <div key={l} className="flex-1 rounded-[10px] py-2 text-center" style={{ background: C.surf2 }}>
-          <div className="text-[18px] font-semibold leading-none tabular-nums">{l === 'giorni' ? v : String(v).padStart(2, '0')}</div>
+          <div className="numeric text-[22px] font-semibold leading-none">{l === 'giorni' ? v : String(v).padStart(2, '0')}</div>
           <div className="text-[10px] mt-1" style={{ color: C.muted }}>{l}</div>
         </div>
       ))}

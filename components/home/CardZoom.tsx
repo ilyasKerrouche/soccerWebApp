@@ -68,7 +68,7 @@ export default function CardZoom({ player, stats, origin, reduced, onClosed }: P
               { v: stats.motm, l: 'MOTM' },
             ].map(({ v, l }) => (
               <div key={l}>
-                <div className="text-xl font-semibold leading-none tabular-nums">{v}</div>
+                <div className="numeric text-[24px] font-semibold leading-none">{v}</div>
                 <div className="text-[11px] mt-1" style={{ color: '#8a96a8' }}>{l}</div>
               </div>
             ))}

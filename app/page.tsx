@@ -64,7 +64,7 @@ export default async function HomePage() {
             <div className="text-[11px] capitalize" style={{ color: '#8a96a8' }}>Ultima partita · {formatRomeDay(lastMatch.played_at)}</div>
             <div className="flex items-baseline justify-center gap-3.5 mt-1">
               <span className="w-24 text-right text-[14px] font-semibold truncate" style={{ color: scoreA >= scoreB ? '#ffffff' : '#8a96a8' }}>{lastMatch.team_a_name}</span>
-              <span className="text-[36px] font-bold tabular-nums tracking-tight leading-none">{scoreA} – {scoreB}</span>
+              <span className="numeric text-[42px] font-bold leading-none">{scoreA} – {scoreB}</span>
               <span className="w-24 text-left text-[14px] font-semibold truncate" style={{ color: scoreB >= scoreA ? '#ffffff' : '#8a96a8' }}>{lastMatch.team_b_name}</span>
             </div>
             <div className="text-[12px] mt-1" style={{ color: '#8a96a8' }}>

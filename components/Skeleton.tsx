@@ -69,7 +69,7 @@ export function SkTiles({ count = 4, cols = 2 }: { count?: number; cols?: 2 | 3 
     <div className={`grid gap-2 ${cols === 3 ? 'grid-cols-3' : 'grid-cols-2'}`}>
       {Array.from({ length: count }).map((_, i) => (
         <SkCard key={i} className="p-3">
-          <Bone className="h-[22px] w-10" />
+          <Bone className="h-[26px] w-10" />
           <Bone className="h-2.5 w-16 mt-2" />
         </SkCard>
       ))}
@@ -102,7 +102,7 @@ export function SkScore({ big = false }: { big?: boolean }) {
       <Bone className="h-3 w-36" />
       <div className="flex items-center justify-center gap-3.5 mt-2">
         <Bone className="h-3.5 w-20" />
-        <Bone className="rounded-lg" style={{ width: big ? 108 : 92, height: big ? 44 : 36 }} />
+        <Bone className="rounded-lg" style={{ width: big ? 108 : 92, height: big ? 52 : 42 }} />
         <Bone className="h-3.5 w-20" />
       </div>
       <Bone className="h-3 w-28 mt-2" />
@@ -129,7 +129,7 @@ export function SkPodium() {
         <div key={i} className="flex flex-col items-center" style={{ flex: i === 1 ? '0 0 118px' : '0 0 92px' }}>
           <SkPlayerCard width={w} />
           <Bone className="h-3 mt-2.5" style={{ width: w - 24 }} />
-          <Bone className={`mt-1.5 ${i === 1 ? 'h-[26px] w-9' : 'h-[19px] w-7'}`} />
+          <Bone className={`mt-1.5 ${i === 1 ? 'h-[32px] w-9' : 'h-[23px] w-7'}`} />
           <div className="h-4 mt-1.5" />
         </div>
       ))}

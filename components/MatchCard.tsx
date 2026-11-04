@@ -23,14 +23,14 @@ export default function MatchCard({ match, motmNames = [] }: { match: MatchWithP
     <div>
       <button className="w-full flex items-center gap-2.5 px-3.5 py-3 text-left" onClick={() => setExpanded((e) => !e)} aria-expanded={expanded}>
         <div className="w-[34px] text-center flex-shrink-0">
-          <div className="text-[16px] font-semibold leading-none tabular-nums">{day}</div>
+          <div className="numeric text-[18px] font-semibold leading-none">{day}</div>
           <div className="text-[10px] mt-0.5" style={{ color: C.muted }}>{weekday}</div>
         </div>
         <div className="flex-1 min-w-0 text-[13.5px] leading-[1.5]">
           {teams.map((t) => (
             <div key={t.key} className="flex justify-between gap-2" style={t.wins ? { color: '#fff', fontWeight: 600 } : { color: C.muted }}>
               <span className="truncate">{t.name}</span>
-              <span className="tabular-nums">{t.score}</span>
+              <span className="numeric text-[15px] leading-[20px]">{t.score}</span>
             </div>
           ))}
           {motmNames.length > 0 && (
@@ -60,7 +60,7 @@ export default function MatchCard({ match, motmNames = [] }: { match: MatchWithP
                   <span className="truncate">
                     {mp.player.name} <span style={{ color: C.muted }}>· {mp.team === 'a' ? match.team_a_name : match.team_b_name}</span>
                   </span>
-                  <span className="flex gap-2 flex-shrink-0 font-semibold tabular-nums">
+                  <span className="flex gap-2 flex-shrink-0 font-semibold numeric text-[14px]">
                     {mp.goals > 0 && <span>{mp.goals}</span>}
                     {mp.own_goals > 0 && <span style={{ color: C.loss }}>{mp.own_goals} autogol</span>}
                   </span>

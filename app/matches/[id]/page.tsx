@@ -88,7 +88,7 @@ export default async function MatchDetailPage({ params }: { params: { id: string
         <div className="text-[12px] text-muted mb-2 capitalize">{date}</div>
         <div className="flex items-baseline justify-center gap-3.5">
           <div className={`text-[14px] font-semibold w-24 text-right truncate ${aWins || !bWins ? 'text-white' : 'text-muted'}`}>{match.team_a_name}</div>
-          <div className="text-[44px] font-bold leading-none tabular-nums tracking-tight">{sa} – {sb}</div>
+          <div className="numeric text-[52px] font-bold leading-none">{sa} – {sb}</div>
           <div className={`text-[14px] font-semibold w-24 text-left truncate ${bWins || !aWins ? 'text-white' : 'text-muted'}`}>{match.team_b_name}</div>
         </div>
         <div className="text-[12px] text-muted mt-1.5">
@@ -121,7 +121,7 @@ export default async function MatchDetailPage({ params }: { params: { id: string
                     </span>
                   )}
                   <span className="text-[11px] flex-shrink-0" style={{ color: C.muted }}>{mp.team === 'a' ? match.team_a_name : match.team_b_name}</span>
-                  <span className="ml-auto flex items-center gap-2 flex-shrink-0 font-semibold tabular-nums">
+                  <span className="ml-auto flex items-center gap-2 flex-shrink-0 font-semibold numeric text-[16px]">
                     {mp.goals > 0 && <span>{mp.goals}</span>}
                     {mp.own_goals > 0 && <span style={{ color: C.loss }}>{mp.own_goals} autogol</span>}
                   </span>

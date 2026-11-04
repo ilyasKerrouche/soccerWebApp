@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import type { MatchWithPlayers, Player, PlayerHomeStats, PlayerWithStats } from '@/lib/types'
+import type { MatchWithPlayers, PlayerHomeStats, PlayerWithStats } from '@/lib/types'
 import type { GlobalStats } from '@/lib/queries/stats'
 import { sortScorers, type HomeViewer } from '@/lib/homeText'
 import { getHomeViewer } from '@/app/homeActions'
@@ -10,6 +10,7 @@ import PillTabs from './PillTabs'
 import { C, Card, Section } from './ui'
 import VoteBox from './home/VoteBox'
 import MySummary from './home/MySummary'
+import StreakFlame from './StreakFlame'
 
 type Props = {
   lastMatch: MatchWithPlayers | null
@@ -17,7 +18,7 @@ type Props = {
   recentMatches: MatchWithPlayers[]
   stats: GlobalStats
   topScorers: PlayerWithStats[]
-  players: Player[]
+  players: PlayerWithStats[]
   playerStats: Record<string, PlayerHomeStats>
   voteOpen: { matchId: string; closesAt: string } | null
 }
@@ -40,6 +41,7 @@ export default function HomeClient({ lastMatch, nextMatch, recentMatches, stats,
     return () => { cancelled = true }
   }, [viewerMatchId])
 
+  const streakOf = (id: string) => players.find((p) => p.id === id)?.scoring_streak ?? 0
   const me = viewer?.kind === 'player' && viewer.playerId ? players.find((p) => p.id === viewer.playerId) : undefined
   const myStats = me ? playerStats[me.id] : undefined
   const scorers = sortScorers(lastMatch?.match_players.filter((mp) => mp.goals > 0) ?? [], (mp) => ({ name: mp.player.name, goals: mp.goals }))
@@ -70,9 +72,12 @@ export default function HomeClient({ lastMatch, nextMatch, recentMatches, stats,
                   {scorers.map((mp, i) => (
                     <Link key={mp.id} href={`/players/${mp.player_id}`} className="flex items-center gap-3 px-3.5 py-3 text-[14px]"
                       style={i > 0 ? { borderTop: `1px solid ${C.line}` } : undefined}>
-                      <span className="flex-1 truncate">{mp.player.name}</span>
+                      <span className="flex-1 min-w-0 flex items-center gap-1.5">
+                        <span className="truncate">{mp.player.name}</span>
+                        <StreakFlame streak={streakOf(mp.player_id)} withCount />
+                      </span>
                       <span className="text-[11px]" style={{ color: C.muted }}>{mp.team === 'a' ? lastMatch.team_a_name : lastMatch.team_b_name}</span>
-                      <span className="font-semibold tabular-nums w-5 text-right">{mp.goals}</span>
+                      <span className="numeric text-[16px] font-semibold w-5 text-right">{mp.goals}</span>
                     </Link>
                   ))}
                 </Card>
@@ -105,7 +110,7 @@ export default function HomeClient({ lastMatch, nextMatch, recentMatches, stats,
                         <span style={{ color: C.muted }}> · </span>
                         <span style={{ color: b >= a ? '#fff' : C.muted }}>{m.team_b_name}</span>
                       </span>
-                      <span className="font-semibold tabular-nums">{a} – {b}</span>
+                      <span className="numeric text-[16px] font-semibold">{a} – {b}</span>
                     </Link>
                   )
                 })}
@@ -125,7 +130,7 @@ export default function HomeClient({ lastMatch, nextMatch, recentMatches, stats,
                   { v: stats.wins_b, l: `Vittorie ${lastMatch?.team_b_name ?? 'squadra B'}` },
                 ].map(({ v, l }) => (
                   <Card key={l} className="p-3">
-                    <div className="text-[22px] font-bold tabular-nums leading-none">{v}</div>
+                    <div className="numeric text-[26px] font-bold leading-none">{v}</div>
                     <div className="text-[11px] mt-1.5 truncate" style={{ color: C.muted }}>{l}</div>
                   </Card>
                 ))}
@@ -140,9 +145,12 @@ export default function HomeClient({ lastMatch, nextMatch, recentMatches, stats,
                 {topScorers.map((p, i) => (
                   <Link key={p.id} href={`/players/${p.id}`} className="flex items-center gap-3 px-3.5 py-3 text-[14px]"
                     style={i > 0 ? { borderTop: `1px solid ${C.line}` } : undefined}>
-                    <span className="w-4 text-[12px] tabular-nums" style={{ color: C.muted }}>{i + 1}</span>
-                    <span className="flex-1 truncate">{p.name}</span>
-                    <span className="font-semibold tabular-nums">{p.total_goals}</span>
+                    <span className="numeric w-4 text-[13px]" style={{ color: C.muted }}>{i + 1}</span>
+                    <span className="flex-1 min-w-0 flex items-center gap-1.5">
+                      <span className="truncate">{p.name}</span>
+                      <StreakFlame streak={p.scoring_streak} withCount />
+                    </span>
+                    <span className="numeric text-[16px] font-semibold">{p.total_goals}</span>
                   </Link>
                 ))}
               </Card>
