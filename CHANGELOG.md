@@ -3,6 +3,15 @@
 Le versioni seguono [Semantic Versioning](https://semver.org/lang/it/):
 il primo numero cambia con un restyling o un cambiamento grosso, il secondo con nuove funzioni, il terzo con correzioni.
 
+## [2.5.0] — 2026-11-04
+
+### Novità
+- Punteggi e statistiche con un font sportivo condensato (Barlow Condensed), un po' più grandi
+- Torna la fiamma 🔥 per chi segna in almeno 3 partite giocate di fila, con il numero della serie: nei marcatori della home, nelle classifiche, nell'elenco giocatori e nella pagina del giocatore
+
+### Correzioni
+- La pagina del giocatore ora calcola la serie di gol
+
 ## [2.4.0] — 2026-11-04
 
 ### Novità
