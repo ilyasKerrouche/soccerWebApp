@@ -187,3 +187,20 @@ html:not([data-stadium-seen]) .stadium-card-shadow { animation: stadium-shadow .
   .page-enter, .podium-rise { animation: none !important; }
   .pill-slider { transition: none; }
 }
+
+/* ── Schermate di caricamento (components/Skeleton.tsx) ──
+   Una luce che scorre sulle sagome. La sagoma compare dopo un attimo: se i dati arrivano subito non si vede nessun lampo. */
+.sk {
+  background: linear-gradient(100deg, rgba(255,255,255,.045) 30%, rgba(255,255,255,.095) 50%, rgba(255,255,255,.045) 70%);
+  background-size: 300% 100%;
+  animation: sk-shimmer 1.6s linear infinite;
+}
+@keyframes sk-shimmer { from { background-position: 100% 0; } to { background-position: 0 0; } }
+.sk-screen { animation: sk-in .25s ease-out .12s backwards; }
+@keyframes sk-in { from { opacity: 0; } }
+.sk-pitch { clip-path: polygon(24% 10%, 76% 10%, 97% 94%, 3% 94%); background: rgba(42,110,48,.16); }
+
+@media (prefers-reduced-motion: reduce) {
+  .sk { animation: none; background: rgba(255,255,255,.06); }
+  .sk-screen { animation: none; }
+}

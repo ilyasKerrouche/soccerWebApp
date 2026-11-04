@@ -9,7 +9,7 @@ In ordine di priorità.
 - [x] Bellezza: dettaglio partita con il campo 3D della home e le card di quella partita
 - [x] Bellezza: momento MOTM alla chiusura del voto (la card del vincitore si gira e si illumina d'oro, una volta sola)
 - [x] Bellezza: transizioni tra pagine e micro-animazioni (pillola che scorre, numeri che salgono, podio che arriva)
-- [ ] Bellezza: schermate di caricamento con la forma delle pagine nuove
+- [x] Bellezza: schermate di caricamento con la forma delle pagine nuove
 - [ ] Bellezza: icona dell'app e piccolo logo del gruppo
 - [ ] Bellezza: font più sportivo (condensato, sobrio) per punteggi e statistiche
 - [ ] Squadre bilanciate automatiche per la prossima partita (in base a gol, vittorie e forma)
@@ -18,7 +18,7 @@ In ordine di priorità.
 - [ ] Lista partite: scroll invece di una lista infinita
 - [ ] Correzioni minori: la card ingrandita in home si chiude con Esc; l'animazione del campo segue il cambio di "riduci movimento" anche ad app aperta
 - [ ] Highlights dai video GoPro
-- [ ] Musica di sottofondo stile menu FC (royalty-free, parte con un tocco)
+- [x] Musica di sottofondo stile menu FC (royalty-free, parte con un tocco)
 - [ ] Palette "verde campo" da valutare
 - [ ] Stile del campo 3D personalizzabile
 - [ ] Promemoria per il voto MOTM e il giorno della partita (sull'iPhone le notifiche richiedono l'app installata)
