@@ -3,6 +3,13 @@
 Le versioni seguono [Semantic Versioning](https://semver.org/lang/it/):
 il primo numero cambia con un restyling o un cambiamento grosso, il secondo con nuove funzioni, il terzo con correzioni.
 
+## [2.4.0] — 2026-11-04
+
+### Novità
+- Mentre una pagina carica si vede la sua sagoma (risultato, campo, podio, card, elenchi), che poi si riempie senza far saltare niente
+- Nuove sagome anche per dettaglio partita, elenco giocatori e profilo
+- Le sagome compaiono solo se il caricamento dura più di un attimo, e restano ferme con "riduci movimento"
+
 ## [2.3.0] — 2026-11-01
 
 ### Novità
