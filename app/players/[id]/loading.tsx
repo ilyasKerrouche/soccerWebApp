@@ -1,29 +1,23 @@
-import { SkeletonBlock, SkeletonList } from '@/components/Skeleton'
+import { Bone, SkCard, SkProfileHead, SkRows, SkScreen, SkSection, SkTiles } from '@/components/Skeleton'
 
+// Giocatore: link indietro, card al centro, numeri, gol per partita, storico
 export default function PlayerLoading() {
   return (
-    <main className="pb-6">
-      <div className="px-4 pt-10 pb-8">
-        <SkeletonBlock className="h-3 w-16 mb-4" />
-        <div className="flex items-end gap-5">
-          <SkeletonBlock style={{ width: 96, height: 133, borderRadius: 12 }} />
-          <div className="flex-1">
-            <SkeletonBlock className="h-6 w-32 mb-2" />
-            <SkeletonBlock className="h-3 w-16 mb-4" />
-            <div className="flex gap-3">
-              <SkeletonBlock className="h-10 w-12" />
-              <SkeletonBlock className="h-10 w-12" />
-              <SkeletonBlock className="h-10 w-12" />
-            </div>
-          </div>
-        </div>
+    <SkScreen className="pb-6">
+      <div className="px-4 pt-4"><Bone className="h-3.5 w-24" /></div>
+      <div className="pt-3"><SkProfileHead cardWidth={118} /></div>
+      <div className="px-4 pt-5 flex flex-col gap-6">
+        <SkTiles count={4} />
+        <SkSection titleWidth={120}>
+          <SkCard className="p-3.5">
+            <Bone className="h-16 w-full rounded-lg" />
+            <Bone className="h-2.5 w-40 mt-2" />
+          </SkCard>
+        </SkSection>
+        <SkSection titleWidth={120}>
+          <SkRows rows={5} lead />
+        </SkSection>
       </div>
-      <div className="px-4 pt-5 flex flex-col gap-5">
-        <SkeletonBlock className="h-3 w-24" />
-        <SkeletonBlock className="h-16 w-full rounded-2xl" />
-        <SkeletonBlock className="h-3 w-28" />
-        <SkeletonList rows={5} />
-      </div>
-    </main>
+    </SkScreen>
   )
 }

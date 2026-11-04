@@ -9,7 +9,7 @@ In ordine di priorità.
 - [x] Bellezza: dettaglio partita con il campo 3D della home e le card di quella partita
 - [x] Bellezza: momento MOTM alla chiusura del voto (la card del vincitore si gira e si illumina d'oro, una volta sola)
 - [x] Bellezza: transizioni tra pagine e micro-animazioni (pillola che scorre, numeri che salgono, podio che arriva)
-- [ ] Bellezza: schermate di caricamento con la forma delle pagine nuove
+- [x] Bellezza: schermate di caricamento con la forma delle pagine nuove
 - [ ] Bellezza: icona dell'app e piccolo logo del gruppo
 - [ ] Bellezza: font più sportivo (condensato, sobrio) per punteggi e statistiche
 - [ ] Squadre bilanciate automatiche per la prossima partita (in base a gol, vittorie e forma)
