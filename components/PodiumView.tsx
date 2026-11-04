@@ -12,9 +12,9 @@ type PodiumSlotProps = {
 // La card e' l'unico oggetto in rilievo della schermata: il primo posto si
 // distingue per dimensione e luce, non per una scatola in piu'.
 const RANK_CONFIG = {
-  1: { cardWidth: 104, nameSize: 'text-[13px]', goalSize: 'text-[26px]', dim: 'text-white' },
-  2: { cardWidth: 78, nameSize: 'text-[11px]', goalSize: 'text-[19px]', dim: 'text-white/75' },
-  3: { cardWidth: 78, nameSize: 'text-[11px]', goalSize: 'text-[19px]', dim: 'text-white/75' },
+  1: { cardWidth: 104, nameSize: 'text-[13px]', goalSize: 'text-[32px]', dim: 'text-white' },
+  2: { cardWidth: 78, nameSize: 'text-[11px]', goalSize: 'text-[23px]', dim: 'text-white/75' },
+  3: { cardWidth: 78, nameSize: 'text-[11px]', goalSize: 'text-[23px]', dim: 'text-white/75' },
 }
 
 function PodiumSlot({ player, rank }: PodiumSlotProps) {
@@ -43,7 +43,7 @@ function PodiumSlot({ player, rank }: PodiumSlotProps) {
         {player?.name ?? '—'}
       </div>
 
-      <div className={`${cfg.goalSize} font-bold leading-none mt-1 tracking-[-0.02em] ${first ? 'text-brand' : 'text-white/80'}`}>
+      <div className={`numeric ${cfg.goalSize} font-bold leading-none mt-1 ${first ? 'text-brand' : 'text-white/80'}`}>
         <CountUp value={player?.total_goals ?? 0} />
       </div>
 

@@ -25,7 +25,7 @@ export default function MySummary({ player, stats }: { player: Player; stats: Pl
               { v: stats.motm, l: 'MOTM' },
             ].map(({ v, l }) => (
               <div key={l}>
-                <div className="text-[17px] font-semibold leading-none tabular-nums">{v}</div>
+                <div className="numeric text-[20px] font-semibold leading-none">{v}</div>
                 <div className="text-[10px] mt-1" style={{ color: '#8a96a8' }}>{l}</div>
               </div>
             ))}

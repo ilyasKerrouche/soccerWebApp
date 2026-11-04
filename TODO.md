@@ -11,7 +11,7 @@ In ordine di priorità.
 - [x] Bellezza: transizioni tra pagine e micro-animazioni (pillola che scorre, numeri che salgono, podio che arriva)
 - [x] Bellezza: schermate di caricamento con la forma delle pagine nuove
 - [ ] Bellezza: icona dell'app e piccolo logo del gruppo
-- [ ] Bellezza: font più sportivo (condensato, sobrio) per punteggi e statistiche
+- [x] Bellezza: font più sportivo (condensato, sobrio) per punteggi e statistiche
 - [ ] Squadre bilanciate automatiche per la prossima partita (in base a gol, vittorie e forma)
 - [ ] Testa a testa tra due giocatori (gol, vittorie, MOTM, insieme e contro)
 - [ ] Stagioni: archivio della stagione chiusa e ripartenza da zero ("2025/26" oggi è scritto nel codice)

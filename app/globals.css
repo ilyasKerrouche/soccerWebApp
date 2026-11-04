@@ -18,11 +18,12 @@ select option {
   color: #e8ecf2;
 }
 
-/* Cifre incolonnate: nelle classifiche le colonne numeriche devono allinearsi. */
+/* Numeri di punteggi e statistiche: font sportivo condensato, cifre incolonnate.
+   Il condensato a pari corpo sembra piu' piccolo: dove conta, il corpo e' un po' piu' grande. */
 .numeric {
-  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-family: var(--font-sport), var(--font-geist), system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
+  letter-spacing: 0.01em;
 }
 
 /* Filetto di separazione: sostituisce le scatole dove serve solo dividere. */

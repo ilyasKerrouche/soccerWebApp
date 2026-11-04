@@ -185,8 +185,15 @@ export async function getPlayerProfile(id: string): Promise<{
       .filter((r): r is { team: 'a' | 'b'; score_a: number | null; score_b: number | null; played_at: string } => r.team !== null)
   )
 
+  // Partite gia' in ordine dalla piu' recente: si contano quelle di fila con almeno un gol
+  let scoring_streak = 0
+  for (const m of matches) {
+    if (m.goals > 0) scoring_streak++
+    else break
+  }
+
   return {
-    player: { ...player, total_goals, total_appearances, record },
+    player: { ...player, total_goals, total_appearances, scoring_streak, record },
     matches,
     goalkeeper_stats,
   }

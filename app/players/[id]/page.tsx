@@ -5,6 +5,7 @@ import PlayerCard from '@/components/PlayerCard'
 import FormDots from '@/components/FormDots'
 import { getMotmCounts } from '@/lib/queries/motm'
 import MotmCounter from '@/components/motm/MotmCounter'
+import { STREAK_MIN } from '@/components/StreakFlame'
 import SwipeBack from '@/components/SwipeBack'
 import { C, Card, Section, StatTile } from '@/components/ui'
 
@@ -47,6 +48,11 @@ export default async function PlayerProfilePage({ params }: { params: { id: stri
         <h1 className="text-[24px] font-bold tracking-[-0.02em] leading-tight mt-2.5 truncate">{player.name}</h1>
         {player.position && <div className="text-[13px]" style={{ color: C.muted }}>{player.position}</div>}
         {motmCount >= 1 && <div className="mt-2"><MotmCounter count={motmCount} /></div>}
+        {player.scoring_streak >= STREAK_MIN && (
+          <div className="mt-2 inline-flex items-center gap-1 text-[12px] font-semibold px-2.5 py-1 rounded-full" style={{ background: 'rgba(251,146,60,.14)', color: '#fb923c' }}>
+            🔥 In gol da <span className="numeric text-[14px]">{player.scoring_streak}</span> partite di fila
+          </div>
+        )}
         {player.record && player.record.form.length > 0 && (
           <div className="mt-2.5 flex justify-center"><FormDots form={player.record.form} size={7} /></div>
         )}
@@ -120,7 +126,7 @@ export default async function PlayerProfilePage({ params }: { params: { id: stri
                     </span>
                     <span className="truncate">{m.team_a_name} {sa} – {sb} {m.team_b_name}</span>
                     <span className="text-[11px] flex-shrink-0" style={{ color: C.muted }}>{date}</span>
-                    <span className="ml-auto flex items-center gap-2 flex-shrink-0 font-semibold tabular-nums">
+                    <span className="ml-auto flex items-center gap-2 flex-shrink-0 font-semibold numeric text-[15px]">
                       {m.goals > 0 && <span style={{ color: C.acc }}>{m.goals} ⚽</span>}
                       {m.own_goals > 0 && <span style={{ color: C.loss }}>{m.own_goals} OG</span>}
                     </span>

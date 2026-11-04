@@ -28,7 +28,7 @@ export function Card({ children, className = '' }: { children: React.ReactNode; 
 export function StatTile({ value, label, tone }: { value: React.ReactNode; label: string; tone?: 'win' }) {
   return (
     <Card className="p-3 min-w-0">
-      <div className="text-[22px] font-bold tabular-nums leading-none" style={tone === 'win' ? { color: C.win } : undefined}><CountUp value={value} /></div>
+      <div className="numeric text-[26px] font-bold leading-none" style={tone === 'win' ? { color: C.win } : undefined}><CountUp value={value} /></div>
       <div className="text-[11px] mt-1.5 truncate" style={{ color: C.muted }}>{label}</div>
     </Card>
   )

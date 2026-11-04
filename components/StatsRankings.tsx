@@ -5,6 +5,7 @@ import FormDots from './FormDots'
 import type { PlayerWithStats, PlayerWithGoalkeeperStats } from '@/lib/types'
 import { C, Card } from './ui'
 import PillTabs from './PillTabs'
+import StreakFlame from './StreakFlame'
 
 type Props = {
   players: PlayerWithStats[]
@@ -37,6 +38,7 @@ function Row({
   note,
   leader,
   first,
+  streak = 0,
 }: {
   href: string
   rank: number
@@ -46,6 +48,7 @@ function Row({
   note?: string
   leader: boolean
   first: boolean
+  streak?: number
 }) {
   return (
     <Link
@@ -53,19 +56,20 @@ function Row({
       className="flex items-center gap-2.5 py-2.5 px-3.5 transition-colors hover:bg-white/[0.03]"
       style={first ? undefined : { borderTop: `1px solid ${C.line}` }}
     >
-      <span className={`numeric text-xs w-4 text-right ${leader ? 'text-brand font-bold' : 'text-muted'}`}>{rank}</span>
+      <span className={`numeric text-[13px] w-4 text-right ${leader ? 'text-brand font-bold' : 'text-muted'}`}>{rank}</span>
       <span className="w-[26px] h-[26px] rounded-full flex items-center justify-center text-[10.5px] flex-shrink-0" style={{ background: C.surf2, color: C.muted }}>
         {initials(name)}
       </span>
-      <span className={`flex-1 min-w-0 text-[13.5px] truncate ${leader ? 'font-semibold text-white' : 'font-medium text-white/85'}`}>
-        {name}
+      <span className={`flex-1 min-w-0 flex items-center gap-1.5 text-[13.5px] ${leader ? 'font-semibold text-white' : 'font-medium text-white/85'}`}>
+        <span className="truncate">{name}</span>
+        <StreakFlame streak={streak} withCount />
       </span>
       <span className="flex-shrink-0">{form}</span>
       <span className="text-right flex-shrink-0" style={{ width: 62 }}>
-        <span className="numeric text-[16px] font-semibold leading-none block text-white/90">
+        <span className="numeric text-[19px] font-semibold leading-none block text-white/90">
           {value}
         </span>
-        {note && <span className="numeric text-[10px] text-muted block mt-0.5">{note}</span>}
+        {note && <span className="text-[10px] tabular-nums text-muted block mt-0.5">{note}</span>}
       </span>
     </Link>
   )
@@ -112,6 +116,7 @@ export default function StatsRankings({ players, goalkeepers, motmCounts }: Prop
               leader={i === 0 && p.total_goals > 0}
               form={<FormDots form={p.record?.form} size={5} />}
               value={p.total_goals}
+              streak={p.scoring_streak}
               note={
                 p.record && p.record.played > 0
                   ? `${pct(p.record.win_rate)} vinte`
