@@ -6,17 +6,22 @@ import type { PlayerWithStats, PlayerWithGoalkeeperStats } from '@/lib/types'
 import { C, Card } from './ui'
 import PillTabs from './PillTabs'
 import StreakFlame from './StreakFlame'
+import RecordsBoard from './RecordsBoard'
+import type { GoldenPair, Records } from '@/lib/records'
+import type { Player } from '@/lib/types'
 
 type Props = {
   players: PlayerWithStats[]
   goalkeepers: PlayerWithGoalkeeperStats[]
   motmCounts: Record<string, number>
+  records: Records<Player>
+  pairs: GoldenPair<Player>[]
 }
 
 const TABS = [
   { key: 'marcatori', label: 'Marcatori' },
   { key: 'presenze', label: 'Presenze' },
-  { key: 'rendimento', label: 'Rendimento' },
+  { key: 'record', label: 'Record' },
   { key: 'portieri', label: 'Portieri' },
   { key: 'motm', label: 'MOTM' },
 ] as const
@@ -75,7 +80,7 @@ function Row({
   )
 }
 
-export default function StatsRankings({ players, goalkeepers, motmCounts }: Props) {
+export default function StatsRankings({ players, goalkeepers, motmCounts, records, pairs }: Props) {
   const [active, setActive] = useState<TabKey>('marcatori')
   const hasPortieri = goalkeepers.some((g) => g.appearances > 0)
   // Solo chi ha almeno un MOTM; la sezione sparisce se ancora nessuno ne ha.
@@ -89,19 +94,12 @@ export default function StatsRankings({ players, goalkeepers, motmCounts }: Prop
   const byGoals = [...players].sort((a, b) => b.total_goals - a.total_goals)
   const byAppearances = [...players].sort((a, b) => b.total_appearances - a.total_appearances)
 
-  // Chi non ha ancora giocato va in fondo: uno 0% sembrerebbe un giudizio.
-  const byRecord = [...players].sort((a, b) => {
-    const pa = a.record?.played ?? 0
-    const pb = b.record?.played ?? 0
-    if (pa === 0 || pb === 0) return pa === pb ? a.name.localeCompare(b.name) : pa === 0 ? 1 : -1
-    const wa = a.record?.win_rate ?? 0
-    const wb = b.record?.win_rate ?? 0
-    return wa !== wb ? wb - wa : pb - pa
-  })
-
   return (
     <div>
       <PillTabs tabs={tabs} active={active} onChange={setActive} />
+      {active === 'record' ? (
+        <div className="mt-4"><RecordsBoard records={records} pairs={pairs} /></div>
+      ) : (
       <Card className="mt-2.5 overflow-hidden">
 
       {active === 'marcatori' && (
@@ -145,28 +143,6 @@ export default function StatsRankings({ players, goalkeepers, motmCounts }: Prop
         </div>
       )}
 
-      {active === 'rendimento' && (
-        <div className="animate-section">
-          {byRecord.map((p, i) => {
-            const rec = p.record
-            const played = (rec?.played ?? 0) > 0
-            return (
-              <Row
-                key={p.id}
-                href={`/players/${p.id}`}
-                rank={i + 1}
-                first={i === 0}
-                name={p.name}
-                leader={i === 0 && played}
-                form={<FormDots form={rec?.form} size={5} />}
-                value={played && rec ? pct(rec.win_rate) : <span className="text-muted">—</span>}
-                note={played && rec ? `${rec.wins}V ${rec.draws}N ${rec.losses}P` : 'mai giocato'}
-              />
-            )
-          })}
-        </div>
-      )}
-
       {active === 'portieri' && hasPortieri && (
         <div className="animate-section">
           {goalkeepers.map((p, i) => (
@@ -201,6 +177,7 @@ export default function StatsRankings({ players, goalkeepers, motmCounts }: Prop
         </div>
       )}
       </Card>
+      )}
     </div>
   )
 }
