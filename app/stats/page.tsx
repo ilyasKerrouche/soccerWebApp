@@ -3,6 +3,9 @@ import { getGlobalStats } from '@/lib/queries/stats'
 import PodiumView from '@/components/PodiumView'
 import { comparePlayers } from '@/lib/ranking'
 import { getMotmCounts } from '@/lib/queries/motm'
+import { getAllMatchesWithPlayers } from '@/lib/queries/matches'
+import { computeRecords, goldenPairs } from '@/lib/records'
+import { PAIR_MIN_GAMES } from '@/components/RecordsBoard'
 import StatsRankings from '@/components/StatsRankings'
 import PageHeader from '@/components/PageHeader'
 import { StatTile } from '@/components/ui'
@@ -10,11 +13,14 @@ import { StatTile } from '@/components/ui'
 export const revalidate = 60
 
 export default async function StatsPage() {
-  const [globalStats, players, goalkeepers] = await Promise.all([
+  const [globalStats, players, goalkeepers, matches] = await Promise.all([
     getGlobalStats(),
     getPlayersWithStats(),
     getGoalkeeperRanking(),
+    getAllMatchesWithPlayers(),
   ])
+  const records = computeRecords(matches)
+  const pairs = goldenPairs(matches, { minGames: PAIR_MIN_GAMES, limit: 5 })
 
   let motmCounts: Record<string, number> = {}
   try {
@@ -43,7 +49,7 @@ export default async function StatsPage() {
       </div>
 
       <div className="mt-6" />
-      <StatsRankings players={players} goalkeepers={goalkeepers} motmCounts={motmCounts} />
+      <StatsRankings players={players} goalkeepers={goalkeepers} motmCounts={motmCounts} records={records} pairs={pairs} />
     </main>
   )
 }
