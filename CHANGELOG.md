@@ -3,6 +3,14 @@
 Le versioni seguono [Semantic Versioning](https://semver.org/lang/it/):
 il primo numero cambia con un restyling o un cambiamento grosso, il secondo con nuove funzioni, il terzo con correzioni.
 
+## [2.6.0] — 2026-11-05
+
+### Novità
+- Nelle Statistiche la scheda Rendimento lascia il posto a **Record**
+- Bacheca dei record: vittoria più larga, partita con più gol, serie di gol e di vittorie più lunghe, più gol in una partita
+- Bomber seriali: chi ha fatto più doppiette, triplette, poker e manite
+- Coppie d'oro: i compagni di squadra che vincono di più insieme (almeno 5 partite insieme)
+
 ## [2.5.0] — 2026-11-04
 
 ### Novità
