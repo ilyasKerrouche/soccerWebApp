@@ -1,4 +1,6 @@
 'use server'
+import { revalidateTag } from 'next/cache'
+import { SEASON_DATA_TAG } from '@/lib/queries/cached'
 import { updateMatch, deleteMatch, createMatch, getMatchById } from '@/lib/queries/matches'
 import { redirect } from 'next/navigation'
 import { requireAdmin } from '@/lib/auth'
@@ -9,11 +11,13 @@ export async function saveEditMatch(
 ): Promise<void> {
   await requireAdmin()
   await updateMatch(id, data)
+  revalidateTag(SEASON_DATA_TAG)
 }
 
 export async function deleteMatchAction(id: string): Promise<void> {
   await requireAdmin()
   await deleteMatch(id)
+  revalidateTag(SEASON_DATA_TAG)
   redirect('/admin')
 }
 
@@ -34,5 +38,6 @@ export async function duplicateMatchAction(id: string): Promise<void> {
       own_goals: 0,
     })),
   })
+  revalidateTag(SEASON_DATA_TAG)
   redirect(`/admin/matches/${newId}`)
 }

@@ -3,6 +3,7 @@
 // Questi dati non vanno mai restituiti ai client: chi ha votato chi e' privato.
 import { createAdminClient } from '@/lib/supabase/admin'
 import { tallyMotm, type VoteRow } from '@/lib/motm'
+import { inSeason, type SeasonKey } from '@/lib/season'
 
 const PAGE = 1000
 
@@ -64,16 +65,17 @@ export async function upsertVote(
 // Vincitori (id giocatore) delle sole partite con voto chiuso. Senza matchIds
 // copre tutte le partite chiuse (nessuna lista id nell'URL). Poche query in
 // tutto, indipendentemente dal numero di partite.
-async function computeWinners(matchIds?: string[]): Promise<Record<string, string[]>> {
+async function computeWinners(matchIds?: string[], season: SeasonKey = 'all'): Promise<Record<string, string[]>> {
   if (matchIds && matchIds.length === 0) return {}
   const supabase = createAdminClient()
   const now = new Date().toISOString()
 
-  const closed = await fetchAll<{ id: string }>((from, to) => {
-    let q = supabase.from('matches').select('id').lt('motm_closes_at', now)
+  const closedAll = await fetchAll<{ id: string; played_at: string }>((from, to) => {
+    let q = supabase.from('matches').select('id, played_at').lt('motm_closes_at', now)
     if (matchIds) q = q.in('id', matchIds)
     return q.order('id').range(from, to)
   })
+  const closed = closedAll.filter(m => inSeason(m.played_at, season))
   const closedIds = closed.map(m => m.id)
   if (closedIds.length === 0) return {}
   const closedSet = new Set(closedIds)
@@ -115,8 +117,8 @@ export function getAllMotmWinners(): Promise<Record<string, string[]>> {
 }
 
 // player_id -> numero di MOTM vinti (un co-MOTM conta 1 per ciascun vincitore).
-export async function getMotmCounts(): Promise<Record<string, number>> {
-  const winners = await computeWinners()
+export async function getMotmCounts(season: SeasonKey = 'all'): Promise<Record<string, number>> {
+  const winners = await computeWinners(undefined, season)
   const counts: Record<string, number> = {}
   for (const ids of Object.values(winners)) {
     for (const id of ids) counts[id] = (counts[id] ?? 0) + 1

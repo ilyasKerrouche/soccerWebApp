@@ -1,5 +1,7 @@
 // lib/queries/stats.ts
 import { createClient } from '@/lib/supabase/server'
+import { createPublicClient } from '@/lib/supabase/public'
+import { inSeason, type SeasonKey } from '@/lib/season'
 
 export type GlobalStats = {
   total_matches: number
@@ -15,12 +17,12 @@ export type MatchGoalPoint = {
   total_goals: number
 }
 
-export async function getGlobalStats(): Promise<GlobalStats> {
-  const supabase = createClient()
+export async function getGlobalStats(season: SeasonKey = 'all'): Promise<GlobalStats> {
+  const supabase = createPublicClient()
 
   const { data: matches } = await supabase
     .from('matches')
-    .select('score_a, score_b, is_upcoming')
+    .select('score_a, score_b, is_upcoming, played_at')
     .eq('is_upcoming', false)
 
   const { count: total_players } = await supabase
@@ -28,7 +30,7 @@ export async function getGlobalStats(): Promise<GlobalStats> {
     .select('*', { count: 'exact', head: true })
     .eq('is_active', true)
 
-  const played = matches ?? []
+  const played = (matches ?? []).filter((m) => inSeason(m.played_at, season))
   const total_matches = played.length
   const total_goals = played.reduce((s, m) => s + (m.score_a ?? 0) + (m.score_b ?? 0), 0)
   const wins_a = played.filter((m) => (m.score_a ?? 0) > (m.score_b ?? 0)).length

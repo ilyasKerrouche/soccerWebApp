@@ -1,6 +1,7 @@
 // lib/queries/matches.ts
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { createPublicClient } from '@/lib/supabase/public'
 import { shouldOpenVote, closesAtFrom } from '@/lib/motm'
 import type { Match, MatchWithPlayers } from '@/lib/types'
 
@@ -157,4 +158,12 @@ export async function deleteMatch(id: string): Promise<void> {
   const supabase = createAdminClient()
   const { error } = await supabase.from('matches').delete().eq('id', id)
   if (error) throw new Error(error.message)
+}
+
+// Date delle partite giocate: servono solo a costruire l'elenco delle stagioni.
+export async function getPlayedDates(): Promise<string[]> {
+  const supabase = createPublicClient()
+  const { data, error } = await supabase.from('matches').select('played_at').eq('is_upcoming', false)
+  if (error) throw new Error(error.message)
+  return (data ?? []).map((m) => m.played_at as string)
 }

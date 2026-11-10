@@ -1,5 +1,7 @@
 // lib/queries/players.ts
 import { createClient } from '@/lib/supabase/server'
+import { createPublicClient } from '@/lib/supabase/public'
+import { inSeason, type SeasonKey } from '@/lib/season'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { computeRecord } from '@/lib/rating'
 import { cardExtension, sniffImageType, UNSUPPORTED_FORMAT } from '@/lib/cardFile'
@@ -16,8 +18,10 @@ export async function getAllPlayers(): Promise<Player[]> {
   return data
 }
 
-export async function getPlayersWithStats(): Promise<PlayerWithStats[]> {
-  const supabase = createClient()
+// Numeri della stagione scelta: le partite fuori stagione si scartano prima di contare,
+// cosi' anche forma e fiamma dei gol ripartono a ogni stagione.
+export async function getPlayersWithStats(season: SeasonKey = 'all'): Promise<PlayerWithStats[]> {
+  const supabase = createPublicClient()
 
   const { data: players, error: pErr } = await supabase
     .from('players')
@@ -37,7 +41,7 @@ export async function getPlayersWithStats(): Promise<PlayerWithStats[]> {
     team: 'a' | 'b'
     match: { played_at: string; is_upcoming: boolean; score_a: number | null; score_b: number | null } | null
   }
-  const completedMp = (mp as unknown as MpRow[]).filter(r => r.match && !r.match.is_upcoming)
+  const completedMp = (mp as unknown as MpRow[]).filter(r => r.match && !r.match.is_upcoming && inSeason(r.match.played_at, season))
 
   return players.map((p) => {
     const rows = completedMp.filter((r) => r.player_id === p.id)
@@ -104,7 +108,7 @@ export async function storePlayerCard(playerId: string, file: File): Promise<str
   return url
 }
 
-export async function getPlayerProfile(id: string): Promise<{
+export async function getPlayerProfile(id: string, season: SeasonKey = 'all'): Promise<{
   player: PlayerWithStats
   matches: (MatchWithPlayers & { goals: number; own_goals: number })[]
   goalkeeper_stats?: GoalkeeperStats
@@ -126,8 +130,6 @@ export async function getPlayerProfile(id: string): Promise<{
     .eq('player_id', id)
 
   const allMp = mpRows ?? []
-  const total_goals = allMp.reduce((s, r) => s + r.goals, 0)
-  const total_appearances = allMp.length
 
   // Fetch the full match data for each match
   const matchIds = allMp.map(r => r.match_id)
@@ -141,7 +143,7 @@ export async function getPlayerProfile(id: string): Promise<{
       .eq('is_upcoming', false)
       .order('played_at', { ascending: false })
 
-    matches = (matchData ?? []).map(m => {
+    matches = (matchData ?? []).filter(m => inSeason(m.played_at, season)).map(m => {
       const mp = allMp.find(r => r.match_id === m.id)
       return {
         ...(m as unknown as MatchWithPlayers),
@@ -151,6 +153,10 @@ export async function getPlayerProfile(id: string): Promise<{
       }
     })
   }
+
+  // Gol e presenze dalle sole partite giocate nella stagione (non da allMp, che include quelle in programma)
+  const total_goals = matches.reduce((s, m) => s + m.goals, 0)
+  const total_appearances = matches.length
 
   let goalkeeper_stats: GoalkeeperStats | undefined
   if (player.position === 'GK' && matches.length > 0) {
@@ -199,8 +205,8 @@ export async function getPlayerProfile(id: string): Promise<{
   }
 }
 
-export async function getGoalkeeperRanking(): Promise<PlayerWithGoalkeeperStats[]> {
-  const supabase = createClient()
+export async function getGoalkeeperRanking(season: SeasonKey = 'all'): Promise<PlayerWithGoalkeeperStats[]> {
+  const supabase = createPublicClient()
 
   const { data: gkPlayers, error: pErr } = await supabase
     .from('players')
@@ -225,11 +231,11 @@ export async function getGoalkeeperRanking(): Promise<PlayerWithGoalkeeperStats[
   if (matchIds.length > 0) {
     const { data: matchData, error: matchErr } = await supabase
       .from('matches')
-      .select('id, score_a, score_b')
+      .select('id, score_a, score_b, played_at')
       .in('id', matchIds)
       .eq('is_upcoming', false)
     if (matchErr) throw new Error(matchErr.message)
-    for (const m of matchData ?? []) {
+    for (const m of (matchData ?? []).filter(m => inSeason(m.played_at, season))) {
       matchMap[m.id] = { score_a: m.score_a, score_b: m.score_b }
     }
   }
@@ -251,7 +257,8 @@ export async function getGoalkeeperRanking(): Promise<PlayerWithGoalkeeperStats[
     return { ...p, goals_conceded, clean_sheets, appearances, avg_conceded }
   })
 
-  return result.sort((a, b) => {
+  // In una stagione compare solo chi ha giocato; in "Sempre" tutti, come prima
+  return result.filter(p => season === 'all' || p.appearances > 0).sort((a, b) => {
     if (a.appearances === 0 && b.appearances === 0) return 0
     if (a.appearances === 0) return 1
     if (b.appearances === 0) return -1
