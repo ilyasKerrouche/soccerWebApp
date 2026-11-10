@@ -3,7 +3,7 @@
 Le versioni seguono [Semantic Versioning](https://semver.org/lang/it/):
 il primo numero cambia con un restyling o un cambiamento grosso, il secondo con nuove funzioni, il terzo con correzioni.
 
-## [Non rilasciato]
+## [2.7.0] — 2026-11-10
 
 ### Novità
 - **Stagioni** da gennaio a dicembre: la prima è la 2026 e comprende anche le partite di ottobre–dicembre 2025
