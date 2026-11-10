@@ -1,8 +1,8 @@
 import Link from 'next/link'
-import { getPlayersWithStats } from '@/lib/queries/players'
 import { getLastMatch, getNextMatch, getAllMatchesWithPlayers } from '@/lib/queries/matches'
-import { getGlobalStats } from '@/lib/queries/stats'
-import { getMotmWinnersByMatch, getMotmCounts } from '@/lib/queries/motm'
+import { getMotmWinnersByMatch } from '@/lib/queries/motm'
+import { cachedGlobalStats, cachedMotmCounts, cachedPlayersWithStats } from '@/lib/queries/cached'
+import { currentSeason, inSeason, seasonEmptyText, seasonOf } from '@/lib/season'
 import { motmStatus } from '@/lib/motm'
 import { buildLedText, formatRomeDay, toPlayerHomeStats, topScorers as topScorersOf } from '@/lib/homeText'
 import HomeClient from '@/components/HomeClient'
@@ -13,12 +13,19 @@ import PullToRefresh from '@/components/PullToRefresh'
 export const revalidate = 60
 
 export default async function HomePage() {
-  const [stats, lastMatch, nextMatch, allMatches, players] = await Promise.all([
-    getGlobalStats(),
+  // Risultati e classifica: stagione in corso. Blocco ultima partita (campo, card, marcatori,
+  // il tuo riepilogo): la stagione di quella partita, anche se e' quella appena chiusa.
+  const season = currentSeason(new Date())
+  const [stats, lastMatch, nextMatch, allMatches] = await Promise.all([
+    cachedGlobalStats(season),
     getLastMatch(),
     getNextMatch(),
     getAllMatchesWithPlayers(),
-    getPlayersWithStats(),
+  ])
+  const lastSeason = lastMatch ? seasonOf(lastMatch.played_at) : season
+  const [players, seasonPlayers] = await Promise.all([
+    cachedPlayersWithStats(lastSeason),
+    lastSeason === season ? null : cachedPlayersWithStats(season),
   ])
 
   // MOTM (solo a voto chiuso) e conteggi per le card: se falliscono, il campo resta senza
@@ -26,7 +33,7 @@ export default async function HomePage() {
   let motmCounts: Record<string, number> = {}
   if (lastMatch) {
     try {
-      const [winners, counts] = await Promise.all([getMotmWinnersByMatch([lastMatch.id]), getMotmCounts()])
+      const [winners, counts] = await Promise.all([getMotmWinnersByMatch([lastMatch.id]), cachedMotmCounts(lastSeason)])
       motmIds = winners[lastMatch.id] ?? []
       motmCounts = counts
     } catch (e) {
@@ -35,8 +42,9 @@ export default async function HomePage() {
   }
   const playerStats = toPlayerHomeStats(players, motmCounts)
 
-  const recentMatches = allMatches.filter((m) => !m.is_upcoming).slice(0, 3)
-  const topScorers = topScorersOf(players, 5)
+  const recentMatches = allMatches.filter((m) => !m.is_upcoming && inSeason(m.played_at, season)).slice(0, 3)
+  const topScorers = topScorersOf(seasonPlayers ?? players, 5)
+  const emptyText = stats.total_matches === 0 ? seasonEmptyText(season) : null
 
   const voteOpen = lastMatch?.motm_closes_at && motmStatus(lastMatch.motm_closes_at, new Date()) === 'open'
     ? { matchId: lastMatch.id, closesAt: lastMatch.motm_closes_at }
@@ -97,6 +105,8 @@ export default async function HomePage() {
         players={players}
         playerStats={playerStats}
         voteOpen={voteOpen}
+        season={season}
+        emptyText={emptyText}
       />
     </main>
   )

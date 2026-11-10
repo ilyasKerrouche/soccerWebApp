@@ -21,12 +21,16 @@ type Props = {
   players: PlayerWithStats[]
   playerStats: Record<string, PlayerHomeStats>
   voteOpen: { matchId: string; closesAt: string } | null
+  /** Stagione in corso: Risultati e Classifica parlano di questa. */
+  season: number
+  /** Stagione in corso ancora senza partite: Risultati e Classifica mostrano solo questo testo. */
+  emptyText: string | null
 }
 
 const TABS = ['Riepilogo', 'Risultati', 'Classifica'] as const
 type Tab = typeof TABS[number]
 
-export default function HomeClient({ lastMatch, nextMatch, recentMatches, stats, topScorers, players, playerStats, voteOpen }: Props) {
+export default function HomeClient({ lastMatch, nextMatch, recentMatches, stats, topScorers, players, playerStats, voteOpen, season, emptyText }: Props) {
   const [tab, setTab] = useState<Tab>('Riepilogo')
   // undefined finche' non sappiamo chi guarda: la pagina e' in cache uguale per tutti
   const [viewer, setViewer] = useState<HomeViewer | undefined>(undefined)
@@ -90,7 +94,11 @@ export default function HomeClient({ lastMatch, nextMatch, recentMatches, stats,
           </>
         )}
 
-        {tab === 'Risultati' && (
+        {(tab === 'Risultati' || tab === 'Classifica') && emptyText && (
+          <p className="text-[13px] text-center py-6" style={{ color: C.muted }}>{emptyText}</p>
+        )}
+
+        {tab === 'Risultati' && !emptyText && (
           <Section title="Ultime partite" link={{ href: '/matches', label: 'Tutte' }}>
             {recentMatches.length === 0 ? (
               <p className="text-[13px] text-center py-6" style={{ color: C.muted }}>Nessuna partita ancora.</p>
@@ -119,9 +127,9 @@ export default function HomeClient({ lastMatch, nextMatch, recentMatches, stats,
           </Section>
         )}
 
-        {tab === 'Classifica' && (
+        {tab === 'Classifica' && !emptyText && (
           <>
-            <Section title="Stagione">
+            <Section title={`Stagione ${season}`}>
               <div className="grid grid-cols-2 gap-2">
                 {[
                   { v: stats.total_matches, l: 'Partite' },
