@@ -80,7 +80,7 @@ async function renderMotm(match: MatchWithPlayers) {
   ).votersCount
   const progress = (
     <p className="text-xs text-white/40 mt-3">
-      {votersCount} su {approved.length} hanno votato
+      {votersCount} su {approved.length} {votersCount === 1 ? 'ha' : 'hanno'} votato
     </p>
   )
   const header = <MotmCountdown closesAt={closesAt} />

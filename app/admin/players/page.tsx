@@ -21,7 +21,7 @@ export default async function AdminPlayersPage() {
       <div className="px-4 pt-4 flex flex-col gap-3">
         <NewPlayerForm />
         <div className="text-[10px] tracking-[2px] uppercase text-white/25 font-bold mt-2">
-          {players.length} giocatori
+          {players.length === 1 ? '1 giocatore' : `${players.length} giocatori`}
         </div>
         {players.map(p => (
           <AdminPlayerRow key={p.id} player={p} />

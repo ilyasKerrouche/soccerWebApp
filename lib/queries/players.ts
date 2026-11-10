@@ -4,6 +4,7 @@ import { createPublicClient } from '@/lib/supabase/public'
 import { inSeason, type SeasonKey } from '@/lib/season'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { computeRecord } from '@/lib/rating'
+import { fetchAll } from './paging'
 import { cardExtension, sniffImageType, UNSUPPORTED_FORMAT } from '@/lib/cardFile'
 import type { Player, PlayerWithStats, MatchWithPlayers, GoalkeeperStats, PlayerWithGoalkeeperStats } from '@/lib/types'
 
@@ -30,18 +31,21 @@ export async function getPlayersWithStats(season: SeasonKey = 'all'): Promise<Pl
     .order('name')
   if (pErr) throw new Error(pErr.message)
 
-  const { data: mp, error: mpErr } = await supabase
-    .from('match_players')
-    .select('player_id, goals, team, match:matches(played_at, is_upcoming, score_a, score_b)')
-  if (mpErr) throw new Error(mpErr.message)
-
   type MpRow = {
     player_id: string
     goals: number
     team: 'a' | 'b'
     match: { played_at: string; is_upcoming: boolean; score_a: number | null; score_b: number | null } | null
   }
-  const completedMp = (mp as unknown as MpRow[]).filter(r => r.match && !r.match.is_upcoming && inSeason(r.match.played_at, season))
+  // Una riga per presenza: con circa 10 giocatori a partita le 1000 righe di una risposta si superano presto
+  const mp = await fetchAll<MpRow>((from, to) =>
+    supabase
+      .from('match_players')
+      .select('player_id, goals, team, match:matches(played_at, is_upcoming, score_a, score_b)')
+      .order('id')
+      .range(from, to) as unknown as PromiseLike<{ data: MpRow[] | null; error: { message: string } | null }>,
+  )
+  const completedMp = mp.filter(r => r.match && !r.match.is_upcoming && inSeason(r.match.played_at, season))
 
   return players.map((p) => {
     const rows = completedMp.filter((r) => r.player_id === p.id)

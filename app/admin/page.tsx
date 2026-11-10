@@ -95,13 +95,14 @@ export default async function AdminPage() {
             {played.map((m) => {
               const date = new Date(m.played_at).toLocaleDateString('it-IT', { day: 'numeric', month: 'long' })
               const aWins = (m.score_a ?? 0) > (m.score_b ?? 0)
+              const bWins = (m.score_b ?? 0) > (m.score_a ?? 0)
               return (
                 <div key={m.id} className="glass rounded-xl px-4 py-3 flex items-center gap-3">
                   <div className="flex-1 flex items-center gap-3">
                     <div className="text-sm font-black">
                       <span className={aWins ? 'text-win' : 'text-white/50'}>{m.score_a}</span>
                       <span className="text-white/20 mx-1.5">–</span>
-                      <span className={!aWins ? 'text-win' : 'text-white/50'}>{m.score_b}</span>
+                      <span className={bWins ? 'text-win' : 'text-white/50'}>{m.score_b}</span>
                     </div>
                     <span className="text-xs text-white/35">{date}</span>
                   </div>

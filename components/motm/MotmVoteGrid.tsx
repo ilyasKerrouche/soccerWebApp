@@ -26,10 +26,16 @@ export default function MotmVoteGrid({ matchId, candidates, myVote }: Props) {
     setSending(playerId)
     setError(null)
     startTransition(async () => {
-      const res = await castVote(matchId, playerId)
-      if (res.error) setError(res.error)
-      else setConfirmed(playerId)
-      setSending(null)
+      // Senza rete la chiamata lancia: la card non deve restare su "Invio…"
+      try {
+        const res = await castVote(matchId, playerId)
+        if (res.error) setError(res.error)
+        else setConfirmed(playerId)
+      } catch {
+        setError('Voto non registrato, riprova')
+      } finally {
+        setSending(null)
+      }
     })
   }
 

@@ -4,21 +4,7 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { tallyMotm, type VoteRow } from '@/lib/motm'
 import { inSeason, type SeasonKey } from '@/lib/season'
-
-const PAGE = 1000
-
-// PostgREST taglia le risposte a 1000 righe: si legge a pagine finche' una e' corta.
-async function fetchAll<T>(
-  page: (from: number, to: number) => PromiseLike<{ data: T[] | null; error: { message: string } | null }>,
-): Promise<T[]> {
-  const rows: T[] = []
-  for (let from = 0; ; from += PAGE) {
-    const { data, error } = await page(from, from + PAGE - 1)
-    if (error) throw new Error(error.message)
-    rows.push(...(data ?? []))
-    if (!data || data.length < PAGE) return rows
-  }
-}
+import { fetchAll } from './paging'
 
 export async function getVotesForMatch(matchId: string): Promise<VoteRow[]> {
   const supabase = createAdminClient()
@@ -65,13 +51,14 @@ export async function upsertVote(
 // Vincitori (id giocatore) delle sole partite con voto chiuso. Senza matchIds
 // copre tutte le partite chiuse (nessuna lista id nell'URL). Poche query in
 // tutto, indipendentemente dal numero di partite.
-async function computeWinners(matchIds?: string[], season: SeasonKey = 'all'): Promise<Record<string, string[]>> {
+async function computeWinners(matchIds?: string[], season: SeasonKey = 'all', at: Date = new Date()): Promise<Record<string, string[]>> {
   if (matchIds && matchIds.length === 0) return {}
   const supabase = createAdminClient()
-  const now = new Date().toISOString()
+  const now = at.toISOString()
 
+  // lte: chiuso dall'istante esatto della scadenza, come motmStatus
   const closedAll = await fetchAll<{ id: string; played_at: string }>((from, to) => {
-    let q = supabase.from('matches').select('id, played_at').lt('motm_closes_at', now)
+    let q = supabase.from('matches').select('id, played_at').lte('motm_closes_at', now)
     if (matchIds) q = q.in('id', matchIds)
     return q.order('id').range(from, to)
   })
@@ -117,11 +104,34 @@ export function getAllMotmWinners(): Promise<Record<string, string[]>> {
 }
 
 // player_id -> numero di MOTM vinti (un co-MOTM conta 1 per ciascun vincitore).
-export async function getMotmCounts(season: SeasonKey = 'all'): Promise<Record<string, number>> {
-  const winners = await computeWinners(undefined, season)
+export async function getMotmCounts(season: SeasonKey = 'all', at: Date = new Date()): Promise<Record<string, number>> {
+  const winners = await computeWinners(undefined, season, at)
   const counts: Record<string, number> = {}
   for (const ids of Object.values(winners)) {
     for (const id of ids) counts[id] = (counts[id] ?? 0) + 1
   }
   return counts
+}
+
+export type MotmCountsSnapshot = {
+  counts: Record<string, number>
+  /** Quando chiude il prossimo voto ancora aperto: da li' in poi questi conteggi sono vecchi. null se nessuno e' aperto. */
+  staleAt: string | null
+}
+
+// Conteggi da tenere in cache: un voto che si chiude da solo non passa da nessun salvataggio,
+// quindi chi li riusa deve sapere fino a quando valgono (vedi cachedMotmCounts).
+export async function getMotmCountsSnapshot(season: SeasonKey = 'all'): Promise<MotmCountsSnapshot> {
+  const at = new Date()
+  const [counts, next] = await Promise.all([
+    getMotmCounts(season, at),
+    createAdminClient()
+      .from('matches')
+      .select('motm_closes_at')
+      .gt('motm_closes_at', at.toISOString())
+      .order('motm_closes_at', { ascending: true })
+      .limit(1),
+  ])
+  if (next.error) throw new Error(next.error.message)
+  return { counts, staleAt: (next.data?.[0]?.motm_closes_at as string | undefined) ?? null }
 }

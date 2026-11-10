@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createPublicClient } from '@/lib/supabase/public'
 import { shouldOpenVote, closesAtFrom } from '@/lib/motm'
+import { seasonRange } from '@/lib/season'
 import type { Match, MatchWithPlayers } from '@/lib/types'
 
 export async function getAllMatches(): Promise<Match[]> {
@@ -46,6 +47,17 @@ export async function getLastMatch(): Promise<MatchWithPlayers | null> {
     .limit(1)
     .single()
   return (data as MatchWithPlayers) ?? null
+}
+
+// Ultime partite giocate di una stagione, per la Home: solo quelle che servono, senza formazioni.
+export async function getRecentPlayedMatches(season: number, limit: number): Promise<Match[]> {
+  const supabase = createClient()
+  const { from, to } = seasonRange(season)
+  let q = supabase.from('matches').select('*').eq('is_upcoming', false).lte('played_at', to)
+  if (from) q = q.gte('played_at', from)
+  const { data, error } = await q.order('played_at', { ascending: false }).limit(limit)
+  if (error) throw new Error(error.message)
+  return data as Match[]
 }
 
 export async function getNextMatch(): Promise<MatchWithPlayers | null> {
@@ -144,7 +156,9 @@ export async function updateMatch(
   }).eq('id', id)
   if (error) throw new Error(error.message)
 
-  await supabase.from('match_players').delete().eq('match_id', id)
+  // Se la cancellazione fallisce non si reinserisce: si avrebbero giocatori doppi
+  const { error: delErr } = await supabase.from('match_players').delete().eq('match_id', id)
+  if (delErr) throw new Error(delErr.message)
 
   if (formData.players.length > 0) {
     const { error: mpErr } = await supabase.from('match_players').insert(

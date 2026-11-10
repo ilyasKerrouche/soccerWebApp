@@ -43,8 +43,25 @@ export function parseSeason(raw: string | string[] | undefined, now: Date): Seas
 
 /** Query string per una stagione: vuota per quella in corso, cosi' l'indirizzo di default resta pulito. */
 export function seasonQuery(season: SeasonKey, now: Date): string {
-  if (season === currentSeason(now)) return ''
+  return seasonQueryFor(season, currentSeason(now))
+}
+
+/** Come seasonQuery, ma con la stagione in corso gia' nota (nel client: quella calcolata dal server). */
+export function seasonQueryFor(season: SeasonKey, current: number): string {
+  if (season === current) return ''
   return `?${SEASON_PARAM}=${season === 'all' ? ALL_PARAM : season}`
+}
+
+const romeDay = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Rome', year: 'numeric', month: '2-digit', day: '2-digit' })
+
+/** Oggi in Italia come "YYYY-MM-DD" (toISOString darebbe il giorno UTC: ieri, subito dopo mezzanotte). */
+export function todayInRome(now: Date): string {
+  return romeDay.format(now)
+}
+
+/** Date estreme di una stagione, per filtrare in query. La prima non ha inizio: comprende tutto cio' che viene prima. */
+export function seasonRange(season: number): { from: string | null; to: string } {
+  return { from: season > FIRST_SEASON ? `${season}-01-01` : null, to: `${season}-12-31` }
 }
 
 /** Accoda al link il parametro della stagione gia' presente nell'indirizzo (valore grezzo). */

@@ -3,6 +3,24 @@
 Le versioni seguono [Semantic Versioning](https://semver.org/lang/it/):
 il primo numero cambia con un restyling o un cambiamento grosso, il secondo con nuove funzioni, il terzo con correzioni.
 
+## [Da pubblicare]
+
+### Correzioni
+- Modificando una partita gli autogol già inseriti non spariscono più
+- Nel form partita, chi cambia squadra o viene tolto perde le sue righe marcatore (prima i gol potevano finire sotto un nome diverso da quello mostrato)
+- Classifiche e statistiche giuste anche oltre le 1000 presenze totali (prima le righe in più venivano ignorate)
+- Il conteggio MOTM si aggiorna appena un voto si chiude, senza il ritardo di circa un minuto
+- Selettore della stagione: usa la stagione del server (niente sorprese a Capodanno) e si attenua mentre carica
+- "1 giocatore", "1 giocata", "1 presenza" al singolare
+- Voto MOTM senza rete: la card non resta più bloccata su "Invio…"
+- La card ingrandita sul campo si chiude con Esc; sponsor e ingrandimento seguono "riduci movimento" anche se cambia ad app aperta
+- Admin: errori visibili quando nome, ruolo o card di un giocatore non si salvano; data di oggi in ora italiana per le partite nuove e duplicate; un pareggio non colora più di verde la seconda squadra
+- Statistiche: a pari merito podio e lista usano lo stesso ordine
+- Approvare o rifiutare un account aggiorna subito elenchi e classifiche
+
+### Sotto il cofano
+- La Home legge solo le 3 partite che mostra, non tutto lo storico con le formazioni
+
 ## [2.7.1] — 2026-11-10
 
 ### Correzioni

@@ -12,18 +12,30 @@ export default function AdminPlayerRow({ player }: { player: Player }) {
   const [uploadPending, startUpload] = useTransition()
   const [gkPending, startGK] = useTransition()
   const [success, setSuccess] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const done = () => {
+    setSuccess(true)
+    setTimeout(() => setSuccess(false), 2000)
+  }
 
   useEffect(() => {
     setIsGK(player.position === 'GK')
   }, [player.position])
 
   const saveName = () => {
-    if (!name.trim() || name === player.name) { setEditing(false); return }
+    if (!name.trim() || name.trim() === player.name) { setName(player.name); setEditing(false); return }
+    setError(null)
     startTransition(async () => {
-      await savePlayerName(player.id, name)
+      try {
+        await savePlayerName(player.id, name)
+        setName(name.trim())
+        done()
+      } catch {
+        setName(player.name)
+        setError('Nome non salvato')
+      }
       setEditing(false)
-      setSuccess(true)
-      setTimeout(() => setSuccess(false), 2000)
     })
   }
 
@@ -32,20 +44,31 @@ export default function AdminPlayerRow({ player }: { player: Player }) {
     if (!file) return
     const fd = new FormData()
     fd.append('card', file)
+    // Svuotato subito: cosi' si puo' riscegliere lo stesso file dopo un errore
+    e.target.value = ''
+    setError(null)
     startUpload(async () => {
-      await uploadPlayerCard(player.id, fd)
-      setSuccess(true)
-      setTimeout(() => setSuccess(false), 2000)
+      try {
+        const res = await uploadPlayerCard(player.id, fd)
+        if (res.error) setError(res.error)
+        else done()
+      } catch {
+        setError('Card non caricata')
+      }
     })
   }
 
   const toggleGK = () => {
     const newPosition = isGK ? null : 'GK'
+    setError(null)
     startGK(async () => {
-      await updatePlayerPosition(player.id, newPosition)
-      setIsGK(!isGK)
-      setSuccess(true)
-      setTimeout(() => setSuccess(false), 2000)
+      try {
+        await updatePlayerPosition(player.id, newPosition)
+        setIsGK(!isGK)
+        done()
+      } catch {
+        setError('Ruolo non salvato')
+      }
     })
   }
 
@@ -100,6 +123,7 @@ export default function AdminPlayerRow({ player }: { player: Player }) {
       {/* Status */}
       {(pending || uploadPending || gkPending) && <span className="text-[10px] text-white/40 animate-pulse">salvo…</span>}
       {success && <span className="text-[10px] text-win">✓</span>}
+      {error && <span role="alert" className="text-[10px] text-red-400 max-w-[90px] leading-tight">{error}</span>}
     </div>
   )
 }

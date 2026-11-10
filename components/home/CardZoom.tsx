@@ -1,5 +1,5 @@
 'use client'
-import { useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import PlayerCard from '@/components/PlayerCard'
 import FormDots from '@/components/FormDots'
@@ -51,6 +51,15 @@ export default function CardZoom({ player, stats, origin, reduced, onClosed }: P
     card.current.animate([{ transform: 'none' }, { transform: end }], { duration: CLOSE_MS, easing: 'cubic-bezier(.4,0,.6,1)', fill: 'forwards' })
       .finished.then(onClosed, onClosed)
   }
+
+  // Esc chiude come il tocco. Il ref tiene sempre l'ultima versione di close senza riagganciare l'ascolto.
+  const closeRef = useRef(close)
+  closeRef.current = close
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') closeRef.current() }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
 
   return (
     <div ref={backdrop} className="stadium-zoom" onClick={close} role="dialog" aria-label={player.name}>

@@ -1,7 +1,7 @@
 'use client'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useTransition } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
-import { seasonLabel, seasonQuery, type SeasonKey } from '@/lib/season'
+import { seasonLabel, seasonQueryFor, type SeasonKey } from '@/lib/season'
 import { C } from './ui'
 
 type Props = {
@@ -17,6 +17,8 @@ export default function SeasonPicker({ seasons, current, active }: Props) {
   const ref = useRef<HTMLDivElement>(null)
   const router = useRouter()
   const pathname = usePathname()
+  // Con rete lenta il cambio stagione ci mette un attimo: nel frattempo la pillola si attenua
+  const [loading, startTransition] = useTransition()
 
   useEffect(() => {
     if (!open) return
@@ -32,7 +34,8 @@ export default function SeasonPicker({ seasons, current, active }: Props) {
 
   const choose = (key: SeasonKey) => {
     setOpen(false)
-    if (key !== active) router.push(pathname + seasonQuery(key, new Date()))
+    // La stagione in corso e' quella del server (current), non l'orologio del telefono
+    if (key !== active) startTransition(() => router.push(pathname + seasonQueryFor(key, current)))
   }
 
   const items: { key: SeasonKey; label: string }[] = [
@@ -46,10 +49,11 @@ export default function SeasonPicker({ seasons, current, active }: Props) {
         type="button"
         aria-haspopup="menu"
         aria-expanded={open}
+        aria-busy={loading}
         aria-label={`Stagione: ${seasonLabel(active)}`}
         onClick={() => setOpen((o) => !o)}
-        className="rounded-full px-3 py-1.5 text-[12px] font-semibold whitespace-nowrap"
-        style={{ background: C.surf, border: `1px solid ${C.line}`, color: C.text }}
+        className="rounded-full px-3 py-1.5 text-[12px] font-semibold whitespace-nowrap transition-opacity"
+        style={{ background: C.surf, border: `1px solid ${C.line}`, color: C.text, opacity: loading ? 0.5 : 1 }}
       >
         {seasonLabel(active)} ▾
       </button>

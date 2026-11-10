@@ -1,7 +1,8 @@
 // app/admin/accounts/actions.ts
 'use server'
 import { randomInt } from 'crypto'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
+import { SEASON_DATA_TAG } from '@/lib/queries/cached'
 import { requireAdmin } from '@/lib/auth'
 import { createAdminClient } from '@/lib/supabase/admin'
 
@@ -26,6 +27,8 @@ function revalidateAccounts(playerVisibilityChanged: boolean) {
     revalidatePath('/players')
     revalidatePath('/stats')
     revalidatePath('/')
+    // Un giocatore nuovo che diventa visibile (o sparisce) cambia elenchi e conteggi in cache
+    revalidateTag(SEASON_DATA_TAG)
   }
 }
 

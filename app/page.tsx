@@ -1,8 +1,8 @@
 import Link from 'next/link'
-import { getLastMatch, getNextMatch, getAllMatchesWithPlayers } from '@/lib/queries/matches'
+import { getLastMatch, getNextMatch, getRecentPlayedMatches } from '@/lib/queries/matches'
 import { getMotmWinnersByMatch } from '@/lib/queries/motm'
 import { cachedGlobalStats, cachedMotmCounts, cachedPlayersWithStats } from '@/lib/queries/cached'
-import { currentSeason, inSeason, seasonEmptyText, seasonOf } from '@/lib/season'
+import { currentSeason, seasonEmptyText, statsSeasonFor } from '@/lib/season'
 import { motmStatus } from '@/lib/motm'
 import { buildLedText, formatRomeDay, toPlayerHomeStats, topScorers as topScorersOf } from '@/lib/homeText'
 import HomeClient from '@/components/HomeClient'
@@ -17,15 +17,18 @@ export const dynamic = 'force-dynamic'
 export default async function HomePage() {
   // Risultati e classifica: stagione in corso. Blocco ultima partita (campo, card, marcatori,
   // il tuo riepilogo): la stagione di quella partita, anche se e' quella appena chiusa.
-  const season = currentSeason(new Date())
-  const [stats, lastMatch, nextMatch, allMatches] = await Promise.all([
+  const now = new Date()
+  const season = currentSeason(now)
+  const [stats, lastMatch, nextMatch, recentMatches] = await Promise.all([
     // Se i numeri non arrivano: null, cosi' non si dice "stagione al via" per sbaglio
     cachedGlobalStats(season).catch((e) => { console.error('home stats failed', e); return null }),
     getLastMatch(),
     getNextMatch(),
-    getAllMatchesWithPlayers(),
+    // Solo le 3 che si mostrano, non tutto lo storico con le formazioni
+    getRecentPlayedMatches(season, 3),
   ])
-  const lastSeason = lastMatch ? seasonOf(lastMatch.played_at) : season
+  // Come il dettaglio partita: la stagione dell'ultima partita, mai una futura (data inserita per errore)
+  const lastSeason = lastMatch ? statsSeasonFor(lastMatch.played_at, now) : season
   const [players, seasonPlayers] = await Promise.all([
     cachedPlayersWithStats(lastSeason),
     lastSeason === season ? null : cachedPlayersWithStats(season),
@@ -45,7 +48,6 @@ export default async function HomePage() {
   }
   const playerStats = toPlayerHomeStats(players, motmCounts)
 
-  const recentMatches = allMatches.filter((m) => !m.is_upcoming && inSeason(m.played_at, season)).slice(0, 3)
   const topScorers = topScorersOf(seasonPlayers ?? players, 5)
   const emptyText = stats && stats.total_matches === 0 ? seasonEmptyText(season) : null
 

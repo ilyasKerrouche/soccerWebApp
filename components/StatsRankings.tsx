@@ -9,6 +9,7 @@ import StreakFlame from './StreakFlame'
 import RecordsBoard from './RecordsBoard'
 import type { GoldenPair, Records } from '@/lib/records'
 import type { Player } from '@/lib/types'
+import { comparePlayers } from '@/lib/ranking'
 
 type Props = {
   players: PlayerWithStats[]
@@ -91,8 +92,9 @@ export default function StatsRankings({ players, goalkeepers, motmCounts, record
     (t) => (t.key !== 'portieri' || hasPortieri) && (t.key !== 'motm' || byMotm.length > 0),
   )
 
-  const byGoals = [...players].sort((a, b) => b.total_goals - a.total_goals)
-  const byAppearances = [...players].sort((a, b) => b.total_appearances - a.total_appearances)
+  // Stesso spareggio del podio (lib/ranking.ts): a pari merito l'ordine non cambia tra podio e lista
+  const byGoals = [...players].sort(comparePlayers('goals'))
+  const byAppearances = [...players].sort(comparePlayers('appearances'))
 
   return (
     <div>

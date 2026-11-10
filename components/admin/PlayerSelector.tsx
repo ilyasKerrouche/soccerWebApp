@@ -76,7 +76,7 @@ export default function PlayerSelector({ players, value, onChange }: Props) {
                 Team {team.toUpperCase()}
               </span>
               <span className="text-[9px]" style={{ color: team === 'a' ? 'rgba(91,156,255,0.5)' : 'rgba(138,150,168,0.5)' }}>
-                {(team === 'a' ? teamA : teamB).length} giocatori
+                {(team === 'a' ? teamA : teamB).length === 1 ? '1 giocatore' : `${(team === 'a' ? teamA : teamB).length} giocatori`}
               </span>
             </div>
             <div
