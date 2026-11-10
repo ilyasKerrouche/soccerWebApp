@@ -1,5 +1,4 @@
 import { notFound } from 'next/navigation'
-import Link from 'next/link'
 import { getPlayerProfile } from '@/lib/queries/players'
 import PlayerCard from '@/components/PlayerCard'
 import FormDots from '@/components/FormDots'
@@ -131,7 +130,7 @@ export default async function PlayerProfilePage({ params, searchParams }: { para
                 const date = new Date(m.played_at).toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: '2-digit' })
 
                 return (
-                  <Link key={m.id} href={`/matches/${m.id}`} className="flex items-center gap-2.5 px-3.5 py-2.5 text-[13px] transition-colors hover:bg-white/[0.03]"
+                  <SeasonLink key={m.id} href={`/matches/${m.id}`} className="flex items-center gap-2.5 px-3.5 py-2.5 text-[13px] transition-colors hover:bg-white/[0.03]"
                     style={i > 0 ? { borderTop: `1px solid ${C.line}` } : undefined}>
                     <span className="w-6 h-6 rounded-[7px] flex items-center justify-center text-[11px] font-bold flex-shrink-0" style={{ background: res.bg, color: res.fg }}>
                       {res.l}
@@ -142,7 +141,7 @@ export default async function PlayerProfilePage({ params, searchParams }: { para
                       {m.goals > 0 && <span style={{ color: C.acc }}>{m.goals} ⚽</span>}
                       {m.own_goals > 0 && <span style={{ color: C.loss }}>{m.own_goals} OG</span>}
                     </span>
-                  </Link>
+                  </SeasonLink>
                 )
               })}
             </Card>

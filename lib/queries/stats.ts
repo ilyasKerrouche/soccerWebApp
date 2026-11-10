@@ -20,15 +20,18 @@ export type MatchGoalPoint = {
 export async function getGlobalStats(season: SeasonKey = 'all'): Promise<GlobalStats> {
   const supabase = createPublicClient()
 
-  const { data: matches } = await supabase
+  // Gli errori si lanciano: un risultato vuoto diventerebbe "Stagione al via" e resterebbe in cache
+  const { data: matches, error: matchesErr } = await supabase
     .from('matches')
     .select('score_a, score_b, is_upcoming, played_at')
     .eq('is_upcoming', false)
+  if (matchesErr) throw new Error(matchesErr.message)
 
-  const { count: total_players } = await supabase
+  const { count: total_players, error: playersErr } = await supabase
     .from('players')
     .select('*', { count: 'exact', head: true })
     .eq('is_active', true)
+  if (playersErr) throw new Error(playersErr.message)
 
   const played = (matches ?? []).filter((m) => inSeason(m.played_at, season))
   const total_matches = played.length

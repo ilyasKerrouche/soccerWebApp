@@ -1,4 +1,3 @@
-import Link from 'next/link'
 import { getMatchById } from '@/lib/queries/matches'
 import { getPlayersWithStats } from '@/lib/queries/players'
 import { getMotmCounts, getMotmWinnersByMatch } from '@/lib/queries/motm'
@@ -9,6 +8,7 @@ import MotmSection from '@/components/motm/MotmSection'
 import { C, Card, Section } from '@/components/ui'
 import type { PlayerHomeStats } from '@/lib/types'
 import { notFound } from 'next/navigation'
+import SeasonLink from '@/components/SeasonLink'
 import { statsSeasonFor } from '@/lib/season'
 
 export const dynamic = 'force-dynamic'
@@ -111,7 +111,7 @@ export default async function MatchDetailPage({ params }: { params: { id: string
           ) : (
             <Card className="overflow-hidden">
               {scorers.map((mp, i) => (
-                <Link
+                <SeasonLink
                   key={mp.player_id}
                   href={`/players/${mp.player_id}`}
                   className="flex items-center gap-2.5 px-3.5 py-3 text-[14px] transition-colors hover:bg-white/[0.03]"
@@ -128,7 +128,7 @@ export default async function MatchDetailPage({ params }: { params: { id: string
                     {mp.goals > 0 && <span>{mp.goals}</span>}
                     {mp.own_goals > 0 && <span style={{ color: C.loss }}>{mp.own_goals} autogol</span>}
                   </span>
-                </Link>
+                </SeasonLink>
               ))}
             </Card>
           )}

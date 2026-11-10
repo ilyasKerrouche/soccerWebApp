@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import Link from 'next/link'
+import SeasonLink from './SeasonLink'
 import type { MatchWithPlayers } from '@/lib/types'
 import { dayParts } from '@/lib/monthGroups'
 import { C } from './ui'
@@ -69,9 +69,9 @@ export default function MatchCard({ match, motmNames = [] }: { match: MatchWithP
             </div>
           )}
 
-          <Link href={`/matches/${match.id}`} className="inline-block mt-2.5 text-[12px] font-semibold" style={{ color: C.acc }}>
+          <SeasonLink href={`/matches/${match.id}`} className="inline-block mt-2.5 text-[12px] font-semibold" style={{ color: C.acc }}>
             Vedi dettaglio →
-          </Link>
+          </SeasonLink>
         </div>
       )}
     </div>

@@ -17,7 +17,8 @@ export default async function HomePage() {
   // il tuo riepilogo): la stagione di quella partita, anche se e' quella appena chiusa.
   const season = currentSeason(new Date())
   const [stats, lastMatch, nextMatch, allMatches] = await Promise.all([
-    cachedGlobalStats(season),
+    // Se i numeri non arrivano: null, cosi' non si dice "stagione al via" per sbaglio
+    cachedGlobalStats(season).catch((e) => { console.error('home stats failed', e); return null }),
     getLastMatch(),
     getNextMatch(),
     getAllMatchesWithPlayers(),
@@ -44,7 +45,7 @@ export default async function HomePage() {
 
   const recentMatches = allMatches.filter((m) => !m.is_upcoming && inSeason(m.played_at, season)).slice(0, 3)
   const topScorers = topScorersOf(seasonPlayers ?? players, 5)
-  const emptyText = stats.total_matches === 0 ? seasonEmptyText(season) : null
+  const emptyText = stats && stats.total_matches === 0 ? seasonEmptyText(season) : null
 
   const voteOpen = lastMatch?.motm_closes_at && motmStatus(lastMatch.motm_closes_at, new Date()) === 'open'
     ? { matchId: lastMatch.id, closesAt: lastMatch.motm_closes_at }

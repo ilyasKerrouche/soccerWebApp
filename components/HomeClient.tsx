@@ -16,7 +16,8 @@ type Props = {
   lastMatch: MatchWithPlayers | null
   nextMatch: MatchWithPlayers | null
   recentMatches: MatchWithPlayers[]
-  stats: GlobalStats
+  /** null se i numeri della stagione non sono arrivati: la sezione Stagione non si mostra. */
+  stats: GlobalStats | null
   topScorers: PlayerWithStats[]
   players: PlayerWithStats[]
   playerStats: Record<string, PlayerHomeStats>
@@ -129,7 +130,7 @@ export default function HomeClient({ lastMatch, nextMatch, recentMatches, stats,
 
         {tab === 'Classifica' && !emptyText && (
           <>
-            <Section title={`Stagione ${season}`}>
+            {stats && <Section title={`Stagione ${season}`}>
               <div className="grid grid-cols-2 gap-2">
                 {[
                   { v: stats.total_matches, l: 'Partite' },
@@ -143,7 +144,7 @@ export default function HomeClient({ lastMatch, nextMatch, recentMatches, stats,
                   </Card>
                 ))}
               </div>
-            </Section>
+            </Section>}
 
             <Section title="Top marcatori" link={{ href: '/stats', label: 'Classifiche' }}>
               {topScorers.length === 0 ? (

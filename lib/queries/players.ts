@@ -124,10 +124,12 @@ export async function getPlayerProfile(id: string, season: SeasonKey = 'all'): P
   if (error || !player) return null
 
   // Fetch player's match_players rows
-  const { data: mpRows } = await supabase
+  // Gli errori si lanciano: un elenco vuoto diventerebbe "Nessuna partita in questa stagione"
+  const { data: mpRows, error: mpErr } = await supabase
     .from('match_players')
     .select('match_id, goals, own_goals, team')
     .eq('player_id', id)
+  if (mpErr) throw new Error(mpErr.message)
 
   const allMp = mpRows ?? []
 
@@ -136,12 +138,13 @@ export async function getPlayerProfile(id: string, season: SeasonKey = 'all'): P
   let matches: (MatchWithPlayers & { goals: number; own_goals: number })[] = []
 
   if (matchIds.length > 0) {
-    const { data: matchData } = await supabase
+    const { data: matchData, error: matchErr } = await supabase
       .from('matches')
       .select('*, match_players(*, player:players(*))')
       .in('id', matchIds)
       .eq('is_upcoming', false)
       .order('played_at', { ascending: false })
+    if (matchErr) throw new Error(matchErr.message)
 
     matches = (matchData ?? []).filter(m => inSeason(m.played_at, season)).map(m => {
       const mp = allMp.find(r => r.match_id === m.id)

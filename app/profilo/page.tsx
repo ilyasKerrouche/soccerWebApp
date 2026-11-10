@@ -89,10 +89,16 @@ export default async function ProfiloPage() {
       </div>
 
       <div className="px-4 pt-5 flex flex-col gap-6">
-        {tiles.length > 0 && (
-          <div className="grid grid-cols-2 gap-2">
-            {tiles.map(({ v, l }) => <StatTile key={l} value={v} label={l} />)}
-          </div>
+        {me && (
+          <Section title={`Stagione ${season}`}>
+            {me.total_appearances === 0 ? (
+              <p className="text-[13px] text-center py-4" style={{ color: C.muted }}>Nessuna partita in questa stagione</p>
+            ) : (
+              <div className="grid grid-cols-2 gap-2">
+                {tiles.map(({ v, l }) => <StatTile key={l} value={v} label={l} />)}
+              </div>
+            )}
+          </Section>
         )}
 
         <Section title="La tua card">
