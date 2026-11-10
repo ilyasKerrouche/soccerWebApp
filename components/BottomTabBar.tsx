@@ -1,7 +1,8 @@
 'use client'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { usePathname, useSearchParams } from 'next/navigation'
+import { Suspense, useEffect, useState } from 'react'
+import { SEASON_PARAM, withSeason } from '@/lib/season'
 import { getHeaderCard, type HeaderCard } from '@/app/profilo/actions'
 import MusicButton from './MusicButton'
 
@@ -55,27 +56,10 @@ export default function BottomTabBar() {
       }}
     >
       <div className="flex items-stretch px-2" style={{ height: 52 }}>
-        {/* Le voci si accendono con la stessa linea sotto usata dalle classifiche. */}
-        {tabs.map((tab) => {
-          const isActive = active(tab.href)
-          return (
-            <Link
-              key={tab.href}
-              href={tab.href}
-              className={`relative flex-1 min-w-0 flex items-center justify-center text-[12px] whitespace-nowrap transition-colors ${
-                isActive ? 'text-white font-semibold' : 'text-muted font-medium hover:text-white'
-              }`}
-            >
-              {tab.label}
-              {isActive && (
-                <span
-                  className="absolute left-2 right-2 bottom-0 h-[2px] rounded-full"
-                  style={{ background: '#5b9cff' }}
-                />
-              )}
-            </Link>
-          )
-        })}
+        {/* La stagione scelta viaggia con i link. useSearchParams vuole un Suspense: la Home e' statica. */}
+        <Suspense fallback={<TabLinks active={active} season={null} />}>
+          <SeasonTabLinks active={active} />
+        </Suspense>
 
         <div className="flex items-center flex-shrink-0 pl-1">
           <MusicButton />
@@ -106,5 +90,37 @@ export default function BottomTabBar() {
         </div>
       </div>
     </nav>
+  )
+}
+
+function SeasonTabLinks({ active }: { active: (href: string) => boolean }) {
+  return <TabLinks active={active} season={useSearchParams().get(SEASON_PARAM)} />
+}
+
+function TabLinks({ active, season }: { active: (href: string) => boolean; season: string | null }) {
+  return (
+    <>
+      {/* Le voci si accendono con la stessa linea sotto usata dalle classifiche. */}
+      {tabs.map((tab) => {
+        const isActive = active(tab.href)
+        return (
+          <Link
+            key={tab.href}
+            href={withSeason(tab.href, season)}
+            className={`relative flex-1 min-w-0 flex items-center justify-center text-[12px] whitespace-nowrap transition-colors ${
+              isActive ? 'text-white font-semibold' : 'text-muted font-medium hover:text-white'
+            }`}
+          >
+            {tab.label}
+            {isActive && (
+              <span
+                className="absolute left-2 right-2 bottom-0 h-[2px] rounded-full"
+                style={{ background: '#5b9cff' }}
+              />
+            )}
+          </Link>
+        )
+      })}
+    </>
   )
 }
