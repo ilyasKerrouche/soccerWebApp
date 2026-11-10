@@ -14,7 +14,16 @@ In ordine di priorità.
 - [x] Bellezza: font più sportivo (condensato, sobrio) per punteggi e statistiche
 - [ ] Squadre bilanciate automatiche per la prossima partita (in base a gol, vittorie e forma)
 - [ ] Testa a testa tra due giocatori (gol, vittorie, MOTM, insieme e contro)
-- [ ] Stagioni: archivio della stagione chiusa e ripartenza da zero ("2025/26" oggi è scritto nel codice)
+- [x] Stagioni: stagione ad anno solare, selettore con le stagioni passate e "Sempre", ripartenza da zero a gennaio
+- [ ] Performance (ramo dopo le stagioni): card dei giocatori ridimensionate invece che a grandezza piena (oggi `unoptimized`, fino a 4 MB anche a 32 px; verificare la scena 3D su Safari); letture Supabase non ripetute nella stessa pagina; la Home non carica tutte le partite per mostrarne 3; la Home in realtà non è in cache (le letture col client a cookie la rendono dinamica, `revalidate = 60` non ha effetto)
+- [ ] Stagioni, rifiniture (dalla revisione del ramo stagioni)
+  - Il selettore usa l'orologio del telefono invece della stagione del server: a cavallo di Capodanno può aggiungere o togliere `?stagione=` per sbaglio (`components/SeasonPicker.tsx`, usare la prop `current`)
+  - Mentre si cambia stagione non c'è un segnale di caricamento: con rete lenta il tocco sembra non fare nulla (`useTransition` e pillola semitrasparente)
+  - "1 giocatori" invece di "1 giocatore" nella pagina Giocatori (e "1 giocate" in Partite)
+  - Il conteggio MOTM può restare indietro fino a circa un minuto dopo che un voto si chiude da solo (cache dei conteggi)
+  - Approvare o rifiutare un account non svuota esplicitamente la cache delle stagioni: oggi funziona via `revalidatePath`, aggiungere `revalidateTag(SEASON_DATA_TAG)` in `app/admin/accounts/actions.ts`
+  - Home usa `seasonOf` dove il dettaglio partita usa `statsSeasonFor` (differenza solo con date future inserite per errore)
+  - Il commento in `lib/supabase/public.ts` dà un motivo impreciso per `no-store` (dentro `unstable_cache` è già forzato); attenzione se una lettura `cached*` finisce in una pagina statica
 - [ ] Lista partite: scroll invece di una lista infinita
 - [ ] Correzioni minori: la card ingrandita in home si chiude con Esc; l'animazione del campo segue il cambio di "riduci movimento" anche ad app aperta
 - [ ] Highlights dai video GoPro

@@ -1,6 +1,7 @@
 // app/matches/[id]/motmActions.ts
 'use server'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
+import { SEASON_DATA_TAG } from '@/lib/queries/cached'
 import { getSessionAccount } from '@/lib/session'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { upsertVote } from '@/lib/queries/motm'
@@ -32,6 +33,7 @@ export async function castVote(matchId: string, votedPlayerId: string): Promise<
 
     await upsertVote(matchId, session.account.player_id, votedPlayerId)
     revalidatePath('/matches/' + matchId)
+    revalidateTag(SEASON_DATA_TAG)
     return {}
   } catch (e) {
     console.error('castVote failed', e)

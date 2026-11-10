@@ -1,5 +1,6 @@
 'use server'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
+import { SEASON_DATA_TAG } from '@/lib/queries/cached'
 import { requireAdmin } from '@/lib/auth'
 import { updatePlayerName, storePlayerCard } from '@/lib/queries/players'
 import { cardFileError } from '@/lib/cardFile'
@@ -16,6 +17,7 @@ export async function createPlayer(formData: FormData): Promise<void> {
   if (error) throw new Error(error.message)
   revalidatePath('/admin/players')
   revalidatePath('/stats')
+  revalidateTag(SEASON_DATA_TAG)
 }
 
 export async function savePlayerName(id: string, name: string): Promise<void> {
@@ -23,6 +25,7 @@ export async function savePlayerName(id: string, name: string): Promise<void> {
   await updatePlayerName(id, name.trim())
   revalidatePath('/admin/players')
   revalidatePath('/stats')
+  revalidateTag(SEASON_DATA_TAG)
 }
 
 export async function uploadPlayerCard(id: string, formData: FormData): Promise<void> {
@@ -35,6 +38,7 @@ export async function uploadPlayerCard(id: string, formData: FormData): Promise<
 
   revalidatePath('/admin/players')
   revalidatePath('/stats')
+  revalidateTag(SEASON_DATA_TAG)
   revalidatePath('/')
 }
 
@@ -45,5 +49,6 @@ export async function updatePlayerPosition(id: string, position: string | null):
   if (error) throw new Error(error.message)
   revalidatePath('/admin/players')
   revalidatePath('/stats')
+  revalidateTag(SEASON_DATA_TAG)
   revalidatePath(`/players/${id}`)
 }

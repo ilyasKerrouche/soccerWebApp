@@ -4,6 +4,7 @@ import PlayerCard from '@/components/PlayerCard'
 import FormDots from '@/components/FormDots'
 import MotmCounter from '@/components/motm/MotmCounter'
 import { getMotmCounts } from '@/lib/queries/motm'
+import { currentSeason } from '@/lib/season'
 import { getPlayerProfile } from '@/lib/queries/players'
 import { getSessionAccount } from '@/lib/session'
 import { signOutAction } from '@/app/accedi/actions'
@@ -57,9 +58,11 @@ export default async function ProfiloPage() {
   }
 
   // Statistiche e MOTM: se non arrivano la pagina resta usabile (card, caricamento, esci)
+  // Come la Home: i tuoi numeri della stagione in corso
+  const season = currentSeason(new Date())
   const [profile, motmCount] = await Promise.all([
-    getPlayerProfile(player.id).catch((e) => { console.error('profile stats failed', e); return null }),
-    getMotmCounts().then((c) => c[player.id] ?? 0).catch((e) => { console.error('MOTM counts failed', e); return 0 }),
+    getPlayerProfile(player.id, season).catch((e) => { console.error('profile stats failed', e); return null }),
+    getMotmCounts(season).then((c) => c[player.id] ?? 0).catch((e) => { console.error('MOTM counts failed', e); return 0 }),
   ])
   const me = profile?.player
   const rec = me?.record
@@ -86,10 +89,16 @@ export default async function ProfiloPage() {
       </div>
 
       <div className="px-4 pt-5 flex flex-col gap-6">
-        {tiles.length > 0 && (
-          <div className="grid grid-cols-2 gap-2">
-            {tiles.map(({ v, l }) => <StatTile key={l} value={v} label={l} />)}
-          </div>
+        {me && (
+          <Section title={`Stagione ${season}`}>
+            {me.total_appearances === 0 ? (
+              <p className="text-[13px] text-center py-4" style={{ color: C.muted }}>Nessuna partita in questa stagione</p>
+            ) : (
+              <div className="grid grid-cols-2 gap-2">
+                {tiles.map(({ v, l }) => <StatTile key={l} value={v} label={l} />)}
+              </div>
+            )}
+          </Section>
         )}
 
         <Section title="La tua card">

@@ -3,6 +3,14 @@
 Le versioni seguono [Semantic Versioning](https://semver.org/lang/it/):
 il primo numero cambia con un restyling o un cambiamento grosso, il secondo con nuove funzioni, il terzo con correzioni.
 
+## [Non rilasciato]
+
+### Novità
+- **Stagioni** da gennaio a dicembre: la prima è la 2026 e comprende anche le partite di ottobre–dicembre 2025
+- Selettore della stagione accanto al titolo in Statistiche, Giocatori e Partite, con le stagioni passate e **Sempre** (tutti i numeri e i record di sempre); la scelta resta passando da una pagina all'altra
+- Classifiche, record, MOTM, forma e fiamma dei gol ripartono da zero a ogni stagione
+- La Home parla della stagione in corso; finché la stagione nuova non ha partite, Risultati e Classifica lo dicono
+
 ## [2.6.0] — 2026-11-05
 
 ### Novità

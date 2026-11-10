@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
-import Link from 'next/link'
+import SeasonLink from './SeasonLink'
 import { countdownParts, formatRomeDay, formatRomeTime, romeInstant } from '@/lib/homeText'
 import AddToCalendar from './AddToCalendar'
 import { C, Card } from './ui'
@@ -41,7 +41,7 @@ export default function NextMatchCard({ match, href }: { match: { played_at: str
   )
   return (
     <Card className="p-3.5">
-      {href ? <Link href={href} className="block">{head}</Link> : head}
+      {href ? <SeasonLink href={href} className="block">{head}</SeasonLink> : head}
       {match.match_time && <Countdown date={match.played_at} time={match.match_time} />}
       <div className="mt-3"><AddToCalendar date={match.played_at} title="Calcetto" /></div>
     </Card>
