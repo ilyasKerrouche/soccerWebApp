@@ -9,6 +9,7 @@ import MotmSection from '@/components/motm/MotmSection'
 import { C, Card, Section } from '@/components/ui'
 import type { PlayerHomeStats } from '@/lib/types'
 import { notFound } from 'next/navigation'
+import { statsSeasonFor } from '@/lib/season'
 
 export const dynamic = 'force-dynamic'
 // Formazioni e risultato cambiano dall'admin: nessuna lettura in cache (vedi app/admin/layout.tsx)
@@ -27,10 +28,12 @@ export default async function MatchDetailPage({ params }: { params: { id: string
   let stats: Record<string, PlayerHomeStats> = {}
   let motmIds: string[] = []
   if (hasLineup) {
+    // Numeri sulle card: quelli della stagione di questa partita (mai una stagione futura)
+    const season = statsSeasonFor(match.played_at, new Date())
     try {
       const [players, counts, winners] = await Promise.all([
-        getPlayersWithStats(),
-        getMotmCounts(),
+        getPlayersWithStats(season),
+        getMotmCounts(season),
         match.is_upcoming ? Promise.resolve({} as Record<string, string[]>) : getMotmWinnersByMatch([match.id]),
       ])
       stats = toPlayerHomeStats(players, counts)
