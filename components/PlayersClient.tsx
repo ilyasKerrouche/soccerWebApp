@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import Link from 'next/link'
+import SeasonLink from './SeasonLink'
 import PodiumView from './PodiumView'
 import PlayerCard from './PlayerCard'
 import PageHeader from './PageHeader'
@@ -15,7 +15,15 @@ const SORTS = [
   { key: 'name', label: 'A–Z' },
 ] as const
 
-export default function PlayersClient({ initialPlayers }: { initialPlayers: PlayerWithStats[] }) {
+type Props = {
+  initialPlayers: PlayerWithStats[]
+  /** Selettore della stagione, accanto al titolo. */
+  picker: React.ReactNode
+  /** Stagione senza partite: al posto della lista si mostra solo questo testo. */
+  emptyText: string | null
+}
+
+export default function PlayersClient({ initialPlayers, picker, emptyText }: Props) {
   const [sort, setSort] = useState<SortKey>('goals')
 
   const sorted = [...initialPlayers].sort(comparePlayers(sort))
@@ -28,10 +36,15 @@ export default function PlayersClient({ initialPlayers }: { initialPlayers: Play
   return (
     <main className="pb-6 px-4">
       <PageHeader
-        eyebrow="Stagione 2025/26"
+        eyebrow={`${initialPlayers.length} giocatori`}
         title="Giocatori"
-        aside={<span className="text-[13px] text-white/30">{initialPlayers.length}</span>}
+        aside={picker}
       />
+
+      {emptyText ? (
+        <p className="text-[13px] text-center py-10 text-muted">{emptyText}</p>
+      ) : (
+      <>
 
       <div className="flex rule mt-4 mb-1">
         {SORTS.map(({ key, label }) => (
@@ -54,7 +67,7 @@ export default function PlayersClient({ initialPlayers }: { initialPlayers: Play
 
       <div className={isRanking ? 'mt-2' : ''}>
         {rest.map((p, i) => (
-          <Link
+          <SeasonLink
             key={p.id}
             href={`/players/${p.id}`}
             className="flex items-center gap-2.5 py-2 px-1 rule transition-colors hover:bg-white/[0.025]"
@@ -81,9 +94,11 @@ export default function PlayersClient({ initialPlayers }: { initialPlayers: Play
                 {sort === 'appearances' ? 'presenze' : 'gol'}
               </span>
             </span>
-          </Link>
+          </SeasonLink>
         ))}
       </div>
+      </>
+      )}
     </main>
   )
 }

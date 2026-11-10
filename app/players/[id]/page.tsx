@@ -3,22 +3,28 @@ import Link from 'next/link'
 import { getPlayerProfile } from '@/lib/queries/players'
 import PlayerCard from '@/components/PlayerCard'
 import FormDots from '@/components/FormDots'
-import { getMotmCounts } from '@/lib/queries/motm'
+import { cachedMotmCounts, cachedPlayedDates } from '@/lib/queries/cached'
+import SeasonPicker from '@/components/SeasonPicker'
+import SeasonLink from '@/components/SeasonLink'
+import { availableSeasons, currentSeason, parseSeason } from '@/lib/season'
 import MotmCounter from '@/components/motm/MotmCounter'
 import { STREAK_MIN } from '@/components/StreakFlame'
 import SwipeBack from '@/components/SwipeBack'
 import { C, Card, Section, StatTile } from '@/components/ui'
 
-export const revalidate = 60
+// Dipende da ?stagione=
+export const dynamic = 'force-dynamic'
 
-export default async function PlayerProfilePage({ params }: { params: { id: string } }) {
-  const data = await getPlayerProfile(params.id)
+export default async function PlayerProfilePage({ params, searchParams }: { params: { id: string }; searchParams: { stagione?: string | string[] } }) {
+  const now = new Date()
+  const season = parseSeason(searchParams.stagione, now)
+  const [data, dates] = await Promise.all([getPlayerProfile(params.id, season), cachedPlayedDates()])
   if (!data) notFound()
 
   const { player, matches, goalkeeper_stats } = data
   let motmCount = 0
   try {
-    motmCount = (await getMotmCounts())[player.id] ?? 0
+    motmCount = (await cachedMotmCounts(season))[player.id] ?? 0
   } catch (e) {
     console.error('MOTM counts failed', e)
   }
@@ -36,9 +42,12 @@ export default async function PlayerProfilePage({ params }: { params: { id: stri
   return (
     <main className="pb-6">
       <SwipeBack />
-      <Link href="/stats" className="text-[13px] inline-block px-4 pt-4 transition-opacity hover:opacity-80" style={{ color: C.acc }}>
-        ‹ Statistiche
-      </Link>
+      <div className="flex items-center justify-between px-4 pt-4">
+        <SeasonLink href="/stats" className="text-[13px] transition-opacity hover:opacity-80" style={{ color: C.acc }}>
+          ‹ Statistiche
+        </SeasonLink>
+        <SeasonPicker seasons={availableSeasons(dates, now)} current={currentSeason(now)} active={season} />
+      </div>
 
       {/* La card e' la protagonista: grande, al centro, con una luce blu leggera */}
       <div className="text-center px-4 pt-2.5" style={{ background: 'radial-gradient(ellipse at 50% 45%, rgba(91,156,255,.14) 0%, transparent 62%)' }}>
@@ -58,6 +67,9 @@ export default async function PlayerProfilePage({ params }: { params: { id: stri
         )}
       </div>
 
+      {season !== 'all' && matches.length === 0 ? (
+        <p className="text-[13px] text-center px-4 py-10" style={{ color: C.muted }}>Nessuna partita in questa stagione</p>
+      ) : (
       <div className="px-4 pt-5 flex flex-col gap-6">
         <div className="flex flex-col gap-2">
           <div className="grid grid-cols-2 gap-2">
@@ -137,6 +149,7 @@ export default async function PlayerProfilePage({ params }: { params: { id: stri
           )}
         </Section>
       </div>
+      )}
     </main>
   )
 }
