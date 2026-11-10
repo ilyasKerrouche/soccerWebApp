@@ -56,7 +56,7 @@ export default function BottomTabBar() {
       }}
     >
       <div className="flex items-stretch px-2" style={{ height: 52 }}>
-        {/* La stagione scelta viaggia con i link. useSearchParams vuole un Suspense: la Home e' statica. */}
+        {/* La stagione scelta viaggia con i link. useSearchParams vuole un Suspense: alcune pagine (es. /accedi) sono statiche. */}
         <Suspense fallback={<TabLinks active={active} season={null} />}>
           <SeasonTabLinks active={active} />
         </Suspense>

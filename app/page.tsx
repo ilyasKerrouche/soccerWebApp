@@ -10,7 +10,9 @@ import StadiumPitch from '@/components/home/StadiumPitch'
 import MotmCelebration from '@/components/home/MotmCelebration'
 import PullToRefresh from '@/components/PullToRefresh'
 
-export const revalidate = 60
+// Dinamica: legge anche senza cookie (client pubblico), e in build una lettura no-store
+// su una pagina statica la fa fallire. I dati restano in cache in lib/queries/cached.ts.
+export const dynamic = 'force-dynamic'
 
 export default async function HomePage() {
   // Risultati e classifica: stagione in corso. Blocco ultima partita (campo, card, marcatori,
