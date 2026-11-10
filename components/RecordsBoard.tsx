@@ -1,4 +1,4 @@
-import Link from 'next/link'
+import SeasonLink from './SeasonLink'
 import type { Player } from '@/lib/types'
 import type { GoldenPair, MatchRecord, PlayerRecord, Records } from '@/lib/records'
 import PlayerCard from './PlayerCard'
@@ -30,10 +30,10 @@ function MatchLines({ rec }: { rec: MatchRecord }) {
   return (
     <>
       {rec.matches.map((m) => (
-        <Link key={m.id} href={`/matches/${m.id}`} className="block truncate hover:opacity-80">
+        <SeasonLink key={m.id} href={`/matches/${m.id}`} className="block truncate hover:opacity-80">
           <span className="numeric text-[14px] font-semibold">{m.score_a} – {m.score_b}</span>
           <span style={{ color: C.muted }}> · {shortDate(m.played_at)}</span>
-        </Link>
+        </SeasonLink>
       ))}
       <More n={rec.more} />
     </>
@@ -44,10 +44,10 @@ function PlayerLines({ rec }: { rec: PlayerRecord<Player> }) {
   return (
     <>
       {rec.holders.map((h) => (
-        <Link key={`${h.player.id}-${h.matchId ?? ''}`} href={h.matchId ? `/matches/${h.matchId}` : `/players/${h.player.id}`} className="block truncate hover:opacity-80">
+        <SeasonLink key={`${h.player.id}-${h.matchId ?? ''}`} href={h.matchId ? `/matches/${h.matchId}` : `/players/${h.player.id}`} className="block truncate hover:opacity-80">
           {h.player.name}
           {h.played_at && <span style={{ color: C.muted }}> · {shortDate(h.played_at)}</span>}
-        </Link>
+        </SeasonLink>
       ))}
       <More n={rec.more} />
     </>
@@ -99,7 +99,7 @@ export default function RecordsBoard({ records, pairs }: { records: Records<Play
                 </span>
                 <span className="flex-1 min-w-0 text-[13px] leading-snug">
                   {rec!.holders.map((h) => (
-                    <Link key={h.player.id} href={`/players/${h.player.id}`} className="block truncate text-white/85 hover:opacity-80">{h.player.name}</Link>
+                    <SeasonLink key={h.player.id} href={`/players/${h.player.id}`} className="block truncate text-white/85 hover:opacity-80">{h.player.name}</SeasonLink>
                   ))}
                   {rec!.more > 0 && <span className="block text-[11px]" style={{ color: C.muted }}>e altri {rec!.more}</span>}
                 </span>
@@ -126,8 +126,8 @@ export default function RecordsBoard({ records, pairs }: { records: Records<Play
                   <span className="-ml-2.5"><PlayerCard player={p.b} width={28} /></span>
                 </span>
                 <span className="flex-1 min-w-0 text-[13px] leading-tight">
-                  <Link href={`/players/${p.a.id}`} className={`block truncate ${i === 0 ? 'font-semibold text-white' : 'font-medium text-white/85'}`}>{p.a.name}</Link>
-                  <Link href={`/players/${p.b.id}`} className={`block truncate ${i === 0 ? 'font-semibold text-white' : 'font-medium text-white/85'}`}>{p.b.name}</Link>
+                  <SeasonLink href={`/players/${p.a.id}`} className={`block truncate ${i === 0 ? 'font-semibold text-white' : 'font-medium text-white/85'}`}>{p.a.name}</SeasonLink>
+                  <SeasonLink href={`/players/${p.b.id}`} className={`block truncate ${i === 0 ? 'font-semibold text-white' : 'font-medium text-white/85'}`}>{p.b.name}</SeasonLink>
                 </span>
                 <span className="text-right flex-shrink-0">
                   <span className="numeric text-[19px] font-semibold leading-none block" style={i === 0 ? { color: C.gold } : undefined}>

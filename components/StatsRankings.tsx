@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import Link from 'next/link'
+import SeasonLink from './SeasonLink'
 import FormDots from './FormDots'
 import type { PlayerWithStats, PlayerWithGoalkeeperStats } from '@/lib/types'
 import { C, Card } from './ui'
@@ -56,7 +56,7 @@ function Row({
   streak?: number
 }) {
   return (
-    <Link
+    <SeasonLink
       href={href}
       className="flex items-center gap-2.5 py-2.5 px-3.5 transition-colors hover:bg-white/[0.03]"
       style={first ? undefined : { borderTop: `1px solid ${C.line}` }}
@@ -76,7 +76,7 @@ function Row({
         </span>
         {note && <span className="text-[10px] tabular-nums text-muted block mt-0.5">{note}</span>}
       </span>
-    </Link>
+    </SeasonLink>
   )
 }
 
