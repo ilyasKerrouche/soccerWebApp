@@ -3,6 +3,11 @@
 Le versioni seguono [Semantic Versioning](https://semver.org/lang/it/):
 il primo numero cambia con un restyling o un cambiamento grosso, il secondo con nuove funzioni, il terzo con correzioni.
 
+## [2.7.1] — 2026-11-10
+
+### Correzioni
+- La pubblicazione dell'app non andava a buon fine per via della pagina admin "Nuova partita": ora le pagine admin e la Home si generano sempre a ogni visita
+
 ## [2.7.0] — 2026-11-10
 
 ### Novità
