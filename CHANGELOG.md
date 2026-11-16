@@ -3,7 +3,7 @@
 Le versioni seguono [Semantic Versioning](https://semver.org/lang/it/):
 il primo numero cambia con un restyling o un cambiamento grosso, il secondo con nuove funzioni, il terzo con correzioni.
 
-## [Da pubblicare]
+## [2.8.0] — 2026-11-16
 
 ### Novità
 - Man of the Match: il vincitore è sempre uno solo. A pari voti vince chi era nella squadra vincente, poi chi ha preso più voti dagli avversari, poi chi ha raggiunto per primo quel numero di voti. Vale anche per le partite già giocate
