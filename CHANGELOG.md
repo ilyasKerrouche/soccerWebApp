@@ -3,7 +3,7 @@
 Le versioni seguono [Semantic Versioning](https://semver.org/lang/it/):
 il primo numero cambia con un restyling o un cambiamento grosso, il secondo con nuove funzioni, il terzo con correzioni.
 
-## [Da pubblicare]
+## [2.9.0] — 2026-11-16
 
 ### Novità
 - Momento MOTM nuovo: la card arriva come sagoma nera con un punto di domanda, poi un lampo dorato la svela; nome e voti compaiono solo dopo
