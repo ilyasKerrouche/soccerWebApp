@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import type { MatchWithPlayers, PlayerHomeStats, PlayerWithStats } from '@/lib/types'
+import type { Match, MatchWithPlayers, PlayerHomeStats, PlayerWithStats } from '@/lib/types'
 import type { GlobalStats } from '@/lib/queries/stats'
 import { sortScorers, type HomeViewer } from '@/lib/homeText'
 import { getHomeViewer } from '@/app/homeActions'
@@ -15,7 +15,7 @@ import StreakFlame from './StreakFlame'
 type Props = {
   lastMatch: MatchWithPlayers | null
   nextMatch: MatchWithPlayers | null
-  recentMatches: MatchWithPlayers[]
+  recentMatches: Match[]
   /** null se i numeri della stagione non sono arrivati: la sezione Stagione non si mostra. */
   stats: GlobalStats | null
   topScorers: PlayerWithStats[]

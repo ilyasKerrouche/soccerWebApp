@@ -2,7 +2,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
   availableSeasons, currentSeason, inSeason, parseSeason, seasonEmptyText, seasonLabel,
-  seasonOf, seasonQuery, statsSeasonFor, withSeason,
+  seasonOf, seasonQuery, seasonQueryFor, seasonRange, statsSeasonFor, todayInRome, withSeason,
 } from './season.ts'
 
 const NOV_2026 = new Date('2026-11-10T12:00:00Z')
@@ -62,4 +62,21 @@ test('etichette', () => {
   assert.equal(seasonLabel(2027), '2027')
   assert.equal(seasonLabel('all'), 'Sempre')
   assert.equal(seasonEmptyText(2027), 'Stagione 2027 al via: ancora nessuna partita')
+})
+
+test('seasonQueryFor usa la stagione in corso del server, non l\'orologio', () => {
+  assert.equal(seasonQueryFor(2026, 2026), '')
+  assert.equal(seasonQueryFor(2027, 2026), '?stagione=2027')
+  assert.equal(seasonQueryFor(2026, 2027), '?stagione=2026')
+  assert.equal(seasonQueryFor('all', 2026), '?stagione=sempre')
+})
+
+test('todayInRome: il giorno italiano, anche subito dopo mezzanotte', () => {
+  assert.equal(todayInRome(NOV_2026), '2026-11-10')
+  assert.equal(todayInRome(JAN_2027), '2027-01-01')
+})
+
+test('seasonRange: la prima stagione non ha inizio (comprende il 2025)', () => {
+  assert.deepEqual(seasonRange(2026), { from: null, to: '2026-12-31' })
+  assert.deepEqual(seasonRange(2027), { from: '2027-01-01', to: '2027-12-31' })
 })

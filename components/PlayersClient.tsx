@@ -8,6 +8,7 @@ import FormDots from './FormDots'
 import StreakFlame from './StreakFlame'
 import { comparePlayers, type SortKey } from '@/lib/ranking'
 import type { PlayerWithStats } from '@/lib/types'
+import { plural } from '@/lib/plural'
 
 const SORTS = [
   { key: 'goals', label: 'Gol' },
@@ -36,7 +37,7 @@ export default function PlayersClient({ initialPlayers, picker, emptyText }: Pro
   return (
     <main className="pb-6 px-4">
       <PageHeader
-        eyebrow={`${initialPlayers.length} giocatori`}
+        eyebrow={plural(initialPlayers.length, 'giocatore', 'giocatori')}
         title="Giocatori"
         aside={picker}
       />

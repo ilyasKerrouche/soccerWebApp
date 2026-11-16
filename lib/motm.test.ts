@@ -7,6 +7,9 @@ import {
   tallyMotm,
   voteError,
   formatCountdown,
+  winningTeam,
+  missingVoters,
+  type LineupEntry,
 } from './motm.ts'
 
 const now = new Date('2026-10-29T20:00:00Z')
@@ -31,24 +34,90 @@ test('closesAtFrom adds 2 hours', () => {
   assert.equal(closesAtFrom(now), '2026-10-29T22:00:00.000Z')
 })
 
-test('tallyMotm', () => {
-  assert.deepEqual(tallyMotm([], ['a', 'b']), { winners: [], topVotes: 0, votersCount: 0 })
-  const v = (a: string, b: string) => ({ voter_player_id: a, voted_player_id: b })
-  assert.deepEqual(tallyMotm([v('a', 'b'), v('c', 'b'), v('b', 'a')], ['a', 'b', 'c']), {
-    winners: ['b'],
+// Formazione di prova: a1, a2, a3 nella squadra A; b1, b2, b3 nella B.
+const lineup: LineupEntry[] = [
+  ...['a1', 'a2', 'a3'].map((id) => ({ player_id: id, team: 'a' as const })),
+  ...['b1', 'b2', 'b3'].map((id) => ({ player_id: id, team: 'b' as const })),
+]
+const v = (voter: string, voted: string, at = '2026-10-29T20:00:00Z') => ({
+  voter_player_id: voter,
+  voted_player_id: voted,
+  updated_at: at,
+})
+
+test('tallyMotm: nessun voto, nessun vincitore', () => {
+  assert.deepEqual(tallyMotm([], lineup, null), { winners: [], topVotes: 0, votersCount: 0, counts: {} })
+})
+
+test('tallyMotm: vince chi ha piu voti', () => {
+  assert.deepEqual(tallyMotm([v('a1', 'b1'), v('a2', 'b1'), v('b1', 'a1')], lineup, null), {
+    winners: ['b1'],
     topVotes: 2,
     votersCount: 3,
+    counts: { b1: 2, a1: 1 },
   })
-  assert.deepEqual(tallyMotm([v('b', 'a'), v('a', 'b')], ['a', 'b']), {
-    winners: ['a', 'b'],
-    topVotes: 1,
-    votersCount: 2,
-  })
-  assert.deepEqual(tallyMotm([v('x', 'b'), v('a', 'y')], ['a', 'b']), {
+})
+
+test('tallyMotm: ignora i voti di chi non e in formazione', () => {
+  assert.deepEqual(tallyMotm([v('x', 'b1'), v('a1', 'y')], lineup, null), {
     winners: [],
     topVotes: 0,
     votersCount: 0,
+    counts: {},
   })
+})
+
+test('tallyMotm: a pari voti vince chi era nella squadra vincente', () => {
+  // a1 ha anche piu voti dagli avversari ed e arrivato prima: conta comunque la squadra
+  const votes = [v('b2', 'a1', '2026-10-29T20:01:00Z'), v('a1', 'b1', '2026-10-29T20:05:00Z')]
+  assert.deepEqual(tallyMotm(votes, lineup, 'b').winners, ['b1'])
+  assert.deepEqual(tallyMotm(votes, lineup, 'a').winners, ['a1'])
+})
+
+test('tallyMotm: tra compagni a pari voti vince chi ha piu voti dagli avversari', () => {
+  // a1: un voto da un compagno e uno da un avversario. a2: due voti da avversari.
+  const votes = [
+    v('a3', 'a1', '2026-10-29T20:01:00Z'),
+    v('b1', 'a1', '2026-10-29T20:02:00Z'),
+    v('b2', 'a2', '2026-10-29T20:03:00Z'),
+    v('b3', 'a2', '2026-10-29T20:04:00Z'),
+  ]
+  assert.deepEqual(tallyMotm(votes, lineup, 'a'), { winners: ['a2'], topVotes: 2, votersCount: 4, counts: { a1: 2, a2: 2 } })
+})
+
+test('tallyMotm: in una partita pari si passa ai voti dagli avversari', () => {
+  const votes = [v('a2', 'a1', '2026-10-29T20:01:00Z'), v('a1', 'b1', '2026-10-29T20:05:00Z')]
+  assert.deepEqual(tallyMotm(votes, lineup, null).winners, ['b1'])
+})
+
+test('tallyMotm: se e ancora pari vince chi ha raggiunto prima quel numero di voti', () => {
+  // a1 e a2: un voto da un compagno e uno da un avversario ciascuno.
+  // L ultimo voto di a2 arriva alle 20:03, quello di a1 alle 20:04.
+  const votes = [
+    v('a3', 'a1', '2026-10-29T20:01:00Z'),
+    v('b1', 'a1', '2026-10-29T20:04:00Z'),
+    v('a1', 'a2', '2026-10-29T20:02:00Z'),
+    v('b2', 'a2', '2026-10-29T20:03:00Z'),
+  ]
+  assert.deepEqual(tallyMotm(votes, lineup, 'a').winners, ['a2'])
+})
+
+test('tallyMotm: il vincitore e sempre uno solo, anche a parita totale', () => {
+  const votes = [v('b1', 'a2'), v('b2', 'a1')]
+  assert.deepEqual(tallyMotm(votes, lineup, 'a').winners, ['a1'])
+})
+
+test('missingVoters: chi puo votare e non l ha ancora fatto, nell ordine dato', () => {
+  assert.deepEqual(missingVoters([v('a1', 'b1'), v('b2', 'a1')], ['a1', 'a2', 'b1', 'b2']), ['a2', 'b1'])
+  assert.deepEqual(missingVoters([], ['a1']), ['a1'])
+  assert.deepEqual(missingVoters([v('a1', 'b1')], ['a1']), [])
+})
+
+test('winningTeam', () => {
+  assert.equal(winningTeam(3, 1), 'a')
+  assert.equal(winningTeam(1, 3), 'b')
+  assert.equal(winningTeam(2, 2), null)
+  assert.equal(winningTeam(null, null), null)
 })
 
 test('voteError', () => {

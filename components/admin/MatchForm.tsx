@@ -5,9 +5,10 @@ import PlayerSelector from './PlayerSelector'
 import ScorerEntry from './ScorerEntry'
 import { balanceTeams } from '@/lib/teamBalancer'
 import { balancingRating, groupAverage } from '@/lib/rating'
+import { initialScorerRows, pruneScorerRows, type ScorerRow } from '@/lib/scorerRows'
+import { todayInRome } from '@/lib/season'
 import type { PlayerWithStats, MatchWithPlayers } from '@/lib/types'
 
-type ScorerRow = { player_id: string; goals: number; is_own_goal: boolean }
 type SelectedPlayer = { player_id: string; team: 'a' | 'b' }
 
 type SaveData = {
@@ -39,22 +40,28 @@ export default function MatchForm({ players, existing, onSave }: Props) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isUpcoming, setIsUpcoming] = useState(existing?.is_upcoming ?? false)
-  const [date, setDate] = useState(existing?.played_at ?? new Date().toISOString().split('T')[0])
+  const [date, setDate] = useState(existing?.played_at ?? todayInRome(new Date()))
   const [matchTime, setMatchTime] = useState(existing?.match_time?.slice(0, 5) ?? '')
   const [teamAName, setTeamAName] = useState(existing?.team_a_name ?? 'Team A')
   const [teamBName, setTeamBName] = useState(existing?.team_b_name ?? 'Team B')
   const [scoreA, setScoreA] = useState<number>(existing?.score_a ?? 0)
   const [scoreB, setScoreB] = useState<number>(existing?.score_b ?? 0)
 
-  const [selectedPlayers, setSelectedPlayers] = useState<SelectedPlayer[]>(
+  const [selectedPlayers, setSelected] = useState<SelectedPlayer[]>(
     existing?.match_players.map((mp) => ({ player_id: mp.player_id, team: mp.team })) ?? []
   )
-  const [scorersA, setScorersA] = useState<ScorerRow[]>(
-    existing?.match_players.filter((mp) => mp.team === 'a' && mp.goals > 0).map((mp) => ({ player_id: mp.player_id, goals: mp.goals, is_own_goal: false })) ?? []
-  )
-  const [scorersB, setScorersB] = useState<ScorerRow[]>(
-    existing?.match_players.filter((mp) => mp.team === 'b' && mp.goals > 0).map((mp) => ({ player_id: mp.player_id, goals: mp.goals, is_own_goal: false })) ?? []
-  )
+  // Gol e autogol gia' salvati: senza gli autogol, risalvare la partita li azzererebbe
+  const [scorersA, setScorersA] = useState<ScorerRow[]>(() => initialScorerRows(existing?.match_players ?? [], 'a'))
+  const [scorersB, setScorersB] = useState<ScorerRow[]>(() => initialScorerRows(existing?.match_players ?? [], 'b'))
+
+  // Chi cambia squadra o esce dalla partita perde le sue righe marcatore:
+  // altrimenti resterebbero salvate sotto un nome diverso da quello mostrato nel menu.
+  const setSelectedPlayers = (next: SelectedPlayer[]) => {
+    setSelected(next)
+    const idsOf = (team: 'a' | 'b') => next.filter((sp) => sp.team === team).map((sp) => sp.player_id)
+    setScorersA((rows) => pruneScorerRows(rows, idsOf('a')))
+    setScorersB((rows) => pruneScorerRows(rows, idsOf('b')))
+  }
 
   const teamAPlayers = players.filter((p) => selectedPlayers.find((sp) => sp.player_id === p.id && sp.team === 'a'))
   const teamBPlayers = players.filter((p) => selectedPlayers.find((sp) => sp.player_id === p.id && sp.team === 'b'))

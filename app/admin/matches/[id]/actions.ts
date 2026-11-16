@@ -4,6 +4,7 @@ import { SEASON_DATA_TAG } from '@/lib/queries/cached'
 import { updateMatch, deleteMatch, createMatch, getMatchById } from '@/lib/queries/matches'
 import { redirect } from 'next/navigation'
 import { requireAdmin } from '@/lib/auth'
+import { todayInRome } from '@/lib/season'
 
 export async function saveEditMatch(
   id: string,
@@ -25,7 +26,7 @@ export async function duplicateMatchAction(id: string): Promise<void> {
   await requireAdmin()
   const match = await getMatchById(id)
   const newId = await createMatch({
-    played_at: new Date().toISOString().split('T')[0],
+    played_at: todayInRome(new Date()),
     team_a_name: match.team_a_name,
     team_b_name: match.team_b_name,
     score_a: null,

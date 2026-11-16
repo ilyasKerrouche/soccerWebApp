@@ -26,7 +26,14 @@ const ENTRY_MS = 2200
 
 function useReducedMotion() {
   const [reduced, setReduced] = useState(false)
-  useEffect(() => { setReduced(window.matchMedia('(prefers-reduced-motion: reduce)').matches) }, [])
+  // Segue anche il cambio dell'impostazione ad app aperta
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const sync = () => setReduced(mq.matches)
+    sync()
+    mq.addEventListener('change', sync)
+    return () => mq.removeEventListener('change', sync)
+  }, [])
   return reduced
 }
 

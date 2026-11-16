@@ -105,7 +105,7 @@ export default async function PlayerProfilePage({ params, searchParams }: { para
                   )
                 })}
               </div>
-              <div className="text-[10.5px] mt-2" style={{ color: C.muted }}>Ultime {matches.length} partite, dalla più vecchia</div>
+              <div className="text-[10.5px] mt-2" style={{ color: C.muted }}>{matches.length === 1 ? 'Ultima partita' : `Ultime ${matches.length} partite, dalla più vecchia`}</div>
             </Card>
           </Section>
         )}

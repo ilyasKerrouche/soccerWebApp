@@ -7,6 +7,7 @@ import SeasonPicker from '@/components/SeasonPicker'
 import { availableSeasons, currentSeason, inSeason, parseSeason, seasonEmptyText } from '@/lib/season'
 import { groupByMonth } from '@/lib/monthGroups'
 import { C, Card, Section } from '@/components/ui'
+import { plural } from '@/lib/plural'
 
 // Dipende da ?stagione=
 export const dynamic = 'force-dynamic'
@@ -34,7 +35,7 @@ export default async function MatchesPage({ searchParams }: { searchParams: { st
 
   return (
     <main className="pb-6 px-4">
-      <PageHeader title="Partite" eyebrow={`${played.length} giocate`} aside={picker} />
+      <PageHeader title="Partite" eyebrow={plural(played.length, 'giocata', 'giocate')} aside={picker} />
 
       <div className="pt-5 flex flex-col gap-6">
         {upcoming.length > 0 && (

@@ -3,7 +3,7 @@ import { revalidatePath, revalidateTag } from 'next/cache'
 import { SEASON_DATA_TAG } from '@/lib/queries/cached'
 import { requireAdmin } from '@/lib/auth'
 import { updatePlayerName, storePlayerCard } from '@/lib/queries/players'
-import { cardFileError } from '@/lib/cardFile'
+import { cardFileError, UNSUPPORTED_FORMAT } from '@/lib/cardFile'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 export async function createPlayer(formData: FormData): Promise<void> {
@@ -28,18 +28,25 @@ export async function savePlayerName(id: string, name: string): Promise<void> {
   revalidateTag(SEASON_DATA_TAG)
 }
 
-export async function uploadPlayerCard(id: string, formData: FormData): Promise<void> {
+// Gli errori sul file tornano come testo: in produzione il messaggio di un'eccezione non arriva al client
+export async function uploadPlayerCard(id: string, formData: FormData): Promise<{ error?: string }> {
   await requireAdmin()
-  const file = formData.get('card') as File
-  if (!file) throw new Error('Nessun file selezionato')
+  const file = formData.get('card')
+  if (!(file instanceof File)) return { error: 'Nessun file selezionato' }
   const error = cardFileError(file)
-  if (error) throw new Error(error)
-  await storePlayerCard(id, file)
+  if (error) return { error }
+  try {
+    await storePlayerCard(id, file)
+  } catch (e) {
+    if (e instanceof Error && e.message === UNSUPPORTED_FORMAT) return { error: UNSUPPORTED_FORMAT }
+    throw e
+  }
 
   revalidatePath('/admin/players')
   revalidatePath('/stats')
   revalidateTag(SEASON_DATA_TAG)
   revalidatePath('/')
+  return {}
 }
 
 export async function updatePlayerPosition(id: string, position: string | null): Promise<void> {

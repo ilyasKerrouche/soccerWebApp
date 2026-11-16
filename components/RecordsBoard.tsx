@@ -23,7 +23,7 @@ function Tile({ label, value, unit, wide, children }: { label: string; value: nu
 }
 
 function More({ n }: { n: number }) {
-  return n > 0 ? <div className="text-[11px]" style={{ color: C.muted }}>e altri {n}</div> : null
+  return n > 0 ? <div className="text-[11px]" style={{ color: C.muted }}>{n === 1 ? 'e un altro' : `e altri ${n}`}</div> : null
 }
 
 function MatchLines({ rec }: { rec: MatchRecord }) {
@@ -101,7 +101,7 @@ export default function RecordsBoard({ records, pairs }: { records: Records<Play
                   {rec!.holders.map((h) => (
                     <SeasonLink key={h.player.id} href={`/players/${h.player.id}`} className="block truncate text-white/85 hover:opacity-80">{h.player.name}</SeasonLink>
                   ))}
-                  {rec!.more > 0 && <span className="block text-[11px]" style={{ color: C.muted }}>e altri {rec!.more}</span>}
+                  {rec!.more > 0 && <span className="block text-[11px]" style={{ color: C.muted }}>{rec!.more === 1 ? 'e un altro' : `e altri ${rec!.more}`}</span>}
                 </span>
                 <span className="text-right flex-shrink-0">
                   <span className="numeric text-[19px] font-semibold leading-none block" style={{ color: C.gold }}>{rec!.value}</span>

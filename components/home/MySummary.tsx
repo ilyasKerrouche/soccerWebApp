@@ -2,6 +2,7 @@ import Link from 'next/link'
 import PlayerCard from '@/components/PlayerCard'
 import FormDots from '@/components/FormDots'
 import type { Player, PlayerHomeStats } from '@/lib/types'
+import { plural } from '@/lib/plural'
 
 /** "Il tuo riepilogo" in cima alla scheda Riepilogo, solo per giocatori approvati. */
 export default function MySummary({ player, stats }: { player: Player; stats: PlayerHomeStats }) {
@@ -16,7 +17,7 @@ export default function MySummary({ player, stats }: { player: Player; stats: Pl
         <div className="flex-1 min-w-0">
           <div className="text-[15px] font-semibold truncate">{player.name}</div>
           <div className="text-[11px]" style={{ color: '#8a96a8' }}>
-            {[player.position, `${stats.appearances} presenze`].filter(Boolean).join(' · ')}
+            {[player.position, plural(stats.appearances, 'presenza', 'presenze')].filter(Boolean).join(' · ')}
           </div>
           <div className="grid grid-cols-3 gap-2.5 mt-2">
             {[
