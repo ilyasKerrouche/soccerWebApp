@@ -5,6 +5,10 @@ il primo numero cambia con un restyling o un cambiamento grosso, il secondo con 
 
 ## [Da pubblicare]
 
+### Novità
+- Man of the Match: il vincitore è sempre uno solo. A pari voti vince chi era nella squadra vincente, poi chi ha preso più voti dagli avversari, poi chi ha raggiunto per primo quel numero di voti. Vale anche per le partite già giocate
+- Man of the Match: a voto aperto si vede chi non ha ancora votato; a voto chiuso, i voti presi da ogni giocatore (chi ha votato chi resta privato)
+
 ### Correzioni
 - Modificando una partita gli autogol già inseriti non spariscono più
 - Nel form partita, chi cambia squadra o viene tolto perde le sue righe marcatore (prima i gol potevano finire sotto un nome diverso da quello mostrato)

@@ -54,9 +54,9 @@ riepilogo e non ha contestato. Le altre le ha prese l'utente.
 | Chi vota | Solo i giocatori in `match_players` di quella partita, con account approvato |
 | Voto per sé stessi | Vietato |
 | Durata del voto | 3 giorni, con un timer a conto alla rovescia visibile sotto la partita |
-| Risultati durante il voto | Nascosti. Si vede solo quanti hanno votato *(mia scelta)* |
+| Risultati durante il voto | Nascosti. Si vede quanti hanno votato e i nomi di chi manca ancora; a voto chiuso, i voti presi da ogni giocatore. Chi ha votato chi resta sempre privato *(nomi e voti per giocatore decisi con Ilyas il 16/11/2026)* |
 | Cambio voto | Consentito finché il voto è aperto *(mia scelta)* |
-| Pareggio | Co-MOTM: vincono tutti i giocatori a pari voti *(mia scelta)* |
+| Pareggio | Un solo MOTM. A pari voti, in ordine: chi era nella squadra vincente, chi ha preso più voti dagli avversari, chi ha raggiunto per primo quel numero di voti. Vale anche per le partite passate *(deciso con Ilyas il 16/11/2026; prima era co-MOTM)* |
 | Nessun voto | La partita resta senza MOTM *(mia scelta)* |
 | Riconoscimento | Badge sulla partita, contatore "MOTM ×N" nel profilo e nelle statistiche *(mia scelta)* |
 | Conferma email | Disattivata: l'identità la garantisce già l'approvazione dell'admin *(mia scelta)* |
@@ -212,8 +212,7 @@ Sotto il campo compare una sezione "Man of the Match":
 - **Voto aperto, utente non votante** (non loggato, non approvato o non in
   campo): timer, "N su M hanno votato" e un messaggio che spiega perché non può
   votare, con il link ad "Accedi" se non è loggato.
-- **Voto chiuso con vincitore**: la card del MOTM (o delle card a pari merito)
-  in evidenza, con il numero di voti. Chi ha votato chi resta privato *(mia
+- **Voto chiuso con vincitore**: la card del MOTM in evidenza, con il numero di voti. Chi ha votato chi resta privato *(mia
   scelta)*.
 - **Voto chiuso senza voti**: "Nessun MOTM per questa partita".
 - **Partita senza `motm_closes_at`** (vecchia o non ancora giocata): sezione
@@ -231,8 +230,8 @@ rinvalidata dopo il voto.
 - **Lista partite e dettaglio**: badge MOTM con il nome del vincitore.
 - **Pagina giocatore**: contatore "MOTM ×N".
 - **Statistiche**: una nuova sezione "Man of the Match" nello stesso stile
-  delle sezioni esistenti, con la classifica per numero di MOTM. In caso di
-  pareggio, ogni co-MOTM conta 1.
+  delle sezioni esistenti, con la classifica per numero di MOTM. A pari voti
+  il MOTM è uno solo (vedi la riga "Pareggio" in tabella).
 
 ## Lasciato al builder
 

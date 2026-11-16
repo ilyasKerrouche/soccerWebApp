@@ -2,7 +2,7 @@
 // motm_votes ha RLS senza policy: ogni accesso passa dal service role.
 // Questi dati non vanno mai restituiti ai client: chi ha votato chi e' privato.
 import { createAdminClient } from '@/lib/supabase/admin'
-import { tallyMotm, type VoteRow } from '@/lib/motm'
+import { tallyMotm, winningTeam, type LineupEntry, type VoteRow } from '@/lib/motm'
 import { inSeason, type SeasonKey } from '@/lib/season'
 import { fetchAll } from './paging'
 
@@ -11,7 +11,7 @@ export async function getVotesForMatch(matchId: string): Promise<VoteRow[]> {
   return fetchAll<VoteRow>((from, to) =>
     supabase
       .from('motm_votes')
-      .select('voter_player_id, voted_player_id')
+      .select('voter_player_id, voted_player_id, updated_at')
       .eq('match_id', matchId)
       .order('id')
       .range(from, to),
@@ -48,7 +48,7 @@ export async function upsertVote(
   if (error) throw new Error(error.message)
 }
 
-// Vincitori (id giocatore) delle sole partite con voto chiuso. Senza matchIds
+// Vincitore (al massimo uno per partita, vedi tallyMotm) delle sole partite con voto chiuso. Senza matchIds
 // copre tutte le partite chiuse (nessuna lista id nell'URL). Poche query in
 // tutto, indipendentemente dal numero di partite.
 async function computeWinners(matchIds?: string[], season: SeasonKey = 'all', at: Date = new Date()): Promise<Record<string, string[]>> {
@@ -57,8 +57,8 @@ async function computeWinners(matchIds?: string[], season: SeasonKey = 'all', at
   const now = at.toISOString()
 
   // lte: chiuso dall'istante esatto della scadenza, come motmStatus
-  const closedAll = await fetchAll<{ id: string; played_at: string }>((from, to) => {
-    let q = supabase.from('matches').select('id, played_at').lte('motm_closes_at', now)
+  const closedAll = await fetchAll<{ id: string; played_at: string; score_a: number | null; score_b: number | null }>((from, to) => {
+    let q = supabase.from('matches').select('id, played_at, score_a, score_b').lte('motm_closes_at', now)
     if (matchIds) q = q.in('id', matchIds)
     return q.order('id').range(from, to)
   })
@@ -71,12 +71,12 @@ async function computeWinners(matchIds?: string[], season: SeasonKey = 'all', at
   // scartano in memoria le partite non chiuse.
   const [votes, lineup] = await Promise.all([
     fetchAll<VoteRow & { match_id: string }>((from, to) => {
-      let q = supabase.from('motm_votes').select('match_id, voter_player_id, voted_player_id')
+      let q = supabase.from('motm_votes').select('match_id, voter_player_id, voted_player_id, updated_at')
       if (matchIds) q = q.in('match_id', closedIds)
       return q.order('id').range(from, to)
     }),
-    fetchAll<{ match_id: string; player_id: string }>((from, to) => {
-      let q = supabase.from('match_players').select('match_id, player_id')
+    fetchAll<LineupEntry & { match_id: string }>((from, to) => {
+      let q = supabase.from('match_players').select('match_id, player_id, team')
       if (matchIds) q = q.in('match_id', closedIds)
       return q.order('id').range(from, to)
     }),
@@ -84,12 +84,12 @@ async function computeWinners(matchIds?: string[], season: SeasonKey = 'all', at
 
   const votesBy: Record<string, VoteRow[]> = {}
   for (const v of votes) if (closedSet.has(v.match_id)) (votesBy[v.match_id] ??= []).push(v)
-  const lineupBy: Record<string, string[]> = {}
-  for (const l of lineup) if (closedSet.has(l.match_id)) (lineupBy[l.match_id] ??= []).push(l.player_id)
+  const lineupBy: Record<string, LineupEntry[]> = {}
+  for (const l of lineup) if (closedSet.has(l.match_id)) (lineupBy[l.match_id] ??= []).push(l)
 
   const result: Record<string, string[]> = {}
-  for (const id of closedIds) {
-    result[id] = tallyMotm(votesBy[id] ?? [], lineupBy[id] ?? []).winners
+  for (const m of closed) {
+    result[m.id] = tallyMotm(votesBy[m.id] ?? [], lineupBy[m.id] ?? [], winningTeam(m.score_a, m.score_b)).winners
   }
   return result
 }
@@ -103,7 +103,7 @@ export function getAllMotmWinners(): Promise<Record<string, string[]>> {
   return computeWinners()
 }
 
-// player_id -> numero di MOTM vinti (un co-MOTM conta 1 per ciascun vincitore).
+// player_id -> numero di MOTM vinti.
 export async function getMotmCounts(season: SeasonKey = 'all', at: Date = new Date()): Promise<Record<string, number>> {
   const winners = await computeWinners(undefined, season, at)
   const counts: Record<string, number> = {}
