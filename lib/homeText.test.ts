@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { buildLedText, buildUpcomingLedText, teamTopScorers, toPlayerHomeStats, sortScorers, topScorers, voteCta, countdownParts, formatRomeDay, formatRomeTime, romeInstant, type LedInput, type HomeViewer } from './homeText.ts'
+import { buildLedText, buildUpcomingLedText, teamTopScorers, toPlayerHomeStats, sortScorers, topScorers, voteCta, countdownParts, formatRomeDay, formatRomeTime, romeInstant, matchPhase, type LedInput, type HomeViewer } from './homeText.ts'
 
 const base: LedInput = { teamA: 'Viola', teamB: 'Azzurri', scoreA: 5, scoreB: 3, motmNames: [], scorers: [], next: null }
 
@@ -95,4 +95,33 @@ test('toPlayerHomeStats: statistiche per card con MOTM', () => {
   )
   assert.deepEqual(s.p, { goals: 4, appearances: 5, winRate: 0.5, motm: 2, form: ['W'] })
   assert.equal(toPlayerHomeStats([{ id: 'q', total_goals: 0, total_appearances: 0, record: undefined }], {}).q.winRate, null)
+})
+
+// 5 novembre 2026, ora solare: le 21:00 italiane sono le 20:00 UTC
+const phaseAt = (utc: string, end: string | null = '22:00', start: string | null = '21:00') =>
+  matchPhase({ date: '2026-11-05', start, end }, new Date(utc))
+
+test('matchPhase: prima dell inizio si aspetta', () => {
+  assert.equal(phaseAt('2026-11-05T19:59:59Z'), 'before')
+})
+
+test('matchPhase: live dall orario di inizio fino a quello di fine', () => {
+  assert.equal(phaseAt('2026-11-05T20:00:00Z'), 'live')
+  assert.equal(phaseAt('2026-11-05T20:59:59Z'), 'live')
+  assert.equal(phaseAt('2026-11-05T21:00:00Z'), 'after')
+})
+
+test('matchPhase: senza orario di fine non e mai live', () => {
+  assert.equal(phaseAt('2026-11-05T19:00:00Z', null), 'before')
+  assert.equal(phaseAt('2026-11-05T20:30:00Z', null), 'after')
+})
+
+test('matchPhase: senza orario di inizio non si sa nulla', () => {
+  assert.equal(phaseAt('2026-11-05T20:30:00Z', '22:00', null), null)
+})
+
+test('matchPhase: una fine prima dell inizio vuol dire dopo mezzanotte', () => {
+  // dalle 23:30 alle 00:30 italiane
+  assert.equal(phaseAt('2026-11-05T23:00:00Z', '00:30', '23:30'), 'live')
+  assert.equal(phaseAt('2026-11-05T23:30:00Z', '00:30', '23:30'), 'after')
 })

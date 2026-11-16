@@ -1,13 +1,15 @@
 import Link from 'next/link'
 import { getLastMatch, getNextMatch, getRecentPlayedMatches } from '@/lib/queries/matches'
-import { getMotmWinnersByMatch } from '@/lib/queries/motm'
-import { cachedGlobalStats, cachedMotmCounts, cachedPlayersWithStats } from '@/lib/queries/cached'
+import { getMotmResultsByMatch } from '@/lib/queries/motm'
+import { cachedGlobalStats, cachedMotmCounts, cachedPlayersWithStats, cachedRecordNews } from '@/lib/queries/cached'
+import { recordNewsFresh, recordNewsLine, type RecordNews } from '@/lib/records'
 import { currentSeason, seasonEmptyText, statsSeasonFor } from '@/lib/season'
 import { motmStatus } from '@/lib/motm'
 import { buildLedText, formatRomeDay, toPlayerHomeStats, topScorers as topScorersOf } from '@/lib/homeText'
 import HomeClient from '@/components/HomeClient'
 import StadiumPitch from '@/components/home/StadiumPitch'
 import MotmCelebration from '@/components/home/MotmCelebration'
+import RecordBanner from '@/components/home/RecordBanner'
 import PullToRefresh from '@/components/PullToRefresh'
 
 // Dinamica: legge anche senza cookie (client pubblico), e in build una lettura no-store
@@ -36,17 +38,29 @@ export default async function HomePage() {
 
   // MOTM (solo a voto chiuso) e conteggi per le card: se falliscono, il campo resta senza
   let motmIds: string[] = []
+  let motmVotes = 0
   let motmCounts: Record<string, number> = {}
   if (lastMatch) {
     try {
-      const [winners, counts] = await Promise.all([getMotmWinnersByMatch([lastMatch.id]), cachedMotmCounts(lastSeason)])
-      motmIds = winners[lastMatch.id] ?? []
+      const [results, counts] = await Promise.all([getMotmResultsByMatch([lastMatch.id]), cachedMotmCounts(lastSeason)])
+      motmIds = results[lastMatch.id]?.winners ?? []
+      motmVotes = results[lastMatch.id]?.topVotes ?? 0
       motmCounts = counts
     } catch (e) {
       console.error('MOTM home failed', e)
     }
   }
   const playerStats = toPlayerHomeStats(players, motmCounts)
+
+  // Record battuti o eguagliati dall'ultima partita: solo se e' recente, e se fallisce la home resta senza avviso
+  let recordItems: RecordNews[] = []
+  if (lastMatch && recordNewsFresh(lastMatch.played_at, now)) {
+    try {
+      recordItems = await cachedRecordNews(lastMatch.id)
+    } catch (e) {
+      console.error('record news failed', e)
+    }
+  }
 
   const topScorers = topScorersOf(seasonPlayers ?? players, 5)
   const emptyText = stats && stats.total_matches === 0 ? seasonEmptyText(season) : null
@@ -58,6 +72,8 @@ export default async function HomePage() {
   const scoreA = lastMatch?.score_a ?? 0
   const scoreB = lastMatch?.score_b ?? 0
   const motmNames = lastMatch ? lastMatch.match_players.filter((mp) => motmIds.includes(mp.player_id)).map((mp) => mp.player.name) : []
+  // Al massimo uno: a pari voti decide lo spareggio di tallyMotm
+  const motmWinner = lastMatch?.match_players.find((mp) => motmIds.includes(mp.player_id))?.player ?? null
   const ledText = lastMatch
     ? buildLedText({
         teamA: lastMatch.team_a_name, teamB: lastMatch.team_b_name, scoreA, scoreB, motmNames,
@@ -86,11 +102,15 @@ export default async function HomePage() {
             </div>
           </Link>
           <StadiumPitch match={lastMatch} motmIds={motmIds} stats={playerStats} ledText={ledText} />
-          {motmIds.length > 0 && (
+          {recordItems.length > 0 && (
+            <RecordBanner matchId={lastMatch.id} beaten={recordItems.some((n) => n.beaten)} lines={recordItems.map(recordNewsLine)} />
+          )}
+          {motmWinner && (
             <MotmCelebration
               matchId={lastMatch.id}
               closesAt={lastMatch.motm_closes_at}
-              winners={lastMatch.match_players.filter((mp) => motmIds.includes(mp.player_id)).map((mp) => mp.player)}
+              winner={motmWinner}
+              votes={motmVotes}
               matchLabel={`${lastMatch.team_a_name} ${scoreA} – ${scoreB} ${lastMatch.team_b_name} · ${formatRomeDay(lastMatch.played_at)}`}
             />
           )}

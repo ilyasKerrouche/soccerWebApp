@@ -10,6 +10,7 @@ import PillTabs from './PillTabs'
 import { C, Card, Section } from './ui'
 import VoteBox from './home/VoteBox'
 import MySummary from './home/MySummary'
+import LineupAnnounce from './home/LineupAnnounce'
 import StreakFlame from './StreakFlame'
 
 type Props = {
@@ -33,6 +34,9 @@ type Tab = typeof TABS[number]
 
 export default function HomeClient({ lastMatch, nextMatch, recentMatches, stats, topScorers, players, playerStats, voteOpen, season, emptyText }: Props) {
   const [tab, setTab] = useState<Tab>('Riepilogo')
+  // Ogni tocco di "Rivedi formazioni" riapre l'annuncio
+  const [lineupReplay, setLineupReplay] = useState(0)
+  const hasLineups = !!nextMatch && (['a', 'b'] as const).every((t) => nextMatch.match_players.some((mp) => mp.team === t))
   // undefined finche' non sappiamo chi guarda: la pagina e' in cache uguale per tutti
   const [viewer, setViewer] = useState<HomeViewer | undefined>(undefined)
 
@@ -53,6 +57,7 @@ export default function HomeClient({ lastMatch, nextMatch, recentMatches, stats,
 
   return (
     <>
+      {nextMatch && hasLineups && <LineupAnnounce match={nextMatch} replay={lineupReplay} />}
       {voteOpen && lastMatch && (
         <VoteBox matchId={voteOpen.matchId} closesAt={voteOpen.closesAt} teamA={lastMatch.team_a_name} teamB={lastMatch.team_b_name} viewer={viewer} />
       )}
@@ -68,6 +73,11 @@ export default function HomeClient({ lastMatch, nextMatch, recentMatches, stats,
             {nextMatch && (
               <Section title="Prossima partita">
                 <NextMatchCard match={nextMatch} />
+                {hasLineups && (
+                  <button type="button" onClick={() => setLineupReplay((n) => n + 1)} className="mt-2.5 w-full text-center text-[12px] font-semibold" style={{ color: C.acc }}>
+                    ▶ Rivedi formazioni
+                  </button>
+                )}
               </Section>
             )}
 

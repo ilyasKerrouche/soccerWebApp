@@ -17,6 +17,8 @@ type Props = {
   motmCounts: Record<string, number>
   records: Records<Player>
   pairs: GoldenPair<Player>[]
+  /** Scheda aperta all'arrivo (es. dall'avviso record in home: /stats?scheda=record). */
+  initialTab?: 'record'
 }
 
 const TABS = [
@@ -81,8 +83,8 @@ function Row({
   )
 }
 
-export default function StatsRankings({ players, goalkeepers, motmCounts, records, pairs }: Props) {
-  const [active, setActive] = useState<TabKey>('marcatori')
+export default function StatsRankings({ players, goalkeepers, motmCounts, records, pairs, initialTab }: Props) {
+  const [active, setActive] = useState<TabKey>(initialTab ?? 'marcatori')
   const hasPortieri = goalkeepers.some((g) => g.appearances > 0)
   // Solo chi ha almeno un MOTM; la sezione sparisce se ancora nessuno ne ha.
   const byMotm = players

@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { computeRecords, goldenPairs, type RMatch } from './records.ts'
+import { computeRecords, goldenPairs, recordNews, recordNewsFresh, recordNewsLine, type RMatch } from './records.ts'
 
 const P = (id: string) => ({ id, name: id.toUpperCase() })
 
@@ -137,4 +137,78 @@ test('coppie: limite sul numero restituito', () => {
     [0, 1].map((i) => m(`${k}${i}`, `2026-01-0${i + 1}`, 1, 0, [[k[0], 'a', 0], [k[1], 'a', 0]])),
   )
   assert.equal(goldenPairs(many, { minGames: 2, limit: 2 }).length, 2)
+})
+
+// ── Novita' sui record dopo l'ultima partita ──
+// Prima di m6: vittoria piu' larga 5 (m3), partita con piu' gol 9 (m3), piu' gol in una partita 3 (x in m3)
+const m6 = m('m6', '2026-02-05', 8, 1, [['x', 'a', 5], ['y', 'a', 3], ['z', 'b', 0]])
+
+test('recordNews: record battuti prima, poi quelli eguagliati', () => {
+  assert.deepEqual(recordNews([...matches, m6], 'm6'), [
+    { kind: 'biggestWin', value: 7, beaten: true, players: [] },
+    { kind: 'mostGoalsInMatch', value: 5, beaten: true, players: ['X'] },
+    { kind: 'mostGoalsMatch', value: 9, beaten: false, players: [] },
+  ])
+})
+
+test('recordNews: una partita normale non fa notizia', () => {
+  assert.deepEqual(recordNews(matches, 'm5', { minHistory: 0 }), [])
+})
+
+test('recordNews: una serie fa notizia la prima volta che supera il vecchio record', () => {
+  // Prima di m4 il record e' 3 di fila (x in m1..m3). In m4 x resta a secco e z arriva a 4.
+  assert.deepEqual(recordNews(matches.slice(0, 4), 'm4', { minHistory: 0 }), [
+    { kind: 'longestScoringStreak', value: 4, beaten: true, players: ['Z'] },
+  ])
+})
+
+test('recordNews: una serie record ancora aperta non fa notizia a ogni partita', () => {
+  // z era gia' a 4 (record suo, gia' annunciato): arrivare a 5 non e' un nuovo avviso
+  const last = m('m5b', '2026-01-29', 1, 1, [['x', 'a', 1], ['z', 'b', 1]])
+  assert.deepEqual(recordNews([...matches.slice(0, 4), last], 'm5b', { minHistory: 0 }), [])
+})
+
+test('recordNews: una serie che raggiunge il record di un altro lo eguaglia', () => {
+  // z si ferma a 4 (m1..m4). x segna in m5, m6x, m7x, m8x: alla quarta eguaglia, alla quinta supera
+  const more = [
+    m('m6x', '2026-02-05', 1, 0, [['x', 'a', 1], ['z', 'b', 0]]),
+    m('m7x', '2026-02-12', 1, 0, [['x', 'a', 1]]),
+    m('m8x', '2026-02-19', 1, 0, [['x', 'a', 1]]),
+    m('m9x', '2026-02-26', 0, 1, [['x', 'b', 1]]),
+  ]
+  const scoring = (id: string, upTo: number) => recordNews([...matches, ...more.slice(0, upTo)], id, { minHistory: 0 }).filter((n) => n.kind === 'longestScoringStreak')
+  assert.deepEqual(scoring('m7x', 2), [])
+  assert.deepEqual(scoring('m8x', 3), [{ kind: 'longestScoringStreak', value: 4, beaten: false, players: ['X'] }])
+  assert.deepEqual(scoring('m9x', 4), [{ kind: 'longestScoringStreak', value: 5, beaten: true, players: ['X'] }])
+})
+
+test('recordNews: una serie corta non fa notizia anche se eguaglia il record', () => {
+  // record di vittorie di fila fermo a 1: eguagliarlo non e' una notizia
+  const r = recordNews(matches, 'm5', { minHistory: 0 })
+  assert.equal(r.some((n) => n.kind === 'longestWinStreak'), false)
+})
+
+test('recordNews: solo per l ultima partita giocata, e solo con abbastanza storia', () => {
+  assert.deepEqual(recordNews([...matches, m6], 'm3'), [])
+  assert.deepEqual(recordNews([...matches, m6], 'boh'), [])
+  // di base servono almeno 5 partite prima: con 2 sole, niente
+  assert.deepEqual(recordNews([matches[0], matches[1], m6], 'm6'), [])
+  assert.equal(recordNews([matches[0], matches[1], m6], 'm6', { minHistory: 2 }).length > 0, true)
+})
+
+test('recordNewsLine: stesse parole della bacheca dei record', () => {
+  assert.equal(recordNewsLine({ kind: 'biggestWin', value: 7, beaten: true, players: [] }), 'Vittoria più larga: 7 gol di scarto')
+  assert.equal(recordNewsLine({ kind: 'mostGoalsMatch', value: 9, beaten: false, players: [] }), 'Partita con più gol: 9 gol in tutto')
+  assert.equal(recordNewsLine({ kind: 'mostGoalsInMatch', value: 5, beaten: true, players: ['Marco'] }), 'Più gol in una partita: 5 gol · Marco')
+  assert.equal(recordNewsLine({ kind: 'longestScoringStreak', value: 5, beaten: true, players: ['Zeno'] }), 'Serie di gol: 5 partite di fila in gol · Zeno')
+  assert.equal(recordNewsLine({ kind: 'longestWinStreak', value: 6, beaten: false, players: ['Aldo', 'Bea'] }), 'Serie di vittorie: 6 vittorie di fila · Aldo, Bea')
+})
+
+test('recordNewsFresh: l avviso vale per una settimana dal giorno della partita', () => {
+  const now = new Date('2026-11-16T10:00:00Z')
+  assert.equal(recordNewsFresh('2026-11-13', now), true)
+  assert.equal(recordNewsFresh('2026-11-09', now), true)
+  assert.equal(recordNewsFresh('2026-11-08', now), false)
+  // una data futura inserita per errore non fa partire nulla
+  assert.equal(recordNewsFresh('2026-11-20', now), false)
 })

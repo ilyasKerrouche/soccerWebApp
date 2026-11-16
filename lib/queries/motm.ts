@@ -2,7 +2,7 @@
 // motm_votes ha RLS senza policy: ogni accesso passa dal service role.
 // Questi dati non vanno mai restituiti ai client: chi ha votato chi e' privato.
 import { createAdminClient } from '@/lib/supabase/admin'
-import { tallyMotm, winningTeam, type LineupEntry, type VoteRow } from '@/lib/motm'
+import { tallyMotm, winningTeam, type LineupEntry, type Tally, type VoteRow } from '@/lib/motm'
 import { inSeason, type SeasonKey } from '@/lib/season'
 import { fetchAll } from './paging'
 
@@ -48,10 +48,10 @@ export async function upsertVote(
   if (error) throw new Error(error.message)
 }
 
-// Vincitore (al massimo uno per partita, vedi tallyMotm) delle sole partite con voto chiuso. Senza matchIds
+// Conteggio (vincitore, al massimo uno, e voti: vedi tallyMotm) delle sole partite con voto chiuso. Senza matchIds
 // copre tutte le partite chiuse (nessuna lista id nell'URL). Poche query in
 // tutto, indipendentemente dal numero di partite.
-async function computeWinners(matchIds?: string[], season: SeasonKey = 'all', at: Date = new Date()): Promise<Record<string, string[]>> {
+async function computeTallies(matchIds?: string[], season: SeasonKey = 'all', at: Date = new Date()): Promise<Record<string, Tally>> {
   if (matchIds && matchIds.length === 0) return {}
   const supabase = createAdminClient()
   const now = at.toISOString()
@@ -87,11 +87,23 @@ async function computeWinners(matchIds?: string[], season: SeasonKey = 'all', at
   const lineupBy: Record<string, LineupEntry[]> = {}
   for (const l of lineup) if (closedSet.has(l.match_id)) (lineupBy[l.match_id] ??= []).push(l)
 
-  const result: Record<string, string[]> = {}
+  const result: Record<string, Tally> = {}
   for (const m of closed) {
-    result[m.id] = tallyMotm(votesBy[m.id] ?? [], lineupBy[m.id] ?? [], winningTeam(m.score_a, m.score_b)).winners
+    result[m.id] = tallyMotm(votesBy[m.id] ?? [], lineupBy[m.id] ?? [], winningTeam(m.score_a, m.score_b))
   }
   return result
+}
+
+async function computeWinners(matchIds?: string[], season: SeasonKey = 'all', at: Date = new Date()): Promise<Record<string, string[]>> {
+  const tallies = await computeTallies(matchIds, season, at)
+  return Object.fromEntries(Object.entries(tallies).map(([id, t]) => [id, t.winners]))
+}
+
+// Come getMotmWinnersByMatch, ma con anche i voti del vincitore (per il momento MOTM in home).
+// Restano fuori i conteggi per giocatore: al client arrivano solo vincitore e voti.
+export async function getMotmResultsByMatch(matchIds: string[]): Promise<Record<string, { winners: string[]; topVotes: number }>> {
+  const tallies = await computeTallies(matchIds)
+  return Object.fromEntries(Object.entries(tallies).map(([id, t]) => [id, { winners: t.winners, topVotes: t.topVotes }]))
 }
 
 export function getMotmWinnersByMatch(matchIds: string[]): Promise<Record<string, string[]>> {
