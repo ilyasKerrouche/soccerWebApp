@@ -13,7 +13,7 @@ import { availableSeasons, currentSeason, inSeason, parseSeason, seasonEmptyText
 // Dipende da ?stagione=: la cache sta sui dati (lib/queries/cached.ts), non sulla pagina
 export const dynamic = 'force-dynamic'
 
-export default async function StatsPage({ searchParams }: { searchParams: { stagione?: string | string[] } }) {
+export default async function StatsPage({ searchParams }: { searchParams: { stagione?: string | string[]; scheda?: string | string[] } }) {
   const now = new Date()
   const season = parseSeason(searchParams.stagione, now)
 
@@ -63,7 +63,7 @@ export default async function StatsPage({ searchParams }: { searchParams: { stag
           </div>
 
           <div className="mt-6" />
-          <StatsRankings players={players} goalkeepers={goalkeepers} motmCounts={motmCounts} records={records} pairs={pairs} />
+          <StatsRankings players={players} goalkeepers={goalkeepers} motmCounts={motmCounts} records={records} pairs={pairs} initialTab={searchParams.scheda === 'record' ? 'record' : undefined} />
         </>
       )}
     </main>

@@ -8,6 +8,7 @@ import { getGlobalStats } from './stats'
 import { getMotmCounts, getMotmCountsSnapshot } from './motm'
 import type { SeasonKey } from '@/lib/season'
 import { getPlayedDates } from './matches'
+import { getRecordNews } from './records'
 
 export const SEASON_DATA_TAG = 'season-data'
 const opts = { revalidate: 60, tags: [SEASON_DATA_TAG] }
@@ -25,4 +26,6 @@ export async function cachedMotmCounts(season: SeasonKey = 'all'): Promise<Recor
   if (snap.staleAt && Date.parse(snap.staleAt) <= Date.now()) return getMotmCounts(season)
   return snap.counts
 }
+// Legge tutte le partite: resta in cache un'ora, e si rinnova subito quando si salva una partita.
+export const cachedRecordNews = unstable_cache(getRecordNews, ['record-news'], { revalidate: 3600, tags: [SEASON_DATA_TAG] })
 export const cachedPlayedDates = unstable_cache(getPlayedDates, ['played-dates'], opts)

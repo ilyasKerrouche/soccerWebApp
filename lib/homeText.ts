@@ -117,6 +117,24 @@ export function romeInstant(date: string, time: string): Date {
   return new Date(asUtc.getTime() - (romeAsUtc - asUtc.getTime()))
 }
 
+export type MatchPhase = 'before' | 'live' | 'after'
+
+/**
+ * A che punto e' una partita da giocare: prima dell'inizio, in campo, o finita (in attesa del risultato).
+ * Orari italiani. Senza orario di inizio non si sa nulla (null); senza orario di fine non e' mai 'live'.
+ * Una fine uguale o precedente all'inizio vuol dire dopo mezzanotte.
+ */
+export function matchPhase(m: { date: string; start: string | null; end: string | null }, now: Date): MatchPhase | null {
+  if (!m.start) return null
+  const start = romeInstant(m.date, m.start).getTime()
+  const t = now.getTime()
+  if (t < start) return 'before'
+  if (!m.end) return 'after'
+  let end = romeInstant(m.date, m.end).getTime()
+  if (end <= start) end += 24 * 60 * 60 * 1000
+  return t < end ? 'live' : 'after'
+}
+
 export function formatRomeTime(time: string | null): string | null {
   return time ? time.slice(0, 5) : null
 }

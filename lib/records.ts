@@ -129,6 +129,87 @@ export function computeRecords<P extends MinPlayer>(matches: RMatch<P>[]): Recor
   }
 }
 
+export type RecordKind = 'biggestWin' | 'mostGoalsMatch' | 'mostGoalsInMatch' | 'longestScoringStreak' | 'longestWinStreak'
+/** Un record battuto (beaten) o eguagliato dall'ultima partita. `players`: i nomi, vuoto per i record di partita. */
+export type RecordNews = { kind: RecordKind; value: number; beaten: boolean; players: string[] }
+
+const KIND_ORDER: RecordKind[] = ['biggestWin', 'mostGoalsMatch', 'mostGoalsInMatch', 'longestScoringStreak', 'longestWinStreak']
+/** Sotto questa lunghezza una serie non fa notizia, anche se eguaglia il record. */
+const MIN_STREAK_NEWS = 3
+
+/**
+ * I record che la partita `matchId` ha battuto o eguagliato, rispetto a tutte le partite precedenti.
+ * Solo se e' l'ultima giocata e se prima ce ne sono almeno `minHistory`: con poca storia ogni partita e' un record.
+ * Non conta doppiette, triplette e simili: cambiano troppo spesso.
+ */
+export function recordNews<P extends MinPlayer>(matches: RMatch<P>[], matchId: string, { minHistory = 5 }: { minHistory?: number } = {}): RecordNews[] {
+  const ms = playedOnly(matches)
+  const last = ms[ms.length - 1]
+  if (!last || last.id !== matchId || ms.length - 1 < minHistory) return []
+  const before = computeRecords(ms.slice(0, -1))
+  const news: RecordNews[] = []
+  // Il record di prima vale 0 se non c'era: qualunque valore positivo lo batte
+  const add = (kind: RecordKind, value: number, old: number | undefined, players: P[] = []) => {
+    if (value > 0 && value >= (old ?? 0)) news.push({ kind, value, beaten: value > (old ?? 0), players: players.map((p) => p.name).sort((a, b) => a.localeCompare(b)) })
+  }
+
+  add('biggestWin', Math.abs(last.score_a - last.score_b), before.biggestWin?.value)
+  add('mostGoalsMatch', last.score_a + last.score_b, before.mostGoalsMatch?.value)
+  const topGoals = Math.max(0, ...last.match_players.map((mp) => mp.goals))
+  add('mostGoalsInMatch', topGoals, before.mostGoalsInMatch?.value, last.match_players.filter((mp) => mp.goals === topGoals).map((mp) => mp.player))
+
+  // Serie: fa notizia solo quando raggiunge o supera per la prima volta il record delle serie gia' chiuse.
+  // Una serie record ancora aperta si allunga a ogni partita: senza questo limite l'avviso uscirebbe ogni volta.
+  const players = perPlayer(ms)
+  const streak = (kind: RecordKind, ok: (g: { goals: number; result: number }) => boolean, old: number | undefined) => {
+    let closedBest = 0
+    const open: { player: P; run: number }[] = []
+    for (const p of players) {
+      let run = 0
+      p.games.forEach((g, i) => {
+        run = ok(g) ? run + 1 : 0
+        const endsHere = i === p.games.length - 1 || !ok(p.games[i + 1])
+        if (run === 0 || !endsHere) return
+        // Aperta = arriva fino a questa partita; tutte le altre sono chiuse (o ferme, per chi non ha giocato)
+        if (i === p.games.length - 1 && g.matchId === last.id) open.push({ player: p.player, run })
+        else closedBest = Math.max(closedBest, run)
+      })
+    }
+    const best = Math.max(0, ...open.map((r) => r.run))
+    if (best < MIN_STREAK_NEWS || (best !== closedBest && best !== closedBest + 1)) return
+    add(kind, best, old, open.filter((r) => r.run === best).map((r) => r.player))
+  }
+  streak('longestScoringStreak', (g) => g.goals > 0, before.longestScoringStreak?.value)
+  streak('longestWinStreak', (g) => g.result > 0, before.longestWinStreak?.value)
+
+  return news.sort((a, b) => Number(b.beaten) - Number(a.beaten) || KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind))
+}
+
+// Stesse parole della bacheca (components/RecordsBoard.tsx)
+const NEWS_TEXT: Record<RecordKind, { label: string; unit: string }> = {
+  biggestWin: { label: 'Vittoria più larga', unit: 'gol di scarto' },
+  mostGoalsMatch: { label: 'Partita con più gol', unit: 'gol in tutto' },
+  mostGoalsInMatch: { label: 'Più gol in una partita', unit: 'gol' },
+  longestScoringStreak: { label: 'Serie di gol', unit: 'partite di fila in gol' },
+  longestWinStreak: { label: 'Serie di vittorie', unit: 'vittorie di fila' },
+}
+
+export function recordNewsKey(matchId: string): string {
+  return `calcetto:record-news:${matchId}`
+}
+
+/** L'avviso vale per una settimana dal giorno della partita (data "YYYY-MM-DD"); mai per una data futura. */
+export function recordNewsFresh(playedAt: string, now: Date): boolean {
+  const sinceDay = now.getTime() - Date.parse(`${playedAt.slice(0, 10)}T00:00:00Z`)
+  return sinceDay >= 0 && sinceDay < 8 * 24 * 60 * 60 * 1000
+}
+
+/** Una riga per l'avviso in home, es. "Più gol in una partita: 5 gol · Marco". */
+export function recordNewsLine(n: RecordNews): string {
+  const { label, unit } = NEWS_TEXT[n.kind]
+  return `${label}: ${n.value} ${unit}${n.players.length > 0 ? ` · ${n.players.join(', ')}` : ''}`
+}
+
 export type GoldenPair<P> = { a: P; b: P; games: number; wins: number; draws: number; winRate: number }
 
 /**

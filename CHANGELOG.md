@@ -3,6 +3,14 @@
 Le versioni seguono [Semantic Versioning](https://semver.org/lang/it/):
 il primo numero cambia con un restyling o un cambiamento grosso, il secondo con nuove funzioni, il terzo con correzioni.
 
+## [Da pubblicare]
+
+### Novità
+- Momento MOTM nuovo: la card arriva come sagoma nera con un punto di domanda, poi un lampo dorato la svela; nome e voti compaiono solo dopo
+- Avviso record: se l'ultima partita batte o eguaglia un record (vittoria più larga, partita con più gol, più gol di un giocatore, serie di gol, serie di vittorie), in Home scende una fascia dorata che porta alla bacheca dei record
+- Annuncio delle formazioni: quando escono le squadre della prossima partita, alla prima apertura della Home parte una presentazione (sigla, una squadra alla volta a ventaglio, formazioni schierate). Una volta sola per partita, tocco per saltare, e si rivede da "Rivedi formazioni"
+- Simbolo LIVE: mentre si gioca, il riquadro "Da giocare" mostra un pallino rosso al posto del conto alla rovescia. Serve l'orario di fine, che ora si può inserire nella partita futura dall'admin
+
 ## [2.8.0] — 2026-11-16
 
 ### Novità

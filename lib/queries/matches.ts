@@ -75,6 +75,7 @@ export async function getNextMatch(): Promise<MatchWithPlayers | null> {
 export async function createMatch(formData: {
   played_at: string
   match_time?: string | null
+  match_end_time?: string | null
   team_a_name: string
   team_b_name: string
   score_a: number | null
@@ -89,6 +90,7 @@ export async function createMatch(formData: {
     .insert({
       played_at: formData.played_at,
       match_time: formData.match_time ?? null,
+      match_end_time: formData.match_end_time ?? null,
       team_a_name: formData.team_a_name,
       team_b_name: formData.team_b_name,
       score_a: formData.score_a,
@@ -118,6 +120,7 @@ export async function updateMatch(
   formData: {
     played_at: string
     match_time?: string | null
+  match_end_time?: string | null
     team_a_name: string
     team_b_name: string
     score_a: number | null
@@ -147,6 +150,7 @@ export async function updateMatch(
   const { error } = await supabase.from('matches').update({
     played_at: formData.played_at,
     match_time: formData.match_time ?? null,
+    match_end_time: formData.match_end_time ?? null,
     team_a_name: formData.team_a_name,
     team_b_name: formData.team_b_name,
     score_a: formData.score_a,

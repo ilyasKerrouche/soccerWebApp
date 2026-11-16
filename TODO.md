@@ -10,6 +10,10 @@ In ordine di priorità.
 - [x] Bellezza: momento MOTM alla chiusura del voto (la card del vincitore si gira e si illumina d'oro, una volta sola)
 - [x] Bellezza: transizioni tra pagine e micro-animazioni (pillola che scorre, numeri che salgono, podio che arriva)
 - [x] Bellezza: schermate di caricamento con la forma delle pagine nuove
+- [x] Bellezza: annuncio delle formazioni all'apertura della Home quando escono le squadre (stile "ventaglio", una volta sola per partita e per telefono)
+  - [ ] Stacco musicale sulla sigla
+- [x] Bellezza: simbolo LIVE rosso sul riquadro "Da giocare" mentre si gioca, tra orario di inizio e di fine inseriti dall'admin
+- [x] Bellezza: avviso dorato in Home quando l'ultima partita batte o eguaglia un record
 - [ ] Bellezza: icona dell'app e piccolo logo del gruppo
 - [x] Bellezza: font più sportivo (condensato, sobrio) per punteggi e statistiche
 - [ ] Squadre bilanciate automatiche per la prossima partita (in base a gol, vittorie e forma)

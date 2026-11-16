@@ -15,6 +15,8 @@ export type Match = {
   id: string
   played_at: string
   match_time: string | null
+  /** Orario di fine ("HH:MM", ora italiana): con match_time decide quando la partita e' LIVE. */
+  match_end_time: string | null
   team_a_name: string
   team_b_name: string
   score_a: number | null
